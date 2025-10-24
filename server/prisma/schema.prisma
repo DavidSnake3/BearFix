@@ -1,0 +1,358 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADM
+  TEC
+  USR
+}
+
+enum TicketEstado {
+  PENDIENTE
+  ASIGNADO
+  EN_PROCESO
+  ESPERA_CLIENTE
+  RESUELTO
+  CERRADO
+  CANCELADO
+}
+
+enum ModoAsignacion {
+  AUTOMATICA
+  MANUAL
+}
+
+enum Prioridad {
+  BAJO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+enum NotifTipo {
+  ASIGNACION_TICKET
+  CAMBIO_ESTADO
+  VENCIMIENTO
+  RECORDATORIO
+  OTRO
+}
+
+enum NotifPrioridad {
+  BAJA
+  MEDIA
+  ALTA
+}
+
+enum ParametroTipo {
+  TEXTO
+  NUMERO
+  BOOLEAN
+  JSON
+}
+
+enum ParametroSistema {
+  MODO_MANTENIMIENTO
+  LIMITE_MAX_SUBIDA_MB
+  EMAIL_SOPORTE
+  URL_SERVICIO_EXTERNO
+  TIEMPO_SESION_MIN
+  HABILITAR_NOTIFICACIONES
+  LOG_LEVEL
+  RETENCION_DATOS_DIAS
+}
+
+model SecuenciaConsecutivo {
+  anio               Int      @id
+  ultimoConsecutivo  Int      @default(0)
+  actualizadoEn      DateTime @updatedAt
+}
+
+model Usuario {
+  id                   Int                         @id @default(autoincrement())
+  correo               String                      @unique
+  contrasenaHash       String
+  nombre               String?
+  telefono             String?
+  rol                  Role
+  activo               Boolean                     @default(true)
+  ultimoInicio         DateTime?
+  disponible           Boolean?                    @default(true)
+  cargosActuales       Int?                        @default(0)
+  limiteCargaTickets   Int?                        @default(5)
+  ultimaActualizacion  DateTime?
+  creadoEn             DateTime                    @default(now())
+  actualizadoEn        DateTime                    @updatedAt
+
+  refreshToken             String? 
+  refreshTokenExpiry       DateTime?
+  resetPasswordToken       String?
+  resetPasswordExpiry      DateTime?
+
+  solicitudes           Ticket[]
+  asignacionesRecibidas Asignacion[] @relation("AsignacionesComoTecnico")
+  asignacionesHechas    Asignacion[] @relation("AsignacionesComoAsignador")
+  usuarioEspecialidades UsuarioEspecialidad[]
+  ticketHistorial       TicketHistorial[]
+  notificacionesRemitente Notificacion[] @relation("NotificacionesRemitente")
+  notificacionesDestino Notificacion[]   @relation("NotificacionesDestinatario")
+  valoraciones         Valoracion[]
+  imagenesSubidas      ImagenTicket[]    @relation("ImagenesSubidasPorUsuario") // RELACIÓN INVERSA AÑADIDA
+
+  @@index([correo])
+  @@index([rol])
+  @@index([activo])
+  @@index([disponible])
+}
+
+model Especialidad {
+  id                      Int                        @id @default(autoincrement())
+  codigo                  String                     @unique
+  nombre                  String
+  descripcion             String?                    @db.Text
+  activa                  Boolean                    @default(true)
+  creadoEn                DateTime                   @default(now())
+  actualizadoEn           DateTime                   @updatedAt
+  usuarios                UsuarioEspecialidad[]
+  categoriaEspecialidades CategoriaEspecialidad[]
+  reglasAutotriage        ReglaAutotriage[]
+
+  @@index([codigo])
+  @@index([activa])
+}
+
+model UsuarioEspecialidad {
+  usuarioId      Int
+  especialidadId Int
+  usuario        Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  especialidad   Especialidad @relation(fields: [especialidadId], references: [id], onDelete: Cascade)
+  creadoEn       DateTime     @default(now())
+  
+  @@id([usuarioId, especialidadId])
+  @@index([usuarioId])
+  @@index([especialidadId])
+}
+
+model Categoria {
+  id                         Int     @id @default(autoincrement())
+  codigo                     String  @unique
+  nombre                     String
+  descripcion                String? @db.Text
+  activa                     Boolean @default(true)
+  creadoEn                   DateTime @default(now())
+  actualizadoEn              DateTime @updatedAt
+
+  slaNombre                  String?
+  slaTiempoMaxRespuestaMin   Int?
+  slaTiempoMaxResolucionMin  Int?
+  slaDescripcion             String? @db.Text
+  slaNivelUrgencia           Prioridad?
+
+  categoriaEtiquetas         CategoriaEtiqueta[]
+  categoriaEspecialidades    CategoriaEspecialidad[]
+  tickets                    Ticket[]
+  reglasAutotriage           ReglaAutotriage[]
+
+  @@index([codigo])
+  @@index([activa])
+}
+
+model Etiqueta {
+  id          Int     @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  activa      Boolean @default(true)
+  categoriaEtiquetas CategoriaEtiqueta[]
+
+  @@index([activa])
+}
+
+model CategoriaEtiqueta {
+  categoriaId Int
+  etiquetaId  Int
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  etiqueta    Etiqueta  @relation(fields: [etiquetaId], references: [id], onDelete: Cascade)
+  
+  @@id([categoriaId, etiquetaId])
+  @@index([categoriaId])
+  @@index([etiquetaId])
+}
+
+model CategoriaEspecialidad {
+  categoriaId    Int
+  especialidadId Int
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+  especialidad Especialidad @relation(fields: [especialidadId], references: [id], onDelete: Cascade)
+  
+  @@id([categoriaId, especialidadId])
+  @@index([categoriaId])
+  @@index([especialidadId])
+}
+
+model Ticket {
+  id                        Int       @id @default(autoincrement())
+  consecutivo               String    @unique
+  titulo                    String
+  descripcion               String?   @db.Text
+  solicitanteId             Int?
+  categoriaId               Int?
+  estado                    TicketEstado @default(PENDIENTE)
+  modoAsignacion            ModoAsignacion @default(AUTOMATICA)
+  prioridad                 Prioridad?
+  fechaCreacion             DateTime @default(now())
+  fechaActualizacion        DateTime @updatedAt
+  fechaLimiteRespuesta      DateTime?
+  fechaLimiteResolucion     DateTime?
+  fechaRespuesta            DateTime?
+  fechaCierre               DateTime?
+  eliminadoLogico           Boolean   @default(false)
+  diasResolucion            Int?
+  
+  // Campos para asignación automática
+  puntajePrioridad          Float?
+  tiempoRestanteSLAHoras    Float?
+  
+  solicitante               Usuario?  @relation(fields: [solicitanteId], references: [id])
+  categoria                 Categoria? @relation(fields: [categoriaId], references: [id])
+
+  asignaciones              Asignacion[]
+  historial                 TicketHistorial[]
+  valoracion                Valoracion?
+  imagenes                  ImagenTicket[]
+
+  @@index([consecutivo])
+  @@index([solicitanteId])
+  @@index([categoriaId])
+  @@index([estado])
+  @@index([prioridad])
+  @@index([fechaCreacion])
+  @@index([eliminadoLogico])
+}
+
+model ImagenTicket {
+  id          Int      @id @default(autoincrement())
+  ticketId    Int
+  nombreArchivo String
+  url         String
+  tipo        String?
+  tamaño      Int?
+  descripcion String?
+  creadoEn    DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
+  // Relación con Ticket
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  // Relación con Usuario (quien subió la imagen) - CORREGIDA
+  subidoPorId Int?
+  subidoPor   Usuario? @relation("ImagenesSubidasPorUsuario", fields: [subidoPorId], references: [id])
+
+  @@index([ticketId])
+  @@index([subidoPorId])
+}
+
+model TicketHistorial {
+  id            Int      @id @default(autoincrement())
+  ticketId      Int
+  estadoOrigen  TicketEstado?
+  estadoDestino TicketEstado
+  usuarioId     Int?
+  observaciones String?  @db.Text
+  creadoEn      DateTime @default(now())
+  ticket        Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  usuario       Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([ticketId])
+  @@index([usuarioId])
+  @@index([creadoEn])
+}
+
+model ReglaAutotriage {
+  id               Int       @id @default(autoincrement())
+  nombre           String
+  descripcion      String?   @db.Text
+  criterios        Json
+  formulaPrioridad String?
+  limiteCargaTecnico Int?
+  ordenPrioridad    Int
+  activo           Boolean   @default(true)
+  creadoEn         DateTime  @default(now())
+  actualizadoEn    DateTime  @updatedAt
+
+  categoriaId      Int
+  categoria        Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  especialidadId   Int?
+  especialidad     Especialidad? @relation(fields: [especialidadId], references: [id])
+
+  asignaciones     Asignacion[]
+
+  @@index([categoriaId])
+  @@index([especialidadId])
+  @@index([activo])
+  @@index([ordenPrioridad])
+}
+
+model Asignacion {
+  id               Int       @id @default(autoincrement())
+  ticketId         Int
+  tecnicoId        Int?
+  metodo           ModoAsignacion @default(AUTOMATICA)
+  justificacion    String?   @db.Text
+  asignadoPorId    Int?
+  reglaAutotriageId Int?
+  puntajeCalculado Float?
+  tiempoRestanteSLAHoras Float?
+  fechaAsignacion  DateTime  @default(now())
+  activo           Boolean   @default(true)
+  
+  ticket           Ticket    @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  tecnico          Usuario?  @relation("AsignacionesComoTecnico", fields: [tecnicoId], references: [id])
+  asignadoPor      Usuario?  @relation("AsignacionesComoAsignador", fields: [asignadoPorId], references: [id])
+  reglaAutotriage  ReglaAutotriage? @relation(fields: [reglaAutotriageId], references: [id])
+
+  @@index([ticketId])
+  @@index([tecnicoId])
+  @@index([reglaAutotriageId])
+  @@index([fechaAsignacion])
+  @@index([activo])
+}
+
+model Notificacion {
+  id             Int       @id @default(autoincrement())
+  tipo           NotifTipo
+  remitenteId    Int?
+  destinatarioId Int
+  asunto         String?
+  mensaje        String?   @db.Text
+  datos          Json?
+  leida          Boolean   @default(false)
+  prioridad      NotifPrioridad @default(BAJA)
+  creadoEn       DateTime  @default(now())
+  remitente      Usuario?  @relation("NotificacionesRemitente", fields: [remitenteId], references: [id])
+  destinatario   Usuario   @relation("NotificacionesDestinatario", fields: [destinatarioId], references: [id])
+
+  @@index([destinatarioId])
+  @@index([leida])
+  @@index([creadoEn])
+}
+
+model Valoracion {
+  id         Int     @id @default(autoincrement())
+  ticketId   Int     @unique
+  usuarioId  Int?
+  puntuacion Int
+  comentario String? @db.Text
+  creadoEn   DateTime @default(now())
+  ticket     Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  usuario    Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([creadoEn])
+}
