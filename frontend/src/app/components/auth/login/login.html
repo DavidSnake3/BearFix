@@ -1,0 +1,193 @@
+<div class="login-container">
+  <div class="login-background">
+    <div class="background-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    
+    <div class="login-wrapper">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="logo-container">
+            <img src="/images/logo.png" alt="BearFix" class="logo">
+          </div>
+          <p class="welcome-text">Sistema de Gestión de Tickets</p>
+        </div>
+
+        <div class="login-body">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+            <div class="form-group">
+              <label for="username" class="form-label">
+                <i class="bi bi-envelope-fill"></i>
+                Correo Electrónico
+              </label>
+              <div class="input-group" 
+                   [class.error]="loginForm.controls['username'].dirty && loginForm.hasError('required','username')">
+                <span class="input-icon">
+                  <i class="bi bi-envelope"></i>
+                </span>
+                <input 
+                  formControlName="username" 
+                  id="username" 
+                  type="email" 
+                  placeholder="usuario@empresa.com"
+                  class="form-input"
+                >
+              </div>
+              
+              @if (loginForm.controls['username'].dirty && loginForm.hasError('required','username')) {
+                <small class="error-text">*El correo electrónico es requerido*</small>
+              }
+              
+              @if (loginForm.controls['username'].dirty && loginForm.hasError('email','username')) {
+                <small class="error-text">*Ingresa un correo electrónico válido*</small>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">
+                <i class="bi bi-shield-lock-fill"></i>
+                Contraseña
+              </label>
+              <div class="input-group" 
+                   [class.error]="loginForm.controls['password'].dirty && loginForm.hasError('required','password')">
+                <span class="input-icon">
+                  <i class="bi bi-lock"></i>
+                </span>
+                <input 
+                  formControlName="password" 
+                  id="password" 
+                  [type]="type()" 
+                  placeholder="Ingresa tu contraseña"
+                  class="form-input"
+                >
+                <button 
+                  type="button" 
+                  (click)="hideShowPass()" 
+                  class="password-toggle"
+                  [attr.title]="isText() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                >
+                  <i class="bi" [class]="eyeIcon()"></i>
+                </button>
+              </div>
+              
+              @if (loginForm.controls['password'].dirty && loginForm.hasError('required','password')) {
+                <small class="error-text">*La contraseña es requerida*</small>
+              }
+            </div>
+
+            <div class="form-options">
+              <a class="forgot-password" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                <i class="bi bi-question-circle"></i>
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
+            <button type="submit" class="login-btn" [disabled]="!loginForm.valid || isLoading()">
+              @if (isLoading()) {
+                <i class="bi bi-arrow-clockwise spinner"></i>
+                Procesando...
+              } @else {
+                <i class="bi bi-box-arrow-in-right"></i>
+                Iniciar Sesión
+              }
+            </button>
+
+            <div class="register-link">
+              <span class="register-text">¿No tienes una cuenta?</span>
+              <a routerLink="/auth/signup" class="register-link-text">
+                <i class="bi bi-person-plus"></i>
+                Regístrate aquí
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div class="login-footer">
+          <p>&copy; 2024 BearFix. Todos los derechos reservados.</p>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <div class="logo-background">
+          <img src="/images/logo.png" alt="BearFix" class="logo-silhouette">
+        </div>
+        
+        <div class="info-content">
+          <h2>Bienvenido a BearFix</h2>
+          <div class="features-list">
+            @for (feature of features; track feature.text; let i = $index) {
+              <div class="feature-item" [style.animation-delay]="(i * 0.1) + 's'">
+                <i [class]="feature.icon"></i>
+                <span>{{ feature.text }}</span>
+              </div>
+            }
+          </div>
+          <div class="stats">
+            @for (stat of stats; track stat.value) {
+              <div class="stat">
+                <h3>{{ stat.value }}</h3>
+                <p>{{ stat.label }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="bi bi-key-fill"></i>
+          <div>
+            <h5 id="resetPasswordModalLabel">Recuperar Contraseña</h5>
+            <p>Ingresa tu correo electrónico para recibir el enlace de recuperación</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="resetEmail" class="form-label">Correo Electrónico</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <i class="bi bi-envelope"></i>
+            </span>
+            <input 
+              [value]="resetPasswordEmail()"
+              (input)="checkValidEmail($any($event.target).value)"
+              type="email" 
+              id="resetEmail" 
+              placeholder="usuario@empresa.com"
+              class="form-input"
+            >
+          </div>
+          
+          @if (!resetPasswordEmail()) {
+            <small class="error-text">*El correo electrónico es requerido*</small>
+          }
+          
+          @if (!isValidEmail() && resetPasswordEmail()) {
+            <small class="error-text">*El correo electrónico no es válido*</small>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirmToSend()" 
+                [disabled]="!isValidEmail() || !resetPasswordEmail()">
+          <i class="bi bi-send"></i>
+          Enviar Enlace
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

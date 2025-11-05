@@ -1,0 +1,442 @@
+<div class="categorias-container">
+  <div class="categorias-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-tags"></i>
+          Gestión de Categorías
+        </h1>
+        <p class="page-subtitle">Administracion de Categorias</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-action refresh" (click)="loadCategorias()" [disabled]="isLoading()">
+          <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+        </button>
+        <button class="btn-action primary">
+          <i class="bi bi-plus-circle"></i>
+          Agregar Categoría
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="bi bi-funnel"></i>
+        Filtros
+      </h3>
+    </div>
+    <div class="card-body">
+      <div class="filters-grid">
+        <div class="filter-group full-width">
+          <label class="filter-label">Buscar Categoría</label>
+          <div class="search-container full-width">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-input search-input large" placeholder="Buscar por código o nombre..."
+              [value]="searchInput()" (input)="onSearchChange($event)">
+          </div>
+        </div>
+      </div>
+
+      @if (searchInput()) {
+      <div class="active-filters">
+        <span class="filters-label">Filtros activos:</span>
+        <span class="filter-badge">
+          Búsqueda: "{{ searchInput() }}"
+          <i class="bi bi-x" (click)="limpiarFiltros()"></i>
+        </span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="card-header">
+      <div class="card-header-content">
+        <div>
+          <h2 class="card-title">
+            <i class="bi bi-list-ul"></i>
+            Lista de Categorías
+          </h2>
+          <p class="card-subtitle">
+            Mostrando {{ categorias().length }} de {{ paginacion().totalItems }} categorías
+          </p>
+        </div>
+        <div class="header-controls">
+          <div class="items-per-page">
+            <label>Mostrar:</label>
+            <select class="form-select small" [value]="paginacion().itemsPerPage"
+              (change)="cambiarItemsPorPagina($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando categorías...</p>
+        </div>
+      </div>
+      } @else {
+      @if (categorias().length > 0) {
+      <div class="table-container">
+        <table class="modern-table">
+          <thead class="table-header">
+            <tr>
+              <th scope="col" class="ps-4">Código</th>
+              <th scope="col">Nombre</th>
+              <th scope="col">Descripción</th>
+              <th scope="col" class="text-center pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (categoria of categorias(); track categoria.id) {
+            <tr class="table-row">
+              <td class="ps-4">
+                <div class="code-cell">{{ categoria.codigo }}</div>
+              </td>
+              <td>
+                <div class="name-cell">{{ categoria.nombre }}</div>
+              </td>
+              <td>
+                <span class="description-cell">{{ categoria.descripcion }}</span>
+              </td>
+              <td class="text-center pe-4">
+                <div class="action-buttons">
+                  <button class="btn-icon info" (click)="viewCategoriaDetail(categoria)" title="Ver detalle">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-icon warning" (click)="enableEditMode(categoria)" title="Editar categoría">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="deleteCategoria(categoria)" title="Eliminar categoría">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} •
+          {{ paginacion().totalItems }} categorías en total
+        </div>
+        <nav class="pagination">
+          <button class="pagination-btn" [disabled]="!paginacion().hasPrevPage"
+            (click)="cambiarPagina(paginacion().currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+
+          <div class="pagination-pages">
+            @for (page of getPaginationPages(); track page) {
+            @if (page === '...') {
+            <span class="pagination-ellipsis">...</span>
+            } @else {
+            <button class="pagination-page" [class.active]="page === paginacion().currentPage"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+            }
+            }
+          </div>
+
+          <button class="pagination-btn" [disabled]="!paginacion().hasNextPage"
+            (click)="cambiarPagina(paginacion().currentPage + 1)">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </nav>
+      </div>
+
+      } @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <i class="bi bi-tags empty-icon"></i>
+          <h3>No se encontraron categorías</h3>
+          <p>
+            No hay categorías que coincidan con los filtros aplicados.
+            @if (searchInput()) {
+            <br>
+            <small>Intenta ajustar los filtros de búsqueda.</small>
+            }
+          </p>
+          <button class="btn-action primary" (click)="limpiarFiltros()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+
+  @if (showModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header" [ngClass]="isEditing() ? 'editing' : 'viewing'">
+        <div class="modal-title">
+          <i class="bi" [ngClass]="isEditing() ? 'bi-pencil-square' : 'bi-tag'"></i>
+          <div>
+            <h3>{{ isEditing() ? 'Editando Categoría' : 'Detalle de la Categoría' }}</h3>
+          </div>
+        </div>
+        <button class="btn-close" (click)="isEditing() ? cancelEdit() : closeModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      @if (selectedCategoria()) {
+      <div class="modal-body">
+        <div class="categoria-header">
+          <div class="categoria-avatar">
+            <i class="fas fa-tag"></i>
+          </div>
+
+          @if (!isEditing()) {
+          <div class="categoria-info">
+            <h2>{{ selectedCategoria()!.nombre }}</h2>
+            <div class="categoria-badges">
+              <span class="badge primary">Código: {{ selectedCategoria()!.codigo }}</span>
+              <span class="badge" [ngClass]="getEstadoBadgeClass(selectedCategoria()!.activa)">
+                {{ selectedCategoria()!.activa ? 'Activa' : 'Inactiva' }}
+              </span>
+            </div>
+          </div>
+          } @else {
+          <div class="categoria-edit">
+            <div class="edit-fields">
+              <input type="text" class="form-input large" [(ngModel)]="editCategoriaData().codigo" placeholder="Código">
+              <input type="text" class="form-input large" [(ngModel)]="editCategoriaData().nombre"
+                placeholder="Nombre de la categoría">
+            </div>
+          </div>
+          }
+        </div>
+
+        <div class="modal-grid">
+          <div class="modal-section">
+            <div class="section-card equal-height">
+              <div class="section-header">
+                <i class="bi bi-info-circle"></i>
+                <h4>Información Básica</h4>
+              </div>
+              <div class="section-body">
+                @if (!isEditing()) {
+                <div class="info-grid">
+
+                  <div class="info-item">
+                    <label>Descripción</label>
+                    <div class="info-value">
+                      <i class="bi bi-text-paragraph"></i>
+                      <span>{{ selectedCategoria()!.descripcion }}</span>
+                    </div>
+                  </div>
+                </div>
+                } @else {
+                <div class="edit-grid">
+                  <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-textarea" rows="3" [(ngModel)]="editCategoriaData().descripcion"></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" [(ngModel)]="editCategoriaData().activa">
+                      <option [ngValue]="true">Activa</option>
+                      <option [ngValue]="false">Inactiva</option>
+                    </select>
+                  </div>
+                </div>
+                }
+
+                <div class="dates-info">
+                  <div class="info-row">
+                    <div class="date-item">
+
+                      <label>Fecha de Registro</label>
+                      <div class="date-value">
+                        <i class="bi bi-calendar"></i>
+                        <span>{{ selectedCategoria()!.creadoEn | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="date-item">
+                      <label>Última Actualización</label>
+                      <div class="date-value">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ selectedCategoria()!.actualizadoEn | date:'dd/MM/yyyy' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="section-card equal-height">
+              <div class="section-header">
+                <i class="bi bi-clock"></i>
+                <h4>SLA</h4>
+              </div>
+              <div class="section-body">
+                <div class="sla-grid">
+                  <div class="info-row">
+                    <div class="sla-item">
+                      <label>Nombre</label>
+                      <div class="sla-value">
+                        <i class="bi bi-tag"></i>
+                        <span>{{ selectedCategoria()!.slaNombre || 'No definido' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="sla-item">
+                      <label>Nivel de Urgencia</label>
+                      <div class="sla-value">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span class="badge"
+                          [ngClass]="getNivelUrgenciaBadgeClass(selectedCategoria()!.slaNivelUrgencia)">
+                          {{ selectedCategoria()!.slaNivelUrgencia || 'No definido' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="sla-item">
+                      <label>Tiempo Máximo de Respuesta</label>
+                      <div class="sla-value">
+                        <i class="bi bi-alarm"></i>
+                        <span>{{ selectedCategoria()!.slaTiempoMaxRespuestaMin }} minutos</span>
+                      </div>
+                    </div>
+
+                    <div class="sla-item">
+                      <label>Tiempo Máximo de Resolución</label>
+                      <div class="sla-value">
+                        <i class="bi bi-clock-history"></i>
+                        <span>{{ selectedCategoria()!.slaTiempoMaxResolucionMin }} minutos</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  @if (selectedCategoria()!.slaDescripcion) {
+                  <div class="sla-item">
+                    <label>Descripción</label>
+                    <div class="sla-value">
+                      <i class="bi bi-text-left"></i>
+                      <span>{{ selectedCategoria()!.slaDescripcion }}</span>
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (selectedCategoria()!.etiquetas && selectedCategoria()!.etiquetas.length > 0) {
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-bookmark"></i>
+              <h4>Etiquetas Asociadas</h4>
+              <span class="section-badge">{{ selectedCategoria()!.etiquetas.length }}</span>
+            </div>
+            <div class="section-body">
+              <div class="tags-grid">
+                @for (etiqueta of selectedCategoria()!.etiquetas; track etiqueta.id) {
+                <div class="tag-card">
+                  <div class="tag-header">
+                    <h5>{{ etiqueta.nombre }}</h5>
+
+                  </div>
+                  <p class="tag-description">{{ etiqueta.descripcion }}</p>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        @if (selectedCategoria()!.especialidades && selectedCategoria()!.especialidades.length > 0) {
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-award"></i>
+              <h4>Especialidades Asociadas</h4>
+              <span class="section-badge">{{ selectedCategoria()!.especialidades.length }}</span>
+            </div>
+            <div class="section-body">
+              <div class="specialties-grid">
+                @for (especialidad of selectedCategoria()!.especialidades; track especialidad.id) {
+                <div class="specialty-card">
+                  <div class="specialty-header">
+                    <h5>{{ especialidad.nombre }}</h5>
+                  </div>
+                  <p class="specialty-description">{{ especialidad.descripcion }}</p>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+        }
+
+        @if ((!selectedCategoria()!.etiquetas || selectedCategoria()!.etiquetas.length === 0) && !isEditing()) {
+        <div class="empty-section">
+          <i class="bi bi-bookmark"></i>
+          <p>No hay etiquetas asociadas</p>
+        </div>
+        }
+
+        @if ((!selectedCategoria()!.especialidades || selectedCategoria()!.especialidades.length === 0) && !isEditing())
+        {
+        <div class="empty-section">
+          <i class="bi bi-award"></i>
+          <p>No hay especialidades asociadas</p>
+        </div>
+        }
+      </div>
+      }
+
+      <div class="modal-footer">
+        <button type="button" class="btn-action secondary" (click)="isEditing() ? cancelEdit() : closeModal()">
+          <i class="bi" [ngClass]="isEditing() ? 'bi-x-circle' : 'bi-x-circle'"></i>
+          {{ isEditing() ? 'Cancelar' : 'Cerrar' }}
+        </button>
+
+        @if (!isEditing()) {
+        <button type="button" class="btn-action primary" (click)="enableEdit()">
+          <i class="bi bi-pencil"></i>
+          Editar Categoría
+        </button>
+        }
+
+        @if (isEditing()) {
+        <button type="button" class="btn-action success" (click)="saveCategoria()">
+          <i class="bi bi-check-circle"></i>
+          Guardar Cambios
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  }

@@ -1,0 +1,238 @@
+<div class="calendario-container">
+  <div class="calendario-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-calendar-week"></i>
+          Mis Asignaciones
+        </h1>
+        <p class="page-subtitle">Gestiona tus tickets asignados por fecha</p>
+      </div>
+
+      <div class="header-stats">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="bi bi-list-task"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-number">{{ getTotalAsignaciones() }}</span>
+            <span class="stat-label">Total Asignaciones</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controles-mes">
+      <button class="btn-control prev" (click)="mesAnterior()">
+        <i class="bi bi-chevron-left"></i>
+        <span>Mes Anterior</span>
+      </button>
+
+      <div class="mes-info">
+        <h2 class="mes-actual">{{ getNombreMes() }} {{ anioActual() }}</h2>
+        <div class="mes-badges">
+          <span class="badge asignaciones-badge">
+            <i class="bi bi-ticket-perforated"></i>
+            {{ getDiasConAsignaciones() }} días con tickets
+          </span>
+        </div>
+      </div>
+
+      <button class="btn-control next" (click)="mesSiguiente()">
+        <span>Mes Siguiente</span>
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="leyenda-prioridades">
+    <div class="leyenda-title">Leyenda de Prioridades:</div>
+    <div class="leyenda-items">
+      <div class="leyenda-item">
+        <span class="color-indicator prioridad-alto"></span>
+        <span>Alta Prioridad</span>
+      </div>
+      <div class="leyenda-item">
+        <span class="color-indicator prioridad-medio"></span>
+        <span>Media Prioridad</span>
+      </div>
+      <div class="leyenda-item">
+        <span class="color-indicator prioridad-bajo"></span>
+        <span>Baja Prioridad</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dias-semana-container">
+    <div class="dias-semana">
+      @for (dia of diasSemana; track dia) {
+      <div class="dia-semana">
+        <span class="dia-nombre">{{ dia }}</span>
+        <span class="dia-abreviatura">{{ getAbreviaturaDia(dia) }}</span>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="grid-calendario">
+    @for (semana of semanas(); track $index) {
+    <div class="semana">
+      @for (dia of semana; track dia.fecha) {
+      <div class="dia" [class.mes-actual]="dia.esMesActual" [class.mes-adjunto]="!dia.esMesActual"
+        [class.con-asignaciones]="dia.tieneAsignaciones" [class.hoy]="esHoy(dia.fecha)" (click)="abrirModalDia(dia)">
+        <div class="dia-header">
+          <span class="numero-dia" [class.hoy]="esHoy(dia.fecha)">
+            {{ dia.numero }}
+          </span>
+
+          @if (esHoy(dia.fecha)) {
+          <span class="hoy-indicator">
+            <i class="bi bi-circle-fill"></i>
+          </span>
+          }
+
+          @if (dia.tieneAsignaciones) {
+          <div class="asignaciones-indicador">
+            <span [class]="'badge-asignaciones ' + obtenerClasePrioridadPrimerTicket(dia)">
+              <i class="bi bi-ticket-perforated"></i>
+              {{ dia.cantidadAsignaciones }}
+            </span>
+          </div>
+          }
+        </div>
+
+        <div class="dia-content">
+          @if (dia.tieneAsignaciones) {
+          <div class="asignaciones-preview">
+            @for (asignacion of dia.asignaciones.slice(0, 3); track asignacion.id) {
+            <div [class]="'preview-item ' + obtenerClasePrioridad(asignacion.prioridad)">
+              <i class="bi bi-circle-fill"></i>
+            </div>
+            }
+            @if (dia.asignaciones.length > 3) {
+            <div class="more-indicator">
+              +{{ dia.asignaciones.length - 3 }}
+            </div>
+            }
+          </div>
+          } @else {
+          @if (dia.esMesActual) {
+          <div class="dia-vacio">
+            <i class="bi bi-check-circle"></i>
+            <span>Sin asignaciones</span>
+          </div>
+          }
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <div class="calendario-footer">
+    <div class="footer-info">
+      <i class="bi bi-info-circle"></i>
+      <span>Haz clic en cualquier día con asignaciones para ver los detalles</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Asignaciones del Día -->
+@if (mostrarModal()) {
+<div class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="bi bi-calendar-date"></i>
+        <div>
+          <h3>Asignaciones del Día</h3>
+          <p class="modal-subtitle">{{ fechaSeleccionada() }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="cerrarModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="asignaciones-count">
+        <i class="bi bi-list-check"></i>
+        <span>{{ asignacionesDiaSeleccionado().length }} asignacion(es) encontrada(s)</span>
+      </div>
+
+      <div class="asignaciones-list">
+        @for (asignacion of asignacionesDiaSeleccionado(); track asignacion.asignacionId) {
+        <div [class]="'asignacion-card ' + obtenerClasePrioridad(asignacion.prioridad) + '-card'">
+
+          <div class="card-header">
+            <div class="card-badges">
+              <span class="badge consecutivo">
+                <i class="bi bi-ticket-perforated"></i>
+                {{ asignacion.consecutivo }}
+              </span>
+              <span [class]="'badge prioridad ' + obtenerClasePrioridad(asignacion.prioridad)">
+                {{ asignacion.prioridad }}
+              </span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-action" (click)="verDetalleAsignacion(asignacion.asignacionId)">
+                <i class="bi bi-eye"></i>
+                Ver Detalle
+              </button>
+            </div>
+          </div>
+
+          <h4 class="card-title">{{ asignacion.titulo }}</h4>
+
+          <div class="card-details">
+            <div class="detail-row">
+              <div class="detail-item">
+                <i class="bi bi-tags"></i>
+                <span>{{ asignacion.categoria }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="bi bi-person"></i>
+                <span>{{ asignacion.solicitante }}</span>
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-item">
+                <i class="bi bi-clock"></i>
+                <span>{{ asignacion.estado }}</span>
+              </div>
+              @if (asignacion.tiempoRestanteSLAHoras < 0) { <div class="detail-item">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span class="text-danger">SLA Vencido: {{ abs(asignacion.tiempoRestanteSLAHoras) }}h</span>
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-info">
+            <i class="bi bi-clock-history"></i>
+            <span>Asignado: {{ asignacion.fechaAsignacion | date:'medium' }}</span>
+          </div>
+          <button class="btn btn-primary" (click)="verDetalleAsignacion(asignacion.asignacionId)">
+            <i class="bi bi-arrow-right"></i>
+            Gestionar
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="cerrarModal()">
+      <i class="bi bi-x-circle"></i>
+      Cerrar
+    </button>
+    <div class="footer-actions">
+      <span class="text-muted">{{ asignacionesDiaSeleccionado().length }} elementos</span>
+    </div>
+  </div>
+</div>
+</div>
+}

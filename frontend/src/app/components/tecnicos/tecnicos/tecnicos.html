@@ -1,0 +1,530 @@
+<div class="tecnicos-container">
+  <div class="tecnicos-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-people"></i>
+          Gestión de Técnicos
+        </h1>
+        <p class="page-subtitle">Administracion de Tecnicos</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-action refresh" (click)="loadTecnicos()" [disabled]="isLoading()">
+          <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+        </button>
+        <button class="btn-action primary">
+          <i class="bi bi-plus-circle"></i>
+          Agregar Técnico
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="bi bi-funnel"></i>
+        Filtros
+      </h3>
+    </div>
+    <div class="card-body">
+      <div class="filters-grid">
+
+        <div class="filter-group">
+          <label class="filter-label">Buscar Técnico</label>
+          <div class="search-container">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-input search-input large" placeholder="Buscar por nombre o correo..."
+              [value]="searchInput()" (input)="onSearchChange($event)">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Estado</label>
+          <select class="form-select" [value]="filtroDisponible()"
+            (change)="onDisponibleChange($any($event.target).value)">
+            <option value="">Todos los estados</option>
+            <option value="true">Disponible</option>
+            <option value="false">No disponible</option>
+          </select>
+        </div>
+      </div>
+
+      @if (searchInput() || filtroDisponible()) {
+      <div class="active-filters">
+        <span class="filters-label">Filtros activos:</span>
+        @if (searchInput()) {
+        <span class="filter-badge">
+          Búsqueda: "{{ searchInput() }}"
+          <i class="bi bi-x" (click)="onSearchChange({ target: { value: '' } })"></i>
+        </span>
+        }
+        @if (filtroDisponible() === 'true') {
+        <span class="filter-badge">
+          Estado: Disponible
+          <i class="bi bi-x" (click)="onDisponibleChange('')"></i>
+        </span>
+        }
+        @if (filtroDisponible() === 'false') {
+        <span class="filter-badge">
+          Estado: No disponible
+          <i class="bi bi-x" (click)="onDisponibleChange('')"></i>
+        </span>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="card-header">
+      <div class="card-header-content">
+        <div>
+          <h2 class="card-title">
+            <i class="bi bi-list-ul"></i>
+            Lista de Técnicos
+          </h2>
+          <p class="card-subtitle">
+            Mostrando {{ tecnicos().length }} de {{ paginacion().totalItems }} técnicos
+          </p>
+        </div>
+        <div class="header-controls">
+          <div class="items-per-page">
+            <label>Mostrar:</label>
+            <select class="form-select small" [value]="paginacion().itemsPerPage"
+              (change)="cambiarItemsPorPagina($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando técnicos...</p>
+        </div>
+      </div>
+      } @else {
+      @if (tecnicos().length > 0) {
+      <div class="table-container">
+        <table class="modern-table">
+          <thead class="table-header">
+            <tr>
+              <th scope="col" class="ps-4">Técnico</th>
+              <th scope="col">Contacto</th>
+              <th scope="col">Estado</th>
+              <th scope="col" class="text-center pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (tecnico of tecnicos(); track tecnico.id) {
+            <tr class="table-row">
+              <td class="ps-4">
+                <div class="tecnico-info">
+                  <div class="tecnico-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div class="tecnico-details">
+                    <div class="tecnico-name">{{ tecnico.nombre }}</div>
+                   
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="contact-info">
+                  <div class="contact-item">
+                    <i class="bi bi-envelope"></i>
+                    <span class="contact-value">{{ tecnico.correo }}</span>
+                  </div>
+                  <div class="contact-item">
+                    <i class="bi bi-telephone"></i>
+                    <span class="contact-value">{{ tecnico.telefono || 'Sin teléfono' }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="tecnico.disponible ? 'bg-success' : 'bg-secondary'">
+                  <i class="bi me-1" [ngClass]="tecnico.disponible ? 'bi-check-circle' : 'bi-x-circle'"></i>
+                  {{ tecnico.disponible ? 'Disponible' : 'No disponible' }}
+                </span>
+              </td>
+
+              <td class="text-center pe-4">
+                <div class="action-buttons">
+                  <button class="btn-icon info" (click)="viewTecnicoDetail(tecnico)" title="Ver detalle">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-icon warning" (click)="enableEditMode(tecnico)" title="Editar técnico">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="deleteTecnico(tecnico)" title="Eliminar técnico">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} •
+          {{ paginacion().totalItems }} técnicos en total
+        </div>
+        <nav class="pagination">
+          <button class="pagination-btn" [disabled]="!paginacion().hasPrevPage"
+            (click)="cambiarPagina(paginacion().currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+
+          <div class="pagination-pages">
+            @for (page of getPaginationPages(); track page) {
+            @if (page === '...') {
+            <span class="pagination-ellipsis">...</span>
+            } @else {
+            <button class="pagination-page" [class.active]="page === paginacion().currentPage"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+            }
+            }
+          </div>
+
+          <button class="pagination-btn" [disabled]="!paginacion().hasNextPage"
+            (click)="cambiarPagina(paginacion().currentPage + 1)">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </nav>
+      </div>
+
+      } @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <i class="bi bi-people empty-icon"></i>
+          <h3>No se encontraron técnicos</h3>
+          <p>
+            No hay técnicos que coincidan con los filtros aplicados.
+            @if (searchInput() || filtroDisponible()) {
+            <br>
+            <small>Intenta ajustar los filtros de búsqueda.</small>
+            }
+          </p>
+          <button class="btn-action primary" (click)="limpiarFiltros()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header" [ngClass]="isEditing() ? 'editing' : 'viewing'">
+      <div class="modal-title">
+        <i class="bi" [ngClass]="isEditing() ? 'bi-pencil-square' : 'bi-person-badge'"></i>
+        <div>
+          <h3>{{ isEditing() ? 'Editando Técnico' : 'Detalle del Técnico' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="isEditing() ? cancelEdit() : closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    @if (selectedTecnico()) {
+    <div class="modal-body">
+      <div class="tecnico-header">
+        <div class="tecnico-avatar-large">
+          <i class="bi bi-person-fill"></i>
+        </div>
+
+        @if (!isEditing()) {
+        <div class="tecnico-info">
+          <h2>{{ selectedTecnico()!.nombre }}</h2>
+        </div>
+        <div class="tecnico-meta-row">
+          <span class="tecnico-id">ID: {{ selectedTecnico()!.id }}</span>
+          <span class="badge" [ngClass]="selectedTecnico()!.disponible ? 'bg-success' : 'bg-secondary'">
+            <i class="bi me-1" [ngClass]="selectedTecnico()!.disponible ? 'bi-check-circle' : 'bi-x-circle'"></i>
+            {{ selectedTecnico()!.disponible ? 'Disponible' : 'No disponible' }}
+          </span>
+        </div>
+        } @else {
+        <div class="tecnico-edit">
+          <div class="edit-fields">
+            <input type="text" class="form-input large" [(ngModel)]="editTecnicoData().nombre"
+              placeholder="Nombre del técnico">
+            <div class="edit-selectors">
+              <select class="form-select" [(ngModel)]="editTecnicoData().disponible">
+                <option [ngValue]="true">Disponible</option>
+                <option [ngValue]="false">No disponible</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-info-circle"></i>
+              <h4>Información Básica</h4>
+            </div>
+            <div class="section-body">
+              @if (!isEditing()) {
+              <div class="info-grid">
+                <div class="info-row">
+                  <div class="info-item">
+                    <label>Correo Electrónico</label>
+                    <div class="info-value">
+                      <i class="bi bi-envelope"></i>
+                      <span>{{ selectedTecnico()!.correo }}</span>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <label>Teléfono</label>
+                    <div class="info-value">
+                      <i class="bi bi-telephone"></i>
+                      <span>{{ selectedTecnico()!.telefono || 'No registrado' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-item">
+                    <label>Fecha de Registro</label>
+                    <div class="info-value">
+                      <i class="bi bi-calendar"></i>
+                      <span>{{ selectedTecnico()!.creadoEn | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <label>Última Actualización</label>
+                    <div class="info-value">
+                      <i class="bi bi-clock"></i>
+                      <span>{{ selectedTecnico()!.actualizadoEn | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              } @else {
+              <div class="edit-grid">
+                <div class="form-group">
+                  <label class="form-label">Correo Electrónico</label>
+                  <div class="input-with-icon">
+                    <i class="bi bi-envelope"></i>
+                    <input type="email" class="form-input" [(ngModel)]="editTecnicoData().correo">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <div class="input-with-icon">
+                    <i class="bi bi-telephone"></i>
+                    <input type="tel" class="form-input" [(ngModel)]="editTecnicoData().telefono">
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-graph-up"></i>
+              <h4>Carga de Trabajo</h4>
+            </div>
+            <div class="section-body">
+              <div class="workload-grid">
+                <div class="workload-row">
+                  <div class="workload-item">
+                    <label>Tickets Asignados</label>
+                    <div class="workload-content">
+                      <div class="workload-stats">
+                        <span class="workload-current">{{ selectedTecnico()!.cargaTrabajo || 0 }}</span>
+                        <span class="workload-separator">/</span>
+                        <span class="workload-limit">{{ selectedTecnico()!.limiteCargaTickets || 'N/A' }}</span>
+                      </div>
+                    </div>
+                    @if (selectedTecnico()!.limiteCargaTickets && selectedTecnico()!.cargaTrabajo !== undefined) {
+                    <div class="progress-container">
+                      <div class="progress-bar"
+                        [ngClass]="getWorkloadClass(selectedTecnico()!.cargaTrabajo, selectedTecnico()!.limiteCargaTickets)"
+                        [style.width]="getWorkloadPercentage(selectedTecnico()!.cargaTrabajo, selectedTecnico()!.limiteCargaTickets) + '%'">
+                        <span class="progress-text">
+                          {{ getWorkloadPercentage(selectedTecnico()!.cargaTrabajo,
+                          selectedTecnico()!.limiteCargaTickets)
+                          }}%
+                        </span>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                </div>
+                <div class="workload-row workload-items-row">
+                  <div class="workload-item">
+                    <label>Cargos Actuales</label>
+                    <div class="info-value">
+                      <i class="bi bi-briefcase"></i>
+                      <span>{{ selectedTecnico()!.cargosActuales || 0 }}</span>
+                    </div>
+                  </div>
+                  <div class="workload-item">
+                    <label>Límite de Tickets</label>
+                    <div class="info-value">
+                      <i class="bi bi-clipboard-check"></i>
+                      <span>{{ selectedTecnico()!.limiteCargaTickets || 'No definido' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (isEditing()) {
+              <div class="form-group">
+                <label class="form-label">Límite de Tickets</label>
+                <div class="input-with-icon">
+                  <i class="bi bi-clipboard-check"></i>
+                  <input type="number" class="form-input" [(ngModel)]="editTecnicoData().limiteCargaTickets">
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      @if (selectedTecnico()!.usuarioEspecialidades && selectedTecnico()!.usuarioEspecialidades.length > 0) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-award"></i>
+            <h4>Especialidades</h4>
+            <span class="section-badge">{{ selectedTecnico()!.usuarioEspecialidades.length }}</span>
+          </div>
+          <div class="section-body">
+            <div class="specialties-grid">
+              @for (esp of selectedTecnico()!.usuarioEspecialidades; track esp.especialidadId) {
+              <div class="specialty-card">
+                <div class="specialty-header">
+                  <h5>{{ esp.especialidad?.nombre || 'Sin nombre' }}</h5>
+                </div>
+                <p class="specialty-description">{{ esp.especialidad?.descripcion || 'Sin descripción' }}</p>
+
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (selectedTecnico()!.asignacionesRecibidas && selectedTecnico()!.asignacionesRecibidas.length > 0) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-ticket-perforated"></i>
+            <h4>Tickets Asignados</h4>
+            <span class="section-badge">{{ selectedTecnico()!.asignacionesRecibidas.length }}</span>
+          </div>
+          <div class="section-body">
+            <div class="tickets-table">
+              <div class="table-header-row">
+                <div class="table-cell">Ticket</div>
+                <div class="table-cell">Descripcion</div>
+                <div class="table-cell">Estado</div>
+                <div class="table-cell">Prioridad</div>
+                <div class="table-cell">Fecha Asignación</div>
+              </div>
+              <div class="table-body">
+                @for (asignacion of selectedTecnico()!.asignacionesRecibidas; track asignacion.id) {
+                <div class="table-row2">
+                  <div class="table-cell">
+                    <strong class="ticket-code">{{ asignacion.ticket?.consecutivo || 'N/A' }}</strong>
+                  </div>
+                  <div class="table-cell ticket-title">
+                    {{ asignacion.ticket?.titulo || 'Sin título' }}
+                  </div>
+                  <div class="table-cell">
+                    <span class="badge" [ngClass]="getEstadoBadgeClass(asignacion.ticket?.estado || '')">
+                      {{ asignacion.ticket?.estado || 'N/A' }}
+                    </span>
+                  </div>
+                  <div class="table-cell">
+                    <span class="badge" [ngClass]="getPrioridadBadgeClass(asignacion.ticket?.prioridad || '')">
+                      {{ asignacion.ticket?.prioridad || 'N/A' }}
+                    </span>
+                  </div>
+                  <div class="table-cell">
+                    <small class="text-muted">{{ asignacion.fechaAsignacion | date:'dd/MM/yyyy' }}</small>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if ((!selectedTecnico()!.usuarioEspecialidades || selectedTecnico()!.usuarioEspecialidades.length === 0) &&
+      !isEditing()) {
+      <div class="empty-section">
+        <i class="bi bi-award"></i>
+        <p>No hay especialidades registradas</p>
+      </div>
+      }
+
+      @if ((!selectedTecnico()!.asignacionesRecibidas || selectedTecnico()!.asignacionesRecibidas.length === 0) &&
+      !isEditing()) {
+      <div class="empty-section">
+        <i class="bi bi-inbox"></i>
+        <p>No hay tickets asignados</p>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="isEditing() ? cancelEdit() : closeModal()">
+        <i class="bi bi-x-circle"></i>
+        {{ isEditing() ? 'Cancelar' : 'Cerrar' }}
+      </button>
+
+      @if (!isEditing()) {
+      <button type="button" class="btn-action primary" (click)="enableEdit()">
+        <i class="bi bi-pencil"></i>
+        Editar Técnico
+      </button>
+      }
+
+      @if (isEditing()) {
+      <button type="button" class="btn-action success" (click)="saveTecnico()">
+        <i class="bi bi-check-circle"></i>
+        Guardar Cambios
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}

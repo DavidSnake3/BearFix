@@ -1,0 +1,21 @@
+@if (showLayout) {
+  <div class="dashboard-container">
+    <app-header></app-header>
+    
+    <div class="main-content">
+      <app-sidebar></app-sidebar>
+      
+      <main class="content-area">
+        <div class="content-wrapper">
+          <ngx-sonner-toaster></ngx-sonner-toaster>
+          <router-outlet></router-outlet>
+        </div>
+      </main>
+    </div>
+    
+    <app-footer></app-footer>
+  </div>
+} @else {
+  <ngx-sonner-toaster></ngx-sonner-toaster>
+  <router-outlet></router-outlet>
+}

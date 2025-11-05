@@ -1,0 +1,301 @@
+@if (!cargando() && asignacion()) {
+<div class="detalle-container">
+  <div class="header-section">
+    <nav aria-label="breadcrumb" class="breadcrumb-nav">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a (click)="volverACalendario()" class="breadcrumb-link">
+            <i class="bi bi-calendar-week"></i> Mis Asignaciones
+          </a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ asignacion()!.ticket?.consecutivo }}
+        </li>
+      </ol>
+    </nav>
+
+    <div class="header-actions">
+      <button class="btn btn-outline-primary" (click)="volverACalendario()">
+        <i class="bi bi-arrow-left"></i> Volver al Calendario
+      </button>
+    </div>
+  </div>
+
+  <div class="detalle-card">
+    <div class="ticket-header-card">
+      <div class="ticket-basic-info">
+        <div class="consecutivo-badge">
+          <i class="bi bi-ticket-perforated"></i>
+          {{ asignacion()!.ticket?.consecutivo }}
+        </div>
+        <h1 class="ticket-title">{{ asignacion()!.ticket?.titulo }}</h1>
+
+        <div class="status-badges">
+          <span class="badge priority-badge" [ngClass]="obtenerClasePrioridad(asignacion()!.ticket?.prioridad)">
+            <i class="bi bi-flag"></i> {{ asignacion()!.ticket?.prioridad }}
+          </span>
+          <span class="badge status-badge" [ngClass]="obtenerClaseEstado(asignacion()!.ticket?.estado)">
+            <i class="bi bi-circle-fill"></i> {{ asignacion()!.ticket?.estado }}
+          </span>
+          <span class="badge category-badge">
+            <i class="bi bi-tags"></i> {{ asignacion()!.ticket?.categoria?.nombre }}
+          </span>
+        </div>
+      </div>
+
+      <div class="ticket-meta-info">
+        <div class="meta-item">
+          <i class="bi bi-calendar-plus"></i>
+          <div class="meta-content">
+            <span class="meta-label">Creado</span>
+            <span class="meta-value">{{ formatearFechaCorta(asignacion()!.ticket?.fechaCreacion) }}</span>
+          </div>
+        </div>
+        <div class="meta-item" *ngIf="asignacion()!.ticket?.fechaLimiteResolucion">
+          <i class="bi bi-clock"
+            [ngClass]="{'text-danger': esSLAVencido(asignacion()!.ticket?.fechaLimiteResolucion)}"></i>
+          <div class="meta-content">
+            <span class="meta-label">Vence</span>
+            <span class="meta-value"
+              [ngClass]="{'text-danger': esSLAVencido(asignacion()!.ticket?.fechaLimiteResolucion)}">
+              {{ formatearFechaCorta(asignacion()!.ticket?.fechaLimiteResolucion) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-header">
+          <i class="bi bi-person"></i>
+          <h3>Solicitante</h3>
+        </div>
+        <div class="card-body">
+          <div class="contact-info">
+            <div class="contact-item">
+              <strong>{{ asignacion()!.ticket?.solicitante?.nombre }}</strong>
+            </div>
+            <div class="contact-item">
+              <i class="bi bi-envelope"></i>
+              <a [href]="'mailto:' + asignacion()!.ticket?.solicitante?.correo" class="contact-link">
+                {{ asignacion()!.ticket?.solicitante?.correo }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header">
+          <i class="bi bi-person-gear"></i>
+          <h3>Técnico Asignado</h3>
+        </div>
+        <div class="card-body">
+          <div class="contact-info">
+            <div class="contact-item">
+              <strong>{{ asignacion()!.tecnico?.nombre }}</strong>
+            </div>
+            <div class="contact-item">
+              <i class="bi bi-envelope"></i>
+              <a [href]="'mailto:' + asignacion()!.tecnico?.correo" class="contact-link">
+                {{ asignacion()!.tecnico?.correo }}
+              </a>
+            </div>
+            <div class="contact-item">
+              <i class="bi bi-diagram-3"></i>
+              <span class="text-muted">Asignado {{ formatearFechaRelativa(asignacion()!.fechaAsignacion) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header">
+          <i class="bi bi-graph-up"></i>
+          <h3>SLA</h3>
+        </div>
+        <div class="card-body">
+          <div class="sla-info">
+            <div class="sla-item">
+              <span class="sla-label">Respuesta Máxima:</span>
+              <span class="sla-value">{{ asignacion()!.ticket?.categoria?.slaTiempoMaxRespuestaMin }} min</span>
+            </div>
+            <div class="sla-item">
+              <span class="sla-label">Resolución Máxima:</span>
+              <span class="sla-value">{{ asignacion()!.ticket?.categoria?.slaTiempoMaxResolucionMin }} min</span>
+            </div>
+            <div class="sla-item" *ngIf="asignacion()!.cumplimientoRespuesta !== null">
+              <span class="sla-label">Cumplimiento Respuesta:</span>
+              <span class="sla-value" [ngClass]="asignacion()!.cumplimientoRespuesta ? 'text-success' : 'text-danger'">
+                {{ asignacion()!.cumplimientoRespuesta ? ' Cumplido' : 'Incumplido' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="card-header">
+          <i class="bi bi-info-circle"></i>
+          <h3>Detalles de Asignación</h3>
+        </div>
+        <div class="card-body">
+          <div class="assignment-info">
+            <div class="assignment-item">
+              <span class="assignment-label">Método:</span>
+              <span class="assignment-value">{{ asignacion()!.metodo }}</span>
+            </div>
+            <div class="assignment-item" *ngIf="asignacion()!.justificacion">
+              <span class="assignment-label">Justificación:</span>
+              <span class="assignment-value">{{ asignacion()!.justificacion }}</span>
+            </div>
+            <div class="assignment-item">
+              <span class="assignment-label">Puntaje:</span>
+              <span class="assignment-value">{{ asignacion()!.puntajeCalculado || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="description-card">
+      <div class="card-header">
+        <i class="bi bi-chat-left-text"></i>
+        <h3>Descripción del Problema</h3>
+      </div>
+      <div class="card-body">
+        <p class="description-text">{{ asignacion()!.ticket?.descripcion }}</p>
+      </div>
+    </div>
+
+    @if (asignacion()!.ticket?.historial?.length) {
+    <div class="history-card">
+      <div class="card-header">
+        <i class="bi bi-clock-history"></i>
+        <h3>Historial de Cambios</h3>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          @for (item of asignacion()!.ticket!.historial; track item.id; let last = $last) {
+          <div class="timeline-item">
+            <div class="timeline-marker">
+              <i class="bi bi-circle-fill"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <strong>{{ item.usuario?.nombre }}</strong>
+                <span class="timeline-date">{{ formatearFechaCompleta(item.creadoEn) }}</span>
+              </div>
+              <div class="state-change">
+                <span class="state-badge state-origin">{{ item.estadoOrigen }}</span>
+                <i class="bi bi-arrow-right"></i>
+                <span class="state-badge state-destination">{{ item.estadoDestino }}</span>
+              </div>
+              <p class="timeline-notes" *ngIf="item.observaciones">{{ item.observaciones }}</p>
+            </div>
+            <div class="timeline-connector" *ngIf="!last"></div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+
+    @if (asignacion()!.ticket?.imagenes?.length) {
+    <div class="images-card">
+      <div class="card-header">
+        <i class="bi bi-images"></i>
+        <h3>Archivos Adjuntos</h3>
+        <span class="section-badge">{{ asignacion()!.ticket!.imagenes.length }}</span>
+      </div>
+      <div class="card-body">
+        <div class="images-grid">
+          @for (imagen of asignacion()!.ticket!.imagenes; track imagen.id) {
+          <div class="image-item">
+            <div class="image-preview">
+              <img [src]="getImageUrl(imagen.nombreArchivo)" [alt]="imagen.descripcion || 'Imagen del ticket'"
+                (click)="abrirImagenModal(imagen)" class="preview-img" (error)="handleImageError($event)">
+              <div class="image-overlay">
+                <button class="btn btn-sm btn-light" (click)="abrirImagenModal(imagen)">
+                  <i class="bi bi-zoom-in"></i>
+                </button>
+              </div>
+            </div>
+            <div class="image-info">
+              <p class="image-description">{{ imagen.descripcion || 'Sin descripción' }}</p>
+
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
+}
+
+@if (cargando()) {
+<div class="loading-state">
+  <div class="spinner-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <h3>Cargando detalles del ticket...</h3>
+    <p>Por favor espere un momento</p>
+  </div>
+</div>
+}
+
+@if (!cargando() && !asignacion()) {
+<div class="error-state">
+  <div class="error-container">
+    <i class="bi bi-exclamation-triangle error-icon"></i>
+    <h2>No se pudo cargar la asignación</h2>
+    <p>La asignación solicitada no existe o no tienes permisos para verla.</p>
+    <button class="btn btn-primary" (click)="volverACalendario()">
+      <i class="bi bi-arrow-left"></i> Volver al Calendario
+    </button>
+  </div>
+</div>
+}
+
+@if (showImageModal()) {
+<div class="image-modal-overlay" (click)="cerrarImagenModal()">
+  <div class="image-modal-container" (click)="$event.stopPropagation()">
+    <div class="image-modal-header">
+      <div class="image-info">
+        <p>{{ selectedImage()?.descripcion || 'Sin descripción' }}</p>
+        <small>{{ formatearFechaCompleta(selectedImage()?.creadoEn) }}</small>
+      </div>
+      <div class="image-actions">
+        <button class="btn-action" (click)="cerrarImagenModal()" title="Cerrar">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div class="image-modal-content">
+      <button class="nav-button prev" (click)="navegarImagen('prev')"
+        [disabled]="(asignacion()?.ticket?.imagenes?.length || 0) <= 1">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <div class="image-wrapper">
+        <img [src]="getImageUrl(selectedImage()?.nombreArchivo)" [alt]="selectedImage()?.nombreArchivo"
+          class="full-size-image" (error)="handleImageError($event)">
+      </div>
+
+      <button class="nav-button next" (click)="navegarImagen('next')"
+        [disabled]="(asignacion()?.ticket?.imagenes?.length || 0) <= 1">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+    <div class="image-modal-footer">
+      <div class="image-counter">
+        {{ currentImageIndex() + 1 }} / {{ asignacion()?.ticket?.imagenes?.length || 0 }}
+      </div>
+    </div>
+  </div>
+</div>
+}

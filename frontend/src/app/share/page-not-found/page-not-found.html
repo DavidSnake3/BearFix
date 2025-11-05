@@ -1,0 +1,25 @@
+<div class="page-not-found-container">
+  <mat-grid-list cols="2" gutterSize="24px" rowHeight="1:1" class="grid-container">
+    
+    <mat-grid-tile>
+      <div class="image-section">
+        <img class="img-responsive" src="/images/page-not-found.jpg" alt="404 robot" />
+      </div>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <div class="message-section">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Lo sentimos!</h2>
+        <p class="error-text">
+          La página que está buscando podría haber sido eliminada, cambiado su
+          nombre o no está disponible temporalmente.
+        </p>
+        <button mat-stroked-button class="btn-primary" (click)="irInicio()">
+          Regresar
+        </button>
+      </div>
+    </mat-grid-tile>
+    
+  </mat-grid-list>
+</div>

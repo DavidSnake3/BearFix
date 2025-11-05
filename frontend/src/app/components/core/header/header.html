@@ -1,0 +1,20 @@
+<header class="navbar navbar-dark bg-primary shadow px-3">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold">
+      BEARFIX - Sistema de Tickets
+    </a>
+    <div class="ms-auto d-flex align-items-center">
+      <span class="text-white me-3">Hola, <strong>{{ fullName }}</strong></span>
+      <div class="dropdown">
+        <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="#" routerLink="/perfil"><i class="bi bi-person"></i> Mi Perfil</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="#" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>

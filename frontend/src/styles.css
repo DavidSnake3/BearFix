@@ -1,0 +1,240 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 60px; 
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  margin-top: 60px; 
+  min-height: calc(100vh - 120px); 
+}
+
+app-sidebar {
+  width: 250px; 
+  background-color: white;
+  position: fixed;
+  left: 0;
+  top: 60px; 
+  bottom: 60px; 
+  overflow-y: 
+  z-index: 900;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.content-area {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  min-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background-color: #f8f9fa;
+}
+
+app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px; 
+  z-index: 1000;
+  background-color: #343a40;
+  color: white;
+}
+
+.content-wrapper {
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  min-height: 100%;
+}
+
+.background-logo {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.03;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.logo-background {
+  width: 500px;
+  height: 500px;
+  object-fit: contain;
+}
+
+@media (max-width: 992px) {
+  app-sidebar {
+    width: 200px;
+  }
+  
+  .content-area {
+    margin-left: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  app-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .content-area {
+    margin-left: 0;
+  }
+  
+  .main-content {
+    margin-top: 60px;
+  }
+  
+  .sidebar-toggle {
+    display: block;
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    z-index: 1001;
+  }
+}
+
+@media (max-width: 576px) {
+  .content-area {
+    padding: 10px;
+  }
+  
+  .content-wrapper {
+    padding: 15px;
+  }
+}
+
+
+
+
+/* Estilos personalizados para ngx-sonner */
+.custom-toast {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  min-height: 70px !important;
+  padding: 18px 24px !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Para asegurar que estén arriba y centradas */
+[data-sonner-toaster][data-x-position="center"] {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: 20px !important;
+}
+
+[data-sonner-toaster] {
+  z-index: 10000 !important;
+}
+
+/* Estilos específicos para cada tipo de notificación */
+[data-sonner-toaster] [data-type="success"] {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: white !important;
+  border-left: 4px solid #047857 !important;
+}
+
+[data-sonner-toaster] [data-type="error"] {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  color: white !important;
+  border-left: 4px solid #b91c1c !important;
+}
+
+[data-sonner-toaster] [data-type="warning"] {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: white !important;
+  border-left: 4px solid #b45309 !important;
+}
+
+[data-sonner-toaster] [data-type="info"] {
+  background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+  color: white !important;
+  border-left: 4px solid #1d4ed8 !important;
+}
+
+/* Iconos más grandes */
+[data-sonner-toaster] [data-sonner-toast] [data-icon] {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 24px !important;
+}
+
+/* Texto más grande */
+[data-sonner-toaster] [data-sonner-toast] [data-content] {
+  font-size: 16px !important;
+  line-height: 1.4 !important;
+}
+
+/* Botón de cerrar más grande */
+[data-sonner-toaster] [data-sonner-toast] button {
+  width: 24px !important;
+  height: 24px !important;
+  font-size: 18px !important;
+}
+
+/* Animación de entrada más suave */
+[data-sonner-toaster] [data-sonner-toast] {
+  animation: toast-in-top 0.5s ease-out !important;
+}
+
+@keyframes toast-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .custom-toast {
+    min-height: 60px !important;
+    padding: 16px 20px !important;
+    font-size: 15px !important;
+    margin: 0 10px !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+  
+  [data-sonner-toaster][data-x-position="center"] {
+    top: 10px !important;
+  }
+}

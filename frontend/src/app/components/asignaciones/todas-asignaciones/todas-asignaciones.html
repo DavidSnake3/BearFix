@@ -1,0 +1,469 @@
+<!-- todas-asignaciones.html -->
+<div class="tickets-container">
+  <div class="tickets-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-list-task"></i>
+          Todas las Asignaciones
+        </h1>
+        <p class="page-subtitle">
+          Administra y visualiza todas las asignaciones del sistema con filtros avanzados
+        </p>
+      </div>
+      <div class="header-actions">
+
+        <button class="btn-action refresh" (click)="loadAsignaciones()" [disabled]="isLoading()">
+          <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+        </button>
+        <button class="btn-action primary">
+          <i class="bi bi-calendar-week-fill"></i>
+          Asignar Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="bi bi-funnel"></i>
+        Filtros
+      </h3>
+    </div>
+    <div class="card-body">
+      <div class="filters-grid">
+
+        <div class="filter-group full-width">
+          <label class="filter-label">Buscar Ticket</label>
+          <div class="search-container full-width">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-input search-input large" placeholder="Buscador..." [value]="searchInput()"
+              (input)="onSearchChange($event)">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Estado</label>
+          <select class="form-select" [value]="filtros().estado"
+            (change)="aplicarFiltro('estado', $any($event.target).value)">
+            <option value="">Todos los estados</option>
+            @for (estado of estados(); track estado) {
+            <option [value]="estado">{{ estado }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Prioridad</label>
+          <select class="form-select" [value]="filtros().prioridad"
+            (change)="aplicarFiltro('prioridad', $any($event.target).value)">
+            <option value="">Todas las prioridades</option>
+            @for (prioridad of prioridades(); track prioridad) {
+            <option [value]="prioridad">{{ prioridad }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (filtros().search || filtros().estado || filtros().prioridad) {
+      <div class="active-filters">
+        <span class="filters-label">Filtros activos:</span>
+        @if (filtros().search) {
+        <span class="filter-badge">
+          Búsqueda: "{{ filtros().search }}"
+          <i class="bi bi-x" (click)="aplicarFiltro('search', '')"></i>
+        </span>
+        }
+        @if (filtros().estado) {
+        <span class="filter-badge">
+          Estado: {{ filtros().estado }}
+          <i class="bi bi-x" (click)="aplicarFiltro('estado', '')"></i>
+        </span>
+        }
+        @if (filtros().prioridad) {
+        <span class="filter-badge">
+          Prioridad: {{ filtros().prioridad }}
+          <i class="bi bi-x" (click)="aplicarFiltro('prioridad', '')"></i>
+        </span>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="card-header">
+      <div class="card-header-content">
+        <div>
+          <h2 class="card-title">
+            <i class="bi bi-list-ul"></i>
+            Lista de Asignaciones
+          </h2>
+          <p class="card-subtitle">
+            Mostrando {{ asignaciones().length }} de {{ paginacion().totalItems }} asignaciones
+          </p>
+        </div>
+        <div class="header-controls">
+          <div class="items-per-page">
+            <label>Mostrar:</label>
+            <select class="form-select small" [value]="paginacion().itemsPerPage"
+              (change)="cambiarItemsPorPagina($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando asignaciones...</p>
+        </div>
+      </div>
+      } @else {
+      @if (asignaciones().length > 0) {
+      <div class="table-container">
+        <table class="modern-table">
+          <thead class="table-header">
+            <tr>
+              <th scope="col" class="ps-4 sortable" (click)="cambiarOrden('consecutivo')">
+                Ticket
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('consecutivo')"></i>
+              </th>
+              <th scope="col">Categoría</th>
+              <th scope="col">Técnico Asignado</th>
+              <th scope="col">Solicitante</th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('estado')">
+                Estado
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('estado')"></i>
+              </th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('prioridad')">
+                Prioridad
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('prioridad')"></i>
+              </th>
+              <th scope="col">Tiempo Restante SLA</th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('fechaAsignacion')">
+                Fecha Asignación
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('fechaAsignacion')"></i>
+              </th>
+              <th scope="col" class="text-center pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (asignacion of asignaciones(); track asignacion.id) {
+            <tr class="table-row">
+              <td class="ps-4">
+                <div class="ticket-info">
+                  <div class="ticket-code">{{ asignacion.consecutivo }}</div>
+                  <div class="ticket-title">{{ asignacion.titulo }}</div>
+                </div>
+              </td>
+
+              <td>
+                <span class="category-name">
+                  <i class="bi me-1" [ngClass]="asignacion.iconoCategoria"></i>
+                  {{ asignacion.categoria }}
+                </span>
+              </td>
+
+              <td>
+                <div class="user-info">
+                  <div class="user-name">{{ asignacion.tecnico }}</div>
+                  <div class="user-email">{{ asignacion.tecnicoEmail }}</div>
+                </div>
+              </td>
+
+              <td>
+                <div class="requester-info">
+                  <div class="requester-name">{{ asignacion.solicitante }}</div>
+                </div>
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="getEstadoBadgeClass(asignacion.estado)">
+                  <i class="bi me-1" [ngClass]="getEstadoIcon(asignacion.estado)"></i>
+                  {{ asignacion.estado }}
+                </span>
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="getPrioridadBadgeClass(asignacion.prioridad)">
+                  {{ asignacion.prioridad }}
+                </span>
+              </td>
+
+              <td>
+                @if (asignacion.tiempoRestanteSLAHoras !== null) {
+                <span class="badge" [ngClass]="getUrgenciaBadgeClass(asignacion.colorUrgencia)">
+                  <i class="bi bi-clock me-1"></i>
+                  {{ asignacion.tiempoRestanteSLAHoras }} horas
+                </span>
+                } @else {
+                <span class="badge bg-secondary">Sin SLA</span>
+                }
+              </td>
+
+              <td>
+                {{ asignacion.fechaAsignacion | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+
+              <td class="text-center pe-4">
+                <div class="action-buttons">
+                  <button class="btn-icon info" (click)="viewAsignacionDetail(asignacion)" title="Ver detalle">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} •
+          {{ paginacion().totalItems }} asignaciones en total
+        </div>
+        <nav class="pagination">
+          <button class="pagination-btn" [disabled]="!paginacion().hasPrevPage"
+            (click)="cambiarPagina(paginacion().currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+
+          <div class="pagination-pages">
+            @for (page of getPaginationPages(); track page) {
+            @if (page === '...') {
+            <span class="pagination-ellipsis">...</span>
+            } @else {
+            <button class="pagination-page" [class.active]="page === paginacion().currentPage"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+            }
+            }
+          </div>
+
+          <button class="pagination-btn" [disabled]="!paginacion().hasNextPage"
+            (click)="cambiarPagina(paginacion().currentPage + 1)">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </nav>
+      </div>
+
+      } @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <i class="bi bi-search empty-icon"></i>
+          <h3>No se encontraron asignaciones</h3>
+          <p>
+            No hay asignaciones que coincidan con los filtros aplicados.
+            @if (filtros().search || filtros().estado || filtros().prioridad || filtros().categoria ||
+            filtros().tecnico) {
+            <br>
+            <small>Intenta ajustar los filtros de búsqueda.</small>
+            }
+          </p>
+          <button class="btn-action primary" (click)="limpiarFiltros()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header viewing">
+      <div class="modal-title">
+        <i class="bi bi-ticket-perforated"></i>
+        <div>
+          <h3>Detalle de Asignación</h3>
+          <p>{{ selectedAsignacion()?.ticket?.consecutivo }} - {{ selectedAsignacion()?.ticket?.titulo }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    @if (selectedAsignacion()) {
+    <div class="modal-body">
+      <div class="ticket-header">
+        <div class="ticket-avatar">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+        <div class="ticket-info">
+          <h2>{{ selectedAsignacion()?.ticket?.consecutivo }}</h2>
+          <h4 class="ticket-title">{{ selectedAsignacion()?.ticket?.titulo }}</h4>
+          <div class="ticket-badges">
+            <span class="badge primary">
+              <i class="bi me-1" [ngClass]="getEstadoIcon(selectedAsignacion()?.ticket?.estado)"></i>
+              {{ selectedAsignacion()?.ticket?.estado }}
+            </span>
+            <span class="badge" [ngClass]="getPrioridadBadgeClass(selectedAsignacion()?.ticket?.prioridad)">
+              {{ selectedAsignacion()?.ticket?.prioridad }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-info-circle"></i>
+              <h4>Información del Ticket</h4>
+            </div>
+            <div class="section-body">
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Descripción</label>
+                  <div class="info-value">
+                    <i class="bi bi-text-paragraph"></i>
+                    <span>{{ selectedAsignacion()?.ticket?.descripcion }}</span>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <label>Solicitante</label>
+                  <div class="info-value">
+                    <i class="bi bi-person"></i>
+                    <div class="user-info">
+                      <div class="user-name">{{ selectedAsignacion()?.ticket?.solicitante?.nombre }}</div>
+                      <div class="user-email">{{ selectedAsignacion()?.ticket?.solicitante?.correo }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="info-item">
+                  <label>Categoría</label>
+                  <div class="info-value">
+                    <i class="bi bi-tag"></i>
+                    <span>{{ selectedAsignacion()?.ticket?.categoria?.nombre }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-clock"></i>
+              <h4>SLA y Asignación</h4>
+            </div>
+            <div class="section-body">
+              <div class="sla-item">
+                <label>Técnico Asignado</label>
+                <div class="sla-value">
+                  <i class="bi bi-person-check"></i>
+                  <div class="user-info">
+                    <div class="user-name">{{ selectedAsignacion()?.tecnico?.nombre }}</div>
+                    <div class="user-email">{{ selectedAsignacion()?.tecnico?.correo }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sla-item">
+                <label>Tiempo Restante SLA</label>
+                <div class="sla-value">
+                  <i class="bi bi-hourglass-split"></i>
+                  <span>{{ selectedAsignacion()?.tiempoRestanteSLAHoras }} horas</span>
+                </div>
+              </div>
+
+              <div class="sla-item">
+                <label>SLA Respuesta</label>
+                <div class="sla-value">
+                  <i class="bi bi-alarm"></i>
+                  <span>{{ selectedAsignacion()?.slaRespuesta }} minutos</span>
+                  @if (selectedAsignacion()?.cumplimientoRespuesta !== null) {
+                  <span class="badge ms-2" [ngClass]="getSLAClass(selectedAsignacion()?.cumplimientoRespuesta)">
+                    <i class="bi me-1" [ngClass]="getSLAIcon(selectedAsignacion()?.cumplimientoRespuesta)"></i>
+                    {{ selectedAsignacion()?.cumplimientoRespuesta ? 'Cumplido' : 'Incumplido' }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="sla-item">
+                <label>SLA Resolución</label>
+                <div class="sla-value">
+                  <i class="bi bi-clock-history"></i>
+                  <span>{{ selectedAsignacion()?.slaResolucion }} minutos</span>
+                  @if (selectedAsignacion()?.cumplimientoResolucion !== null) {
+                  <span class="badge ms-2" [ngClass]="getSLAClass(selectedAsignacion()?.cumplimientoResolucion)">
+                    <i class="bi me-1" [ngClass]="getSLAIcon(selectedAsignacion()?.cumplimientoResolucion)"></i>
+                    {{ selectedAsignacion()?.cumplimientoResolucion ? 'Cumplido' : 'Incumplido' }}
+                  </span>
+                  }
+                </div>
+              </div>
+
+              <div class="sla-item">
+                <label>Fecha de Asignación</label>
+                <div class="sla-value">
+                  <i class="bi bi-calendar"></i>
+                  <span>{{ selectedAsignacion()?.fechaAsignacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-calendar"></i>
+            <h4>Fechas del Ticket</h4>
+          </div>
+          <div class="section-body">
+            <div class="dates-info">
+              <div class="date-item">
+                <label>Fecha de Creación</label>
+                <div class="date-value">
+                  <i class="bi bi-calendar"></i>
+                  <span>{{ selectedAsignacion()?.ticket?.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+
+              <div class="date-item">
+                <label>Última Actualización</label>
+                <div class="date-value">
+                  <i class="bi bi-clock"></i>
+                  <span>{{ selectedAsignacion()?.ticket?.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeModal()">
+        <i class="bi bi-x-circle"></i>
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+}

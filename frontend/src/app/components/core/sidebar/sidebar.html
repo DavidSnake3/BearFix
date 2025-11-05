@@ -1,0 +1,111 @@
+<nav class="sidebar bg-white shadow">
+  <div class="sidebar-content">
+    <ul class="nav flex-column">
+
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+          <i class="bi bi-house-door"></i>
+          <span>Inicio</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/nuevo/ticket" routerLinkActive="active">
+          <i class="bi bi-plus-circle"></i>
+          <span>Nuevo Ticket</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/historial" routerLinkActive="active">
+          <i class="bi bi-clock-history"></i>
+          <span>Historial</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/perfil" routerLinkActive="active">
+          <i class="bi bi-person-gear"></i>
+          <span>Mi Cuenta</span>
+        </a>
+      </li>
+
+      @if (role === 'TEC' || role === 'ADM') {
+        <li class="nav-item mt-3">
+          <div class="sidebar-divider">
+            <span class="text-muted small fw-bold">HERRAMIENTAS TÉCNICO</span>
+          </div>
+        </li>
+      }
+
+      @if (role === 'TEC' || role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/asignaciones" routerLinkActive="active">
+            <i class="bi bi-calendar-week"></i>
+            <span>Mis Asignaciones</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'TEC' || role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/metricas" routerLinkActive="active">
+            <i class="bi bi-graph-up"></i>
+            <span>Métricas</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item mt-3">
+          <div class="sidebar-divider">
+            <span class="text-muted small fw-bold">ADMINISTRACIÓN</span>
+          </div>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/tecnicos" routerLinkActive="active">
+            <i class="bi bi-people"></i>
+            <span>Gestión de Técnicos</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/categorias" routerLinkActive="active">
+            <i class="bi bi-tags"></i>
+            <span>Gestión de Categorías</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/tickets" routerLinkActive="active">
+            <i class="bi bi-list-check"></i>
+            <span>Todos los Tickets</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="Todas/asignaciones" routerLinkActive="active">
+            <i class="bi bi-diagram-3"></i>
+            <span>Asignaciones</span>
+          </a>
+        </li>
+      }
+
+      @if (role === 'ADM') {
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/reportes" routerLinkActive="active">
+            <i class="bi bi-bar-chart"></i>
+            <span>Reportes</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,793 @@
+<div class="tickets-container">
+  <div class="tickets-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-ticket-perforated"></i>
+          Gestión de Tickets
+        </h1>
+        <p class="page-subtitle">Administra y visualiza todos los tickets del sistema</p>
+      </div>
+
+      <div class="header-actions">
+
+        <button class="btn-action refresh" (click)="loadTickets()" [disabled]="isLoading()">
+          <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+        </button>
+        <button class="btn-action primary">
+          <i class="bi bi-plus-circle"></i>
+          Crear Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-card">
+    <div class="card-header">
+      <h3 class="card-title">
+        <i class="bi bi-funnel"></i>
+        Filtros
+      </h3>
+    </div>
+    <div class="card-body">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Buscar Ticket</label>
+          <div class="search-container ">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-input search-input large" placeholder="Buscador..." [value]="searchInput()"
+              (input)="onSearchChange($event)">
+          </div>
+        </div>
+
+
+        <div class="filter-group">
+          <label class="filter-label">Estado</label>
+          <select class="form-select" [value]="filtros().estado"
+            (change)="aplicarFiltro('estado', $any($event.target).value)">
+            <option value="">Todos los estados</option>
+            @for (estado of estados(); track estado) {
+            <option [value]="estado">{{ estado }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Prioridad</label>
+          <select class="form-select" [value]="filtros().prioridad"
+            (change)="aplicarFiltro('prioridad', $any($event.target).value)">
+            <option value="">Todas las prioridades</option>
+            @for (prioridad of prioridades(); track prioridad) {
+            <option [value]="prioridad">{{ prioridad }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (filtros().search || filtros().categoria || filtros().estado || filtros().prioridad) {
+      <div class="active-filters">
+        <span class="filters-label">Filtros activos:</span>
+        @if (filtros().search) {
+        <span class="filter-badge">
+          Búsqueda: "{{ filtros().search }}"
+          <i class="bi bi-x" (click)="aplicarFiltro('search', '')"></i>
+        </span>
+        }
+        @if (filtros().estado) {
+        <span class="filter-badge">
+          Estado: {{ filtros().estado }}
+          <i class="bi bi-x" (click)="aplicarFiltro('estado', '')"></i>
+        </span>
+        }
+        @if (filtros().prioridad) {
+        <span class="filter-badge">
+          Prioridad: {{ filtros().prioridad }}
+          <i class="bi bi-x" (click)="aplicarFiltro('prioridad', '')"></i>
+        </span>
+        }
+      </div>
+      }
+    </div>
+  </div>
+
+  <div class="main-card">
+    <div class="card-header">
+      <div class="card-header-content">
+        <div>
+          <h2 class="card-title">
+            <i class="bi bi-list-ul"></i>
+            Lista de Tickets
+          </h2>
+          <p class="card-subtitle">
+            Mostrando {{ tickets().length }} de {{ paginacion().totalItems }} tickets
+          </p>
+        </div>
+        <div class="header-controls">
+          <div class="items-per-page">
+            <label>Mostrar:</label>
+            <select class="form-select small" [value]="paginacion().itemsPerPage"
+              (change)="cambiarItemsPorPagina($any($event.target).value)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando tickets...</p>
+        </div>
+      </div>
+      } @else {
+      @if (tickets().length > 0) {
+      <div class="table-container">
+        <table class="modern-table">
+          <thead class="table-header">
+            <tr>
+              <th scope="col" class="ps-4 sortable" (click)="cambiarOrden('consecutivo')">
+                Ticket
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('consecutivo')"></i>
+              </th>
+              <th scope="col">Categoría</th>
+              <th scope="col">Solicitante</th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('estado')">
+                Estado
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('estado')"></i>
+              </th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('prioridad')">
+                Prioridad
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('prioridad')"></i>
+              </th>
+              <th scope="col" class="sortable" (click)="cambiarOrden('fechaCreacion')">
+                Fecha Creación
+                <i class="bi ms-1" [ngClass]="getOrdenIcon('fechaCreacion')"></i>
+              </th>
+              <th scope="col" class="text-center pe-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ticket of tickets(); track ticket.id) {
+            <tr class="table-row">
+              <td class="ps-4">
+                <div class="ticket-info">
+                  <div class="ticket-code">{{ ticket.consecutivo }}</div>
+                  <div class="ticket-title">{{ ticket.titulo }}</div>
+                </div>
+              </td>
+
+              <td>
+                <span class="category-name">
+                  {{ ticket.categoria?.nombre || ticket.categoria || 'Sin categoría' }}
+                </span>
+              </td>
+
+              <td>
+                <div class="requester-info">
+                  <div class="requester-name">
+                    {{ ticket.solicitante?.nombre || ticket.solicitante || 'Sin solicitante' }}
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="getEstadoBadgeClass(ticket.estado)">
+                  <i class="bi me-1" [ngClass]="getEstadoIcon(ticket.estado)"></i>
+                  {{ ticket.estado }}
+                </span>
+              </td>
+
+              <td>
+                <span class="badge" [ngClass]="getPrioridadBadgeClass(ticket.prioridad)">
+                  {{ ticket.prioridad }}
+                </span>
+              </td>
+
+              <td>
+                {{ ticket.fechaCreacion | date:'dd/MM/yyyy' }}
+              </td>
+
+              <td class="text-center pe-4">
+                <div class="action-buttons">
+                  <button class="btn-icon info" (click)="viewTicketDetail(ticket)" title="Ver detalle">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn-icon warning" (click)="enableEditMode(ticket)" title="Editar ticket">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="deleteTicket(ticket)" title="Eliminar ticket">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-container">
+        <div class="pagination-info">
+          Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} •
+          {{ paginacion().totalItems }} tickets en total
+        </div>
+        <nav class="pagination">
+          <button class="pagination-btn" [disabled]="!paginacion().hasPrevPage"
+            (click)="cambiarPagina(paginacion().currentPage - 1)">
+            <i class="bi bi-chevron-left"></i> Anterior
+          </button>
+
+          <div class="pagination-pages">
+            @for (page of getPaginationPages(); track page) {
+            @if (page === '...') {
+            <span class="pagination-ellipsis">...</span>
+            } @else {
+            <button class="pagination-page" [class.active]="page === paginacion().currentPage"
+              (click)="cambiarPagina(page)">
+              {{ page }}
+            </button>
+            }
+            }
+          </div>
+
+          <button class="pagination-btn" [disabled]="!paginacion().hasNextPage"
+            (click)="cambiarPagina(paginacion().currentPage + 1)">
+            Siguiente <i class="bi bi-chevron-right"></i>
+          </button>
+        </nav>
+      </div>
+
+      } @else {
+      <div class="empty-state">
+        <div class="empty-content">
+          <i class="bi bi-search empty-icon"></i>
+          <h3>No se encontraron tickets</h3>
+          <p>
+            No hay tickets que coincidan con los filtros aplicados.
+            @if (filtros().search || filtros().categoria || filtros().estado || filtros().prioridad) {
+            <br>
+            <small>Intenta ajustar los filtros de búsqueda.</small>
+            }
+          </p>
+          <button class="btn-action primary" (click)="limpiarFiltros()">
+            <i class="bi bi-arrow-clockwise"></i>
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+      }
+      }
+    </div>
+  </div>
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header" [ngClass]="isEditing() ? 'editing' : 'viewing'">
+      <div class="modal-title">
+        <i class="bi" [ngClass]="isEditing() ? 'bi-pencil-square' : 'bi-ticket-perforated'"></i>
+        <div>
+          <h3>{{ isEditing() ? 'Editando Ticket' : 'Detalle del Ticket' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="isEditing() ? cancelEdit() : closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    @if (selectedTicket()) {
+    <div class="modal-body">
+      <div class="ticket-header">
+        <div class="ticket-avatar">
+          <i class="fas fa-ticket-alt"></i>
+        </div>
+
+        @if (!isEditing()) {
+        <div class="ticket-info">
+          <h2>{{ selectedTicket()!.consecutivo }}</h2>
+          <h4 class="ticket-title">{{ selectedTicket()!.titulo }}</h4>
+          <div class="ticket-badges">
+            <span class="badge primary">
+              <i class="bi me-1" [ngClass]="getEstadoIcon(selectedTicket()!.estado)"></i>
+              {{ selectedTicket()!.estado }}
+            </span>
+            <span class="badge" [ngClass]="getPrioridadBadgeClass(selectedTicket()!.prioridad)">
+              {{ selectedTicket()!.prioridad }}
+            </span>
+          </div>
+        </div>
+        } @else {
+        <div class="ticket-edit">
+          <div class="edit-fields">
+            <input type="text" class="form-input large" [(ngModel)]="editTicketData().titulo"
+              placeholder="Título del ticket">
+            <div class="edit-selectors">
+              <select class="form-select" [(ngModel)]="editTicketData().estado">
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="ASIGNADO">Asignado</option>
+                <option value="EN_PROCESO">En Proceso</option>
+                <option value="ESPERA_CLIENTE">Espera Cliente</option>
+                <option value="RESUELTO">Resuelto</option>
+                <option value="CERRADO">Cerrado</option>
+              </select>
+              <select class="form-select" [(ngModel)]="editTicketData().prioridad">
+                <option value="BAJA">Baja</option>
+                <option value="MEDIA">Media</option>
+                <option value="ALTA">Alta</option>
+                <option value="CRITICO">Crítico</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-info-circle"></i>
+              <h4>Información Básica</h4>
+            </div>
+            <div class="section-body">
+              @if (!isEditing()) {
+              <div class="info-grid">
+         
+            <div class="info-item full-width">
+              <label>Descripción</label>
+              <div class="info-value full-width">
+                <div class="description-text">{{ selectedTicket()!.descripcion }}</div>
+              </div>
+            </div>
+      
+
+                <div class="info-row">
+                  <div class="info-item">
+                    <label>Solicitante</label>
+                    <div class="info-value">
+                     
+                      <div class="user-info">
+                        <div class="user-name">{{ selectedTicket()!.solicitante?.nombre }}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="info-item">
+                    <label>Categoría</label>
+                    <div class="info-value">
+                      <i class="bi bi-tag"></i>
+                      <span>{{ selectedTicket()!.categoria?.nombre }}</span>
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+              } @else {
+              <div class="edit-grid">
+                <div class="form-group">
+                  <label class="form-label">Descripción</label>
+                  <textarea class="form-textarea" rows="4" [(ngModel)]="editTicketData().descripcion"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Prioridad</label>
+                  <select class="form-select" [(ngModel)]="editTicketData().prioridad">
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRITICO">Crítico</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Estado</label>
+                  <select class="form-select" [(ngModel)]="editTicketData().estado">
+                    <option value="PENDIENTE">Pendiente</option>
+                    <option value="ASIGNADO">Asignado</option>
+                    <option value="EN_PROCESO">En Proceso</option>
+                    <option value="ESPERA_CLIENTE">Espera Cliente</option>
+                    <option value="RESUELTO">Resuelto</option>
+                    <option value="CERRADO">Cerrado</option>
+                  </select>
+                </div>
+              </div>
+              }
+
+              <div class="dates-info">
+                <div class="info-row">
+                  <div class="date-item">
+                    <label>Fecha de Creación</label>
+                    <div class="date-value">
+                      <i class="bi bi-calendar"></i>
+                      <span>{{ selectedTicket()!.fechaCreacion | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="date-item">
+                    <label>Última Actualización</label>
+                    <div class="date-value">
+                      <i class="bi bi-clock"></i>
+                      <span>{{ selectedTicket()!.fechaActualizacion | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-clock"></i>
+              <h4>Asignación | SLA</h4>
+            </div>
+            <div class="section-body">
+              <div class="sla-row first-row">
+                @if (selectedTicket()!.tecnicoAsignado) {
+                <div class="sla-item">
+                  <label>Técnico Asignado</label>
+                  <div class="sla-value">
+                    <i class="bi bi-person-check"></i>
+                    <div class="user-info">
+                      <div class="user-name">{{ selectedTicket()!.tecnicoAsignado.nombre }}</div>
+                    </div>
+                  </div>
+                </div>
+                }
+
+                <div class="sla-item">
+                  <label>Modo de Asignación</label>
+                  <div class="sla-value">
+                    <i class="bi bi-gear"></i>
+                    <span>{{ selectedTicket()!.modoAsignacion }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sla-row second-row">
+                <div class="sla-item">
+                  <label>Respuesta</label>
+                  <div class="sla-value centered">
+                    <i class="bi bi-alarm"></i>
+                    <span>{{ selectedTicket()!.slaRespuesta }} minutos</span>
+                    @if (selectedTicket()!.cumplimientoRespuesta !== null) {
+                    }
+                  </div>
+                </div>
+
+                @if (selectedTicket()!.tiempoRestanteSLAHoras) {
+                <div class="sla-item">
+                  <label>Tiempo Restante</label>
+                  <div class="sla-value centered">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>{{ selectedTicket()!.tiempoRestanteSLAHoras }} horas</span>
+                  </div>
+                </div>
+                }
+
+                <div class="sla-item">
+                  <label>Resolución</label>
+                  <div class="sla-value centered">
+                    <i class="bi bi-clock-history"></i>
+                    <span>{{ selectedTicket()!.slaResolucion }} minutos</span>
+                    @if (selectedTicket()!.cumplimientoResolucion !== null) {
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+
+      @if (selectedTicket()!.asignaciones && selectedTicket()!.asignaciones.length > 0) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-people"></i>
+            <h4>Historial de Asignaciones</h4>
+            <span class="section-badge">{{ selectedTicket()!.asignaciones.length }}</span>
+          </div>
+          <div class="section-body">
+            <div class="assignments-grid">
+              @for (asignacion of selectedTicket()!.asignaciones; track asignacion.id) {
+              <div class="assignment-card">
+                <div class="assignment-header">
+                  <h5>{{ asignacion.tecnico?.nombre }}</h5>
+                </div>
+                <p class="assignment-description">{{ asignacion.justificacion }}</p>
+
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (selectedTicket()!.historial && selectedTicket()!.historial.length > 0) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-clock-history"></i>
+            <h4>Historial de Cambios</h4>
+            <span class="section-badge">{{ selectedTicket()!.historial.length }}</span>
+          </div>
+          <div class="section-body">
+            <div class="timeline">
+              @for (historial of selectedTicket()!.historial; track historial.id) {
+              <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <h6>
+                      <i class="bi bi-arrow-right"></i>
+                      {{ historial.estadoOrigen }} → {{ historial.estadoDestino }}
+                    </h6>
+                    <small>{{ historial.creadoEn | date:'dd/MM/yyyy' }}</small>
+                  </div>
+                  <p class="timeline-description">{{ historial.observaciones }}</p>
+                  <small class="timeline-user">Por: {{ historial.usuario?.nombre }}</small>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (selectedTicket()!.imagenes && selectedTicket()!.imagenes.length > 0) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-images"></i>
+            <h4>Imágenes Adjuntas</h4>
+            <span class="section-badge">{{ selectedTicket()!.imagenes.length }}</span>
+          </div>
+          <div class="section-body">
+            <div class="images-grid" [class.multiple-images]="selectedTicket()!.imagenes.length > 1">
+              @for (imagen of selectedTicket()!.imagenes; track imagen.id; let i = $index) {
+              <div class="image-card">
+                <div class="image-content">
+                  <img [src]="getImageUrl(imagen.nombreArchivo)"
+                    [alt]="imagen.descripcion || 'Imagen ' + (i + 1) + ' del ticket'" (error)="handleImageError($event)"
+                    class="ticket-image" (click)="openImageModal(imagen)"
+                    title="Haz clic para ver en tamaño completo" />
+                  <div class="image-info">
+
+                    <p>{{ imagen.descripcion || 'Sin descripción' }}</p>
+                    <div class="image-meta">
+
+                      @if (imagen.fechaCreacion) {
+                      <small class="upload-date">
+                        {{ imagen.fechaCreacion | date:'dd/MM/yyyy' }}
+                      </small>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+      } @else {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-images"></i>
+            <h4>Imágenes Adjuntas</h4>
+          </div>
+          <div class="section-body">
+            <div class="empty-section">
+              <i class="bi bi-image"></i>
+              <p>No hay imágenes adjuntas para este ticket</p>
+              <small>Puedes agregar imágenes al crear o editar el ticket</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (selectedTicket()!.valoracion && !isEditing()) {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-star"></i>
+            <h4>Valoración del Servicio</h4>
+          </div>
+          <div class="section-body">
+            <div class="rating-content">
+              <div class="rating-score">
+                <span class="score">{{ selectedTicket()!.valoracion.puntuacion }} / 5</span>
+                <div class="star-rating">
+                  @for (star of [1,2,3,4,5]; track star) {
+                  <i class="bi"
+                    [ngClass]="star <= selectedTicket()!.valoracion.puntuacion ? 'bi-star-fill text-warning' : 'bi-star text-muted'"></i>
+                  }
+                </div>
+              </div>
+              <div class="rating-comment">
+                <p>{{ selectedTicket()!.valoracion.comentario }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if (!selectedTicket()!.valoracion && !isEditing() && selectedTicket()!.estado === 'CERRADO') {
+      <div class="modal-section">
+        <div class="section-card">
+          <div class="section-header">
+            <i class="bi bi-star"></i>
+            <h4>Agregar Valoración</h4>
+          </div>
+          <div class="section-body">
+            <div class="rating-form">
+              <div class="form-group">
+                <label class="form-label">Puntuación</label>
+                <div class="star-rating selectable">
+                  @for (star of [1,2,3,4,5]; track star) {
+                  <span class="star-select" (click)="setPuntuacion(star)"
+                    [class.active]="star <= nuevaValoracion().puntuacion">
+                    <i class="bi"
+                      [ngClass]="star <= nuevaValoracion().puntuacion ? 'bi-star-fill text-warning' : 'bi-star text-muted'"></i>
+                  </span>
+                  }
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Comentario</label>
+                <textarea class="form-textarea" rows="3" [(ngModel)]="nuevaValoracion().comentario"
+                  placeholder="¿Cómo fue tu experiencia con el servicio?"></textarea>
+              </div>
+              <button class="btn-action primary" (click)="agregarValoracion()">
+                <i class="bi bi-check-circle"></i>
+                Enviar Valoración
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+
+      @if ((!selectedTicket()!.asignaciones || selectedTicket()!.asignaciones.length === 0) && !isEditing()) {
+      <div class="empty-section">
+        <i class="bi bi-people"></i>
+        <p>No hay asignaciones registradas</p>
+      </div>
+      }
+
+      @if ((!selectedTicket()!.historial || selectedTicket()!.historial.length === 0) && !isEditing()) {
+      <div class="empty-section">
+        <i class="bi bi-clock-history"></i>
+        <p>No hay historial de cambios</p>
+      </div>
+      }
+
+      @if ((!selectedTicket()!.imagenes || selectedTicket()!.imagenes.length === 0) && !isEditing()) {
+      <div class="empty-section">
+        <i class="bi bi-images"></i>
+        <p>No hay imágenes adjuntas</p>
+      </div>
+      }
+
+      @if (!selectedTicket()!.valoracion && !isEditing() && selectedTicket()!.estado !== 'CERRADO') {
+      <div class="empty-section">
+        <i class="bi bi-star"></i>
+        <p>Este ticket aún no puede ser valorado</p>
+        <small>Solo los tickets cerrados pueden ser valorados</small>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="isEditing() ? cancelEdit() : closeModal()">
+        <i class="bi bi-x-circle"></i>
+        {{ isEditing() ? 'Cancelar' : 'Cerrar' }}
+      </button>
+
+      @if (!isEditing()) {
+      <button type="button" class="btn-action primary" (click)="enableEdit()">
+        <i class="bi bi-pencil"></i>
+        Editar Ticket
+      </button>
+      }
+
+      @if (isEditing()) {
+      <button type="button" class="btn-action success" (click)="saveTicket()">
+        <i class="bi bi-check-circle"></i>
+        Guardar Cambios
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}
+
+@if (showImageModal()) {
+<div class="image-modal-overlay" (click)="closeImageModal()">
+  <div class="image-modal-container" (click)="$event.stopPropagation()">
+
+    <div class="image-modal-header">
+      <div class="image-info">
+        <p>{{ selectedImage()?.descripcion || 'Sin descripción' }}</p>
+
+      </div>
+
+      <div class="image-actions">
+        <button class="btn-action secondary" (click)="downloadImage(selectedImage()?.nombreArchivo)" title="Descargar">
+          <i class="bi bi-download"></i>
+        </button>
+        <button class="btn-close" (click)="closeImageModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="image-modal-content">
+      @if (selectedTicket()?.imagenes?.length > 1) {
+      <button class="nav-button prev" (click)="navigateImage(-1)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      }
+
+      <div class="image-wrapper">
+        @if (imageLoading()) {
+        <div class="image-loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando imagen...</p>
+        </div>
+        }
+        <img [src]="getImageUrl(selectedImage()?.nombreArchivo)"
+          [alt]="selectedImage()?.descripcion || 'Imagen del ticket'" (load)="onImageLoad()"
+          (error)="handleImageError($event)" class="full-size-image" [class.hidden]="imageLoading()"
+          [style.transform]="getImageTransform()" [style.transformOrigin]="'center center'" />
+      </div>
+
+      @if (selectedTicket()?.imagenes?.length > 1) {
+      <button class="nav-button next" (click)="navigateImage(1)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      }
+
+      <div class="zoom-controls">
+        <button class="zoom-button" (click)="zoomOut()" title="Alejar" [disabled]="imageZoom() <= 0.5">
+          <i class="bi bi-dash-lg"></i>
+        </button>
+        <button class="zoom-button" (click)="resetZoom()" title="Tamaño original">
+          <i class="bi bi-arrows-angle-expand"></i>
+        </button>
+        <button class="zoom-button" (click)="zoomIn()" title="Acercar" [disabled]="imageZoom() >= 3">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    @if (selectedTicket()?.imagenes?.length > 1) {
+    <div class="image-modal-footer">
+      <span class="image-counter">
+        {{ getImageCounterText() }}
+      </span>
+    </div>
+    }
+  </div>
+</div>
+}
