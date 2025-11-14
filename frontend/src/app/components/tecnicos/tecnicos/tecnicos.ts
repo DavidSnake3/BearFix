@@ -1,8 +1,12 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, computed } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { TecnicoService } from '../../../share/services/api/tecnico.service';
 import { Usuario } from '../../../share/models/UsuarioModel';
+import { EspecialidadService } from '../../../share/services/api/especialidad.service';
+import { Especialidad } from '../../../share/models/EspecialidadModel';
+import { CreateTecnicoRequest, UpdateTecnicoRequest } from '../../../share/models/tecnico.model';
+import { NotificationService } from '../../../share/services/app/notification.service';
 
 @Component({
   selector: 'app-tecnicos',
@@ -12,7 +16,11 @@ import { Usuario } from '../../../share/models/UsuarioModel';
 })
 export class TecnicosComponent implements OnInit, OnDestroy {
   private tecnicoService = inject(TecnicoService);
+  private especialidadService = inject(EspecialidadService);
+  private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
+
+  especialidadesList = signal<Especialidad[]>([]);
 
   tecnicos = signal<Usuario[]>([]);
   selectedTecnico = signal<any>(null);
@@ -21,6 +29,29 @@ export class TecnicosComponent implements OnInit, OnDestroy {
   isEditing = signal(false);
   editTecnicoData = signal<any>(null);
   originalTecnico = signal<any>(null);
+
+  // Señales para crear técnico
+  showCreateModal = signal(false);
+  newTecnico = signal<CreateTecnicoRequest>({
+    nombre: '',
+    correo: '',
+    telefono: '',
+    disponible: true,
+    limiteCargaTickets: 5,
+    especialidades: []
+  });
+
+  // Señales para el modal de especialidades
+  showEspecialidadesModal = signal(false);
+  isEspecialidadesForCreate = signal(false);
+  especialidadesSearch = signal('');
+  especialidadesFiltradas = computed(() => {
+    const search = this.especialidadesSearch().toLowerCase();
+    return this.especialidadesList().filter(esp => 
+      esp.nombre.toLowerCase().includes(search) || 
+      (esp.descripcion && esp.descripcion.toLowerCase().includes(search))
+    );
+  });
 
   searchInput = signal<string>('');
   filtroDisponible = signal<string>('');
@@ -38,6 +69,19 @@ export class TecnicosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupSearchDebounce();
     this.loadTecnicos();
+    this.loadEspecialidades();
+  }
+
+  private loadEspecialidades(): void {
+    this.especialidadService.get().subscribe({
+      next: (especialidades) => {
+        this.especialidadesList.set(especialidades);
+      },
+      error: (error) => {
+        console.error('Error cargando especialidades:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar las especialidades', 4000);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -98,6 +142,7 @@ export class TecnicosComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando técnicos:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudieron cargar los técnicos', 4000);
       }
     });
   }
@@ -158,7 +203,7 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   viewTecnicoDetail(tecnico: Usuario): void {
     this.isLoading.set(true);
-    this.tecnicoService.getById(tecnico.id!).subscribe({
+    this.tecnicoService.getById(tecnico.id).subscribe({
       next: (detail) => {
         this.selectedTecnico.set(detail);
         this.showModal.set(true);
@@ -167,13 +212,14 @@ export class TecnicosComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando detalle del técnico:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo cargar el detalle del técnico', 4000);
       }
     });
   }
 
   enableEditMode(tecnico: Usuario): void {
     this.isLoading.set(true);
-    this.tecnicoService.getById(tecnico.id!).subscribe({
+    this.tecnicoService.getById(tecnico.id).subscribe({
       next: (detail) => {
         this.selectedTecnico.set(detail);
         this.showModal.set(true);
@@ -183,6 +229,7 @@ export class TecnicosComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando detalle del técnico:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo cargar el detalle del técnico', 4000);
       }
     });
   }
@@ -200,13 +247,45 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     this.editTecnicoData.set(null);
   }
 
-  saveTecnico() {
-    console.log('Guardando técnico:', this.editTecnicoData());
-    this.selectedTecnico.set({ ...this.editTecnicoData() });
-    this.isEditing.set(false);
-    this.originalTecnico.set(null);
-    this.editTecnicoData.set(null);
-    this.loadTecnicos();
+  saveTecnico(): void {
+    const tecnicoData = this.editTecnicoData();
+    
+    if (!tecnicoData?.nombre || !tecnicoData?.correo) {
+      this.notificationService.warning(
+        'Formulario incompleto', 
+        'Por favor completa todos los campos requeridos correctamente',
+        4000
+      );
+      return;
+    }
+
+    const updateData: UpdateTecnicoRequest = {
+      id: tecnicoData.id,
+      nombre: tecnicoData.nombre,
+      correo: tecnicoData.correo,
+      telefono: tecnicoData.telefono,
+      disponible: tecnicoData.disponible,
+      limiteCargaTickets: tecnicoData.limiteCargaTickets,
+      especialidades: tecnicoData.especialidades || []
+    };
+
+    this.isLoading.set(true);
+    this.tecnicoService.updateTecnico(updateData).subscribe({
+      next: (tecnicoActualizado) => {
+        this.selectedTecnico.set(tecnicoActualizado);
+        this.isEditing.set(false);
+        this.originalTecnico.set(null);
+        this.editTecnicoData.set(null);
+        this.loadTecnicos();
+        this.isLoading.set(false);
+        this.notificationService.success('Éxito', 'Técnico actualizado exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error actualizando técnico:', error);
+        this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo actualizar el técnico', 4000);
+      }
+    });
   }
 
   closeModal() {
@@ -217,27 +296,140 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     this.editTecnicoData.set(null);
   }
 
-  deleteTecnico(tecnico: Usuario): void {
-    if (confirm(`¿Estás seguro de eliminar al técnico "${tecnico.nombre}"?`)) {
-      console.log('Eliminar técnico:', tecnico);
+  // Métodos para crear técnico
+  openCreateModal(): void {
+    this.showCreateModal.set(true);
+    this.newTecnico.set({
+      nombre: '',
+      correo: '',
+      telefono: '',
+      disponible: true,
+      limiteCargaTickets: 5,
+      especialidades: []
+    });
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal.set(false);
+  }
+
+  createTecnico(): void {
+    const tecnicoData = this.newTecnico();
+    
+    if (!tecnicoData.nombre || !tecnicoData.correo) {
+      this.notificationService.warning(
+        'Formulario incompleto', 
+        'Por favor completa todos los campos requeridos correctamente',
+        4000
+      );
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.tecnicoService.createTecnico(tecnicoData).subscribe({
+      next: (tecnicoCreado) => {
+        this.showCreateModal.set(false);
+        this.loadTecnicos();
+        this.isLoading.set(false);
+        this.notificationService.success('Éxito', 'Técnico creado exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error creando técnico:', error);
+        this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo crear el técnico', 4000);
+      }
+    });
+  }
+
+  // Métodos para el modal de especialidades
+  openEspecialidadesModal(forCreate: boolean): void {
+    this.isEspecialidadesForCreate.set(forCreate);
+    this.showEspecialidadesModal.set(true);
+    this.especialidadesSearch.set('');
+  }
+
+  closeEspecialidadesModal(): void {
+    this.showEspecialidadesModal.set(false);
+    this.especialidadesSearch.set('');
+  }
+
+  onEspecialidadSearchChange(event: any): void {
+    this.especialidadesSearch.set(event.target.value);
+  }
+
+  addEspecialidad(especialidad: Especialidad): void {
+    if (this.isEspecialidadesForCreate()) {
+      // Para creación
+      const especialidades = [...(this.newTecnico().especialidades || [])];
+      if (especialidad.id && !especialidades.includes(especialidad.id)) {
+        especialidades.push(especialidad.id);
+        this.newTecnico.update(data => ({ ...data, especialidades }));
+      }
+    } else {
+      // Para edición
+      const especialidades = [...(this.editTecnicoData().especialidades || [])];
+      if (especialidad.id && !especialidades.includes(especialidad.id)) {
+        especialidades.push(especialidad.id);
+        this.editTecnicoData.update(data => ({ ...data, especialidades }));
+      }
     }
   }
 
-  getWorkloadPercentage(current: number, limit: number): number {
-    if (!limit || limit === 0) return 0;
+removeEspecialidad(especialidadId: number, forCreate: boolean): void {
+  if (forCreate) {
+    const especialidades = this.newTecnico().especialidades?.filter((id: number) => id !== especialidadId) || [];
+    this.newTecnico.update(data => ({ ...data, especialidades }));
+  } else {
+    const especialidades = this.editTecnicoData().especialidades?.filter((id: number) => id !== especialidadId) || [];
+    this.editTecnicoData.update(data => ({ ...data, especialidades }));
+  }
+}
+  isEspecialidadSelected(especialidadId: number): boolean {
+    if (this.isEspecialidadesForCreate()) {
+      return this.newTecnico().especialidades?.includes(especialidadId) || false;
+    } else {
+      return this.editTecnicoData().especialidades?.includes(especialidadId) || false;
+    }
+  }
+
+  getEspecialidadNombre(especialidadId: number): string {
+    const especialidad = this.especialidadesList().find(esp => esp.id === especialidadId);
+    return especialidad ? especialidad.nombre : 'Especialidad no encontrada';
+  }
+
+  deleteTecnico(tecnico: Usuario): void {
+    if (confirm(`¿Estás seguro de eliminar al técnico "${tecnico.nombre}"?`)) {
+      this.isLoading.set(true);
+      this.tecnicoService.deleteTecnico(tecnico.id).subscribe({
+        next: () => {
+          this.loadTecnicos();
+          this.isLoading.set(false);
+          this.notificationService.success('Éxito', 'Técnico eliminado exitosamente', 4000);
+        },
+        error: (error) => {
+          console.error('Error eliminando técnico:', error);
+          this.isLoading.set(false);
+          this.notificationService.error('Error', 'No se pudo eliminar el técnico', 4000);
+        }
+      });
+    }
+  }
+
+  getWorkloadPercentage(current: number | undefined, limit: number | undefined): number {
+    if (!limit || limit === 0 || !current) return 0;
     const percentage = (current / limit) * 100;
     return Math.min(percentage, 100);
   }
 
-  getWorkloadClass(current: number, limit: number): string {
-    if (!limit || limit === 0) return 'low';
+  getWorkloadClass(current: number | undefined, limit: number | undefined): string {
+    if (!limit || limit === 0 || !current) return 'low';
     const percentage = current / limit;
     if (percentage < 0.7) return 'low';
     if (percentage < 1) return 'medium';
     return 'high';
   }
 
-  getPrioridadBadgeClass(prioridad: string): string {
+  getPrioridadBadgeClass(prioridad: string | undefined): string {
     if (!prioridad) return 'bg-secondary';
 
     const prioridadLower = prioridad.toLowerCase();
@@ -254,7 +446,7 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     }
   }
 
-    getEstadoBadgeClass(estado: string): string {
+  getEstadoBadgeClass(estado: string | undefined): string {
     if (!estado) return 'bg-secondary';
 
     const estadoLower = estado.toLowerCase();

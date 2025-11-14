@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/custom.error";
 import { PrismaClient, Role } from "../../generated/prisma";
-
+import * as bcrypt from "bcrypt";
 export class TecnicoController {
   prisma = new PrismaClient();
 
@@ -131,6 +131,234 @@ export class TecnicoController {
 
     } catch (error: any) {
       next(error)
+    }
+  };
+
+  create = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const body = request.body;
+
+      if (!body.correo || !body.nombre) {
+        next(AppError.badRequest("El correo y nombre son requeridos"));
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.correo)) {
+        next(AppError.badRequest("El formato del correo electrónico no es válido"));
+        return;
+      }
+
+      const usuarioExistente = await this.prisma.usuario.findUnique({
+        where: { correo: body.correo }
+      });
+
+      if (usuarioExistente) {
+        next(AppError.badRequest("Ya existe un usuario con este correo electrónico"));
+        return;
+      }
+
+      const contrasenaPlana = body.contrasena || "TempPassword123";
+      const contrasenaHash = await bcrypt.hash(contrasenaPlana, 10);
+
+      const newTecnico = await this.prisma.usuario.create({
+        data: {
+          correo: body.correo,
+          nombre: body.nombre,
+          telefono: body.telefono,
+          contrasenaHash: contrasenaHash,
+          rol: Role.TEC,
+          disponible: body.disponible !== undefined ? body.disponible : true,
+          limiteCargaTickets: body.limiteCargaTickets || 5,
+          cargosActuales: 0,
+          usuarioEspecialidades: body.especialidades && body.especialidades.length > 0 ? {
+            create: body.especialidades.map((espId: number) => ({
+              especialidadId: espId
+            }))
+          } : undefined
+        },
+        include: {
+          usuarioEspecialidades: {
+            include: {
+              especialidad: true
+            }
+          }
+        }
+      });
+
+      const { contrasenaHash: hash, refreshToken, resetPasswordToken, resetPasswordExpiry, ...tecnicoResponse } = newTecnico;
+
+      response.status(201).json(tecnicoResponse);
+    } catch (error) {
+      console.error("Error creando técnico:", error);
+      next(error);
+    }
+  };
+
+  update = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const body = request.body;
+      const idTecnico = parseInt(request.params.id);
+
+      if (isNaN(idTecnico)) {
+        next(AppError.badRequest("El ID no es válido"));
+        return;
+      }
+
+      const tecnicoExistente = await this.prisma.usuario.findFirst({
+        where: { 
+          id: idTecnico,
+          rol: Role.TEC,
+          activo: true
+        },
+        include: {
+          usuarioEspecialidades: {
+            select: {
+              especialidadId: true
+            }
+          }
+        }
+      });
+
+      if (!tecnicoExistente) {
+        next(AppError.notFound("No existe el técnico"));
+        return;
+      }
+
+      if (body.correo && body.correo !== tecnicoExistente.correo) {
+        const correoExistente = await this.prisma.usuario.findUnique({
+          where: { correo: body.correo }
+        });
+
+        if (correoExistente) {
+          next(AppError.badRequest("Ya existe un usuario con este correo electrónico"));
+          return;
+        }
+      }
+
+      const updateData: any = {
+        nombre: body.nombre,
+        telefono: body.telefono,
+        disponible: body.disponible,
+        limiteCargaTickets: body.limiteCargaTickets
+      };
+
+      if (body.correo) {
+        updateData.correo = body.correo;
+      }
+
+      if (body.contrasena) {
+        updateData.contrasenaHash = await bcrypt.hash(body.contrasena, 10);
+      }
+
+      const updatedTecnico = await this.prisma.usuario.update({
+        where: { id: idTecnico },
+        data: {
+          ...updateData,
+          usuarioEspecialidades: {
+            deleteMany: {},
+            create: body.especialidades ? body.especialidades.map((espId: number) => ({
+              especialidadId: espId
+            })) : []
+          }
+        },
+        include: {
+          usuarioEspecialidades: {
+            include: {
+              especialidad: true
+            }
+          },
+          asignacionesRecibidas: {
+            where: {
+              activo: true
+            },
+            include: {
+              ticket: {
+                select: {
+                  id: true,
+                  consecutivo: true,
+                  titulo: true,
+                  estado: true,
+                  prioridad: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      const cargaTrabajo = updatedTecnico.asignacionesRecibidas.length;
+      const disponibilidad = updatedTecnico.disponible && 
+        (updatedTecnico.limiteCargaTickets ? cargaTrabajo < updatedTecnico.limiteCargaTickets : true);
+
+      const { contrasenaHash, refreshToken, resetPasswordToken, resetPasswordExpiry, ...tecnicoResponse } = {
+        ...updatedTecnico,
+        cargaTrabajo,
+        disponibilidad
+      };
+
+      response.json(tecnicoResponse);
+    } catch (error) {
+      console.error("Error actualizando técnico:", error);
+      next(error);
+    }
+  };
+
+  delete = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const idTecnico = parseInt(request.params.id);
+
+      if (isNaN(idTecnico)) {
+        next(AppError.badRequest("El ID no es válido"));
+        return;
+      }
+
+      const tecnicoExistente = await this.prisma.usuario.findFirst({
+        where: { 
+          id: idTecnico,
+          rol: Role.TEC,
+          activo: true
+        }
+      });
+
+      if (!tecnicoExistente) {
+        next(AppError.notFound("No existe el técnico"));
+        return;
+      }
+
+      const asignacionesActivas = await this.prisma.asignacion.count({
+        where: {
+          tecnicoId: idTecnico,
+          activo: true,
+          ticket: {
+            eliminadoLogico: false,
+            estado: {
+              in: ['PENDIENTE', 'ASIGNADO', 'EN_PROCESO', 'ESPERA_CLIENTE']
+            }
+          }
+        }
+      });
+
+      if (asignacionesActivas > 0) {
+        next(AppError.badRequest("No se puede eliminar el técnico porque tiene tickets asignados activos"));
+        return;
+      }
+
+      const tecnicoEliminado = await this.prisma.usuario.update({
+        where: { id: idTecnico },
+        data: {
+          activo: false,
+          disponible: false
+        }
+      });
+
+      response.json({
+        message: "Técnico eliminado exitosamente",
+        id: tecnicoEliminado.id
+      });
+    } catch (error) {
+      console.error("Error eliminando técnico:", error);
+      next(error);
     }
   };
 }

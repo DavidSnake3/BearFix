@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Usuario } from '../../models/UsuarioModel';
 import { BaseAPI } from './base-apis';
+import { CreateTecnicoRequest, UpdateTecnicoRequest } from '../../models/tecnico.model';
 
 @Injectable({
   providedIn: 'root'
@@ -31,5 +32,17 @@ export class TecnicoService extends BaseAPI<Usuario> {
       headers, 
       params 
     });
+  }
+
+  createTecnico(tecnicoData: CreateTecnicoRequest) {
+    return this.http.post<Usuario>(`${this.urlAPI}/${this.endpoint}`, tecnicoData);
+  }
+
+  updateTecnico(tecnicoData: UpdateTecnicoRequest) {
+    return this.http.put<Usuario>(`${this.urlAPI}/${this.endpoint}/${tecnicoData.id}`, tecnicoData);
+  }
+
+  deleteTecnico(id: number) {
+    return this.http.delete<any>(`${this.urlAPI}/${this.endpoint}/${id}`);
   }
 }

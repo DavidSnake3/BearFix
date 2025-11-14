@@ -1200,3 +1200,51 @@
   padding: 8px 12px;
   color: #6c757d;
 }
+
+.especialidades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.especialidad-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.especialidad-checkbox:hover {
+  border-color: #667eea;
+}
+
+.especialidad-checkbox input[type="checkbox"] {
+  margin-top: 2px;
+}
+
+.especialidad-checkbox label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.especialidad-checkbox label strong {
+  color: #2c3e50;
+  font-size: 0.9em;
+}
+
+.especialidad-checkbox label small {
+  color: #6c757d;
+  font-size: 0.8em;
+}
+
+.text-muted {
+  color: #6c757d !important;
+  text-align: center;
+  padding: 20px;
+}
