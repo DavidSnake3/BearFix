@@ -10,6 +10,7 @@ export class ImageController {
   upload = async (request: Request, response: Response, next: NextFunction) => {
     try {
       //Subir la imagen
+       console.log('📤 Recibiendo petición de upload...');
       await uploadFile(request, response);
       if (!request.file) {
         response.status(400).send({ message: "¡Por favor sube un archivo!" });

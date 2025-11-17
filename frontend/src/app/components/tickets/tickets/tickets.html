@@ -33,7 +33,7 @@
       <div class="filters-grid">
         <div class="filter-group">
           <label class="filter-label">Buscar Ticket</label>
-          <div class="search-container ">
+          <div class="search-container">
             <i class="bi bi-search search-icon"></i>
             <input type="text" class="form-input search-input large" placeholder="Buscador..." [value]="searchInput()"
               (input)="onSearchChange($event)">
@@ -113,7 +113,6 @@
             </select>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -408,6 +407,67 @@
               </div>
             </div>
           </div>
+
+          <div class="modal-section">
+            <div class="section-card equal-height">
+              <div class="section-header">
+                <i class="bi bi-images"></i>
+                <h4>Imágenes Adjuntas</h4>
+              </div>
+              <div class="section-body">
+                <div class="upload-section">
+                  <label class="form-label">Agregar Imágenes</label>
+                  <div class="file-upload-container">
+                    <input type="file" 
+                           #fileInput 
+                           (change)="onFileSelected($event)" 
+                           multiple 
+                           accept="image/*" 
+                           class="file-input"
+                           [disabled]="estaSubiendoImagen()">
+                    <div class="upload-area" (click)="fileInput.click()">
+                      <i class="bi bi-cloud-upload"></i>
+                      <p>Haz clic o arrastra imágenes aquí</p>
+                      <small>Formatos: JPEG, PNG, GIF, WebP (Máx. 2MB por imagen)</small>
+                    </div>
+                  </div>
+                  
+                  @if (estaSubiendoImagen()) {
+                  <div class="upload-loading">
+                    <div class="spinner small"></div>
+                    <span>Subiendo imagen...</span>
+                  </div>
+                  }
+                </div>
+
+                @if (imagenesSeleccionadas().length > 0) {
+                <div class="images-preview">
+                  <h5>Imágenes a subir:</h5>
+                  <div class="preview-grid">
+                    @for (imagen of imagenesSeleccionadas(); track $index; let i = $index) {
+                    <div class="preview-item">
+                      <img [src]="imagen.url" [alt]="imagen.descripcion" class="preview-image">
+                      <div class="preview-actions">
+                        <button class="btn-icon danger small" 
+                                (click)="eliminarImagenSeleccionada(i, imagen)"
+                                title="Eliminar imagen">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                </div>
+                } @else {
+                <div class="empty-images">
+                  <i class="bi bi-image"></i>
+                  <p>No hay imágenes seleccionadas</p>
+                  <small>Puedes agregar imágenes del problema o solicitud</small>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -620,6 +680,52 @@
                     <option value="CERRADO">Cerrado</option>
                   </select>
                 </div>
+
+                <div class="form-group full-width">
+                  <label class="form-label">Imágenes Adjuntas</label>
+                  
+                  <div class="file-upload-container">
+                    <input type="file" 
+                           #editFileInput 
+                           (change)="onFileSelected($event)" 
+                           multiple 
+                           accept="image/*" 
+                           class="file-input"
+                           [disabled]="estaSubiendoImagen()">
+                    <div class="upload-area" (click)="editFileInput.click()">
+                      <i class="bi bi-cloud-upload"></i>
+                      <p>Agregar más imágenes</p>
+                      <small>Formatos: JPEG, PNG, GIF, WebP (Máx. 2MB por imagen)</small>
+                    </div>
+                  </div>
+
+                  @if (estaSubiendoImagen()) {
+                  <div class="upload-loading">
+                    <div class="spinner small"></div>
+                    <span>Subiendo imagen...</span>
+                  </div>
+                  }
+
+                  @if (imagenesSeleccionadas().length > 0) {
+                  <div class="edit-images-grid">
+                    @for (imagen of imagenesSeleccionadas(); track $index; let i = $index) {
+                    <div class="edit-image-item">
+                      <img [src]="imagen.url" [alt]="imagen.descripcion" class="edit-preview-image">
+                      <div class="edit-image-actions">
+                        <button class="btn-icon danger small" 
+                                (click)="eliminarImagenSeleccionada(i, imagen)"
+                                title="Eliminar imagen">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                      @if (!imagen.id) {
+                      <span class="new-badge">Nueva</span>
+                      }
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
               </div>
               }
 
@@ -681,8 +787,6 @@
                   <div class="sla-value centered">
                     <i class="bi bi-alarm"></i>
                     <span>{{ selectedTicket()!.slaRespuesta }} minutos</span>
-                    @if (selectedTicket()!.cumplimientoRespuesta !== null) {
-                    }
                   </div>
                 </div>
 
@@ -701,8 +805,6 @@
                   <div class="sla-value centered">
                     <i class="bi bi-clock-history"></i>
                     <span>{{ selectedTicket()!.slaResolucion }} minutos</span>
-                    @if (selectedTicket()!.cumplimientoResolucion !== null) {
-                    }
                   </div>
                 </div>
               </div>
@@ -767,7 +869,7 @@
       </div>
       }
 
-      @if (selectedTicket()!.imagenes && selectedTicket()!.imagenes.length > 0) {
+      @if (selectedTicket()!.imagenes && selectedTicket()!.imagenes.length > 0 && !isEditing()) {
       <div class="modal-section">
         <div class="section-card">
           <div class="section-header">
@@ -794,25 +896,16 @@
                       }
                     </div>
                   </div>
+                  <div class="image-actions">
+                    <button class="btn-icon danger small" 
+                            (click)="eliminarImagenDelTicket(selectedTicket()!.id, imagen.id)"
+                            title="Eliminar imagen">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
               }
-            </div>
-          </div>
-        </div>
-      </div>
-      } @else {
-      <div class="modal-section">
-        <div class="section-card">
-          <div class="section-header">
-            <i class="bi bi-images"></i>
-            <h4>Imágenes Adjuntas</h4>
-          </div>
-          <div class="section-body">
-            <div class="empty-section">
-              <i class="bi bi-image"></i>
-              <p>No hay imágenes adjuntas para este ticket</p>
-              <small>Puedes agregar imágenes al crear o editar el ticket</small>
             </div>
           </div>
         </div>

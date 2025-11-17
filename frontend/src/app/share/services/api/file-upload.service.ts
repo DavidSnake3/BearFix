@@ -11,21 +11,20 @@ export class FileUploadService {
   
   constructor(private http: HttpClient) {}
 
-  upload(file: File, previousImage: string | null | undefined): Observable<HttpEvent<any>> {
+  upload(file: File, previousImage: string | null | undefined): Observable<any> {
     const formData: FormData = new FormData();
 
     formData.append('file', file);
     if (previousImage !== null && previousImage !== undefined) {
       formData.append('previousFileName', previousImage);
     } else {
-      formData.append('previousFileName', ''); 
-    
+      formData.append('previousFileName', '');
     }
-    
-    return this.http.post<any | any[]>(`${this.baseUrl}/file/upload`, formData);
+
+    return this.http.post<any>(`${this.baseUrl}/images/upload`, formData);
   }
 
   getFiles(): Observable<any> {
-    return this.http.get(`${this.baseUrl}file/files`);
+    return this.http.get(`${this.baseUrl}/images/files`);
   }
 }

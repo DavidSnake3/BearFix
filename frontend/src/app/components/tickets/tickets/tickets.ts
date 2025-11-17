@@ -33,6 +33,11 @@ export class TicketsComponent implements OnInit, OnDestroy {
   originalTicket = signal<any>(null);
   editTicketData = signal<any>(null);
 
+  imagenesSeleccionadas = signal<any[]>([]);
+  imagenesParaEliminar = signal<number[]>([]);
+  estaSubiendoImagen = signal(false);
+
+
   showCreateModal = signal(false);
   showUserModal = signal(false);
   newTicket = signal<any>({
@@ -157,6 +162,85 @@ export class TicketsComponent implements OnInit, OnDestroy {
     });
   }
 
+   onFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.subirImagen(file);
+      }
+      event.target.value = ''; 
+    }
+  }
+
+  subirImagen(file: File): void {
+    if (file.size > 2 * 1024 * 1024) { 
+      this.notificationService.warning('Archivo muy grande', 'La imagen no debe superar los 2MB', 4000);
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.notificationService.warning('Tipo de archivo no válido', 'Solo se permiten imágenes JPEG, PNG, GIF y WebP', 4000);
+      return;
+    }
+
+    this.estaSubiendoImagen.set(true);
+
+    const previousImage = this.isEditing() ? 
+      this.editTicketData()?.imagenes?.[0]?.nombreArchivo : null;
+
+    this.fileUploadService.upload(file, previousImage).subscribe({
+      next: (response) => {
+        const nuevaImagen = {
+          nombreArchivo: response.fileName,
+          tipo: file.type,
+          tamaño: file.size,
+          descripcion: `Imagen subida el ${new Date().toLocaleDateString()}`,
+          url: `${environment.apiURL}/files/${response.fileName}`
+        };
+
+        this.imagenesSeleccionadas.update(imagenes => [...imagenes, nuevaImagen]);
+        this.estaSubiendoImagen.set(false);
+        this.notificationService.success('Éxito', 'Imagen subida correctamente', 3000);
+      },
+      error: (error) => {
+        console.error('Error subiendo imagen:', error);
+        this.estaSubiendoImagen.set(false);
+        this.notificationService.error('Error', 'No se pudo subir la imagen', 4000);
+      }
+    });
+  }
+
+  eliminarImagenSeleccionada(index: number, imagen: any): void {
+    if (imagen.id) {
+      this.imagenesParaEliminar.update(ids => [...ids, imagen.id]);
+    }
+    
+    this.imagenesSeleccionadas.update(imagenes => 
+      imagenes.filter((_, i) => i !== index)
+    );
+  }
+
+  eliminarImagenDelTicket(ticketId: number, imagenId: number): void {
+    if (confirm('¿Estás seguro de eliminar esta imagen?')) {
+      this.ticketService.eliminarImagen(ticketId, imagenId).subscribe({
+        next: () => {
+          this.selectedTicket.update(ticket => ({
+            ...ticket!,
+            imagenes: ticket!.imagenes.filter((img: any) => img.id !== imagenId)
+          }));
+          
+          this.notificationService.success('Éxito', 'Imagen eliminada correctamente', 3000);
+        },
+        error: (error) => {
+          console.error('Error eliminando imagen:', error);
+          this.notificationService.error('Error', 'No se pudo eliminar la imagen', 4000);
+        }
+      });
+    }
+  }
+
   onSearchChange(event: any): void {
     this.searchInput.set(event.target.value);
     this.searchSubject.next(event.target.value);
@@ -260,6 +344,7 @@ export class TicketsComponent implements OnInit, OnDestroy {
 
   closeCreateModal(): void {
     this.showCreateModal.set(false);
+    this.imagenesSeleccionadas.set([]);
   }
 
   openUserModal(): void {
@@ -277,7 +362,10 @@ export class TicketsComponent implements OnInit, OnDestroy {
   }
 
   createTicket(): void {
-    const ticketData = this.newTicket();
+    const ticketData = {
+      ...this.newTicket(),
+      imagenes: this.imagenesSeleccionadas()
+    };
 
     if (!ticketData.titulo || !ticketData.categoriaId || !ticketData.etiquetaId || !ticketData.solicitanteId) {
       this.notificationService.warning('Formulario incompleto', 'Por favor completa todos los campos requeridos', 4000);
@@ -288,6 +376,7 @@ export class TicketsComponent implements OnInit, OnDestroy {
     this.ticketService.createTicket(ticketData).subscribe({
       next: (ticketCreado) => {
         this.showCreateModal.set(false);
+        this.imagenesSeleccionadas.set([]); 
         this.loadTickets();
         this.isLoading.set(false);
         this.notificationService.success('Éxito', 'Ticket creado exitosamente', 4000);
@@ -539,7 +628,9 @@ export class TicketsComponent implements OnInit, OnDestroy {
     this.originalTicket.set(JSON.parse(JSON.stringify(this.selectedTicket())));
     this.editTicketData.set(JSON.parse(JSON.stringify(this.selectedTicket())));
     
-    // Cargar etiquetas de la categoría actual en edición
+    this.imagenesSeleccionadas.set(this.selectedTicket()?.imagenes || []);
+    this.imagenesParaEliminar.set([]);
+
     const categoriaId = this.editTicketData().categoriaId;
     if (categoriaId) {
       this.ticketService.getEtiquetasByCategoria(categoriaId).subscribe({
@@ -559,10 +650,12 @@ export class TicketsComponent implements OnInit, OnDestroy {
     this.selectedTicket.set(JSON.parse(JSON.stringify(this.originalTicket())));
     this.originalTicket.set(null);
     this.editTicketData.set(null);
+    this.imagenesSeleccionadas.set([]);
+    this.imagenesParaEliminar.set([]);
   }
 
   saveTicket() {
-    const updateData = {
+    const updateData: any = {
       id: this.editTicketData().id,
       titulo: this.editTicketData().titulo,
       descripcion: this.editTicketData().descripcion,
@@ -573,12 +666,22 @@ export class TicketsComponent implements OnInit, OnDestroy {
       observacionesCambioEstado: 'Ticket actualizado'
     };
 
+    if (this.imagenesSeleccionadas().length > 0) {
+      updateData.nuevasImagenes = this.imagenesSeleccionadas();
+    }
+
+    if (this.imagenesParaEliminar().length > 0) {
+      updateData.imagenesAEliminar = this.imagenesParaEliminar();
+    }
+
     this.ticketService.updateTicket(updateData).subscribe({
       next: (ticketActualizado) => {
         this.selectedTicket.set(ticketActualizado);
         this.isEditing.set(false);
         this.originalTicket.set(null);
         this.editTicketData.set(null);
+        this.imagenesSeleccionadas.set([]);
+        this.imagenesParaEliminar.set([]);
         this.loadTickets();
         this.notificationService.success('Éxito', 'Ticket actualizado exitosamente', 4000);
       },

@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/custom.error";
 import { PrismaClient, Role, TicketEstado, Prioridad, ModoAsignacion } from "../../generated/prisma";
+import path from "path";
+import fs from "fs";
 
 export class TicketController {
   prisma = new PrismaClient();
+
+  private __basedir = path.resolve();
+  private directoryPath = path.join(this.__basedir, "/assets/uploads/");
+  private baseUrl = "http://localhost:3000/images/";
 
   private calcularTiempoRestante(fechaLimite: Date): number {
     const ahora = new Date();
@@ -390,159 +396,212 @@ export class TicketController {
   };
 
   create = async (request: Request, response: Response, next: NextFunction) => {
-    try {
-      const body = request.body;
-      const userId = parseInt(request.headers['user-id'] as string);
+      try {
+        const body = request.body;
+        const userId = parseInt(request.headers['user-id'] as string);
 
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
-      }
-
-      const categoriaId = parseInt(body.categoriaId);
-      const etiquetaId = parseInt(body.etiquetaId);
-
-      if (isNaN(categoriaId)) {
-        return next(AppError.badRequest("El ID de categoría no es válido"));
-      }
-
-      if (isNaN(etiquetaId)) {
-        return next(AppError.badRequest("El ID de etiqueta no es válido"));
-      }
-
-      if (!body.titulo) {
-        return next(AppError.badRequest("El título es requerido"));
-      }
-
-      if (!categoriaId) {
-        return next(AppError.badRequest("La categoría es requerida"));
-      }
-
-      if (!etiquetaId) {
-        return next(AppError.badRequest("La etiqueta es requerida"));
-      }
-
-      const usuario = await this.prisma.usuario.findFirst({
-        where: {
-          id: userId,
-          activo: true
+        if (isNaN(userId)) {
+          return next(AppError.badRequest("User ID no válido"));
         }
-      });
 
-      if (!usuario) {
-        return next(AppError.badRequest("El usuario solicitante no existe o no está activo"));
-      }
+        const categoriaId = parseInt(body.categoriaId);
+        const etiquetaId = parseInt(body.etiquetaId);
 
-      const categoria = await this.prisma.categoria.findFirst({
-        where: {
-          id: categoriaId, 
-          activa: true
+        if (isNaN(categoriaId)) {
+          return next(AppError.badRequest("El ID de categoría no es válido"));
         }
-      });
 
-      if (!categoria) {
-        return next(AppError.badRequest("La categoría seleccionada no existe o no está activa"));
-      }
-
-      const etiquetaCategoria = await this.prisma.categoriaEtiqueta.findFirst({
-        where: {
-          categoriaId: categoriaId, 
-          etiquetaId: etiquetaId    
-        },
-        include: {
-          etiqueta: true
+        if (isNaN(etiquetaId)) {
+          return next(AppError.badRequest("El ID de etiqueta no es válido"));
         }
-      });
 
-      if (!etiquetaCategoria) {
-        return next(AppError.badRequest("La etiqueta seleccionada no existe o no pertenece a la categoría"));
-      }
+        if (!body.titulo) {
+          return next(AppError.badRequest("El título es requerido"));
+        }
 
-      const consecutivo = await this.generarConsecutivo();
+        const usuario = await this.prisma.usuario.findFirst({
+          where: {
+            id: userId,
+            activo: true
+          }
+        });
 
-      const fechaCreacion = new Date();
-      const { fechaLimiteRespuesta, fechaLimiteResolucion } = this.calcularFechasSLAs(fechaCreacion, categoria);
+        if (!usuario) {
+          return next(AppError.badRequest("El usuario solicitante no existe o no está activo"));
+        }
 
-      const newTicket = await this.prisma.ticket.create({
-        data: {
-          consecutivo,
-          titulo: body.titulo,
-          descripcion: body.descripcion,
-          solicitanteId: userId,
-          categoriaId: categoriaId, 
-          prioridad: body.prioridad || Prioridad.MEDIO,
-          fechaLimiteRespuesta,
-          fechaLimiteResolucion
-        },
-        include: {
-          solicitante: {
-            select: {
-              nombre: true,
-              correo: true
-            }
+        const categoria = await this.prisma.categoria.findFirst({
+          where: {
+            id: categoriaId, 
+            activa: true
+          }
+        });
+
+        if (!categoria) {
+          return next(AppError.badRequest("La categoría seleccionada no existe o no está activa"));
+        }
+
+        const etiquetaCategoria = await this.prisma.categoriaEtiqueta.findFirst({
+          where: {
+            categoriaId: categoriaId, 
+            etiquetaId: etiquetaId    
           },
-          categoria: {
-            include: {
-              categoriaEtiquetas: {
-                include: {
-                  etiqueta: true
-                }
+          include: {
+            etiqueta: true
+          }
+        });
+
+        if (!etiquetaCategoria) {
+          return next(AppError.badRequest("La etiqueta seleccionada no existe o no pertenece a la categoría"));
+        }
+
+        const consecutivo = await this.generarConsecutivo();
+
+        const fechaCreacion = new Date();
+        const { fechaLimiteRespuesta, fechaLimiteResolucion } = this.calcularFechasSLAs(fechaCreacion, categoria);
+
+        const newTicket = await this.prisma.ticket.create({
+          data: {
+            consecutivo,
+            titulo: body.titulo,
+            descripcion: body.descripcion,
+            solicitanteId: userId,
+            categoriaId: categoriaId, 
+            prioridad: body.prioridad || Prioridad.MEDIO,
+            fechaLimiteRespuesta,
+            fechaLimiteResolucion
+          },
+          include: {
+            solicitante: {
+              select: {
+                nombre: true,
+                correo: true
               }
-            }
-          },
-          asignaciones: {
-            where: {
-              activo: true
             },
-            include: {
-              tecnico: {
-                select: {
-                  nombre: true,
-                  correo: true
+            categoria: {
+              include: {
+                categoriaEtiquetas: {
+                  include: {
+                    etiqueta: true
+                  }
                 }
               }
-            }
-          },
-          historial: {
-            include: {
-              usuario: {
-                select: {
-                  nombre: true
+            },
+            asignaciones: {
+              where: {
+                activo: true
+              },
+              include: {
+                tecnico: {
+                  select: {
+                    nombre: true,
+                    correo: true
+                  }
                 }
               }
-            }
-          },
-          valoracion: true,
-          imagenes: true
+            },
+            historial: {
+              include: {
+                usuario: {
+                  select: {
+                    nombre: true
+                  }
+                }
+              }
+            },
+            valoracion: true,
+            imagenes: true
+          }
+        });
+
+        if (body.imagenes && Array.isArray(body.imagenes)) {
+          for (const imagenData of body.imagenes) {
+            await this.prisma.imagenTicket.create({
+              data: {
+                ticketId: newTicket.id,
+                nombreArchivo: imagenData.nombreArchivo,
+                url: `${this.baseUrl}${imagenData.nombreArchivo}`,
+                tipo: imagenData.tipo,
+                tamaño: imagenData.tamaño,
+                descripcion: imagenData.descripcion,
+                subidoPorId: userId
+              }
+            });
+          }
         }
-      });
 
-      await this.prisma.ticketHistorial.create({
-        data: {
-          ticketId: newTicket.id,
-          estadoDestino: TicketEstado.PENDIENTE,
-          usuarioId: userId,
-          observaciones: 'Ticket creado'
-        }
-      });
+        await this.prisma.ticketHistorial.create({
+          data: {
+            ticketId: newTicket.id,
+            estadoDestino: TicketEstado.PENDIENTE,
+            usuarioId: userId,
+            observaciones: 'Ticket creado'
+          }
+        });
 
-      const ticketCompleto = {
-        ...newTicket,
-        diasResolucion: null,
-        cumplimientoRespuesta: null,
-        cumplimientoResolucion: null,
-        tecnicoAsignado: null,
-        tiempoRestanteSLAHoras: this.calcularTiempoRestante(newTicket.fechaLimiteResolucion || new Date()),
-        slaRespuesta: categoria.slaTiempoMaxRespuestaMin,
-        slaResolucion: categoria.slaTiempoMaxResolucionMin,
-        modoAsignacion: newTicket.modoAsignacion,
-        etiquetas: newTicket.categoria?.categoriaEtiquetas?.map(ce => ce.etiqueta) || []
-      };
+        const ticketConImagenes = await this.prisma.ticket.findFirst({
+          where: { id: newTicket.id },
+          include: {
+            solicitante: {
+              select: {
+                nombre: true,
+                correo: true
+              }
+            },
+            categoria: {
+              include: {
+                categoriaEtiquetas: {
+                  include: {
+                    etiqueta: true
+                  }
+                }
+              }
+            },
+            asignaciones: {
+              where: {
+                activo: true
+              },
+              include: {
+                tecnico: {
+                  select: {
+                    nombre: true,
+                    correo: true
+                  }
+                }
+              }
+            },
+            historial: {
+              include: {
+                usuario: {
+                  select: {
+                    nombre: true
+                  }
+                }
+              }
+            },
+            valoracion: true,
+            imagenes: true
+          }
+        });
 
-      response.status(201).json(ticketCompleto);
-    } catch (error) {
-      console.error("Error creando ticket:", error);
-      next(error);
-    }
+        const ticketCompleto = {
+          ...ticketConImagenes,
+          diasResolucion: null,
+          cumplimientoRespuesta: null,
+          cumplimientoResolucion: null,
+          tecnicoAsignado: null,
+          tiempoRestanteSLAHoras: this.calcularTiempoRestante(ticketConImagenes!.fechaLimiteResolucion || new Date()),
+          slaRespuesta: categoria.slaTiempoMaxRespuestaMin,
+          slaResolucion: categoria.slaTiempoMaxResolucionMin,
+          modoAsignacion: ticketConImagenes!.modoAsignacion,
+          etiquetas: ticketConImagenes!.categoria?.categoriaEtiquetas?.map(ce => ce.etiqueta) || []
+        };
+
+        response.status(201).json(ticketCompleto);
+      } catch (error) {
+        console.error("Error creando ticket:", error);
+        next(error);
+      }
   };
 
   update = async (request: Request, response: Response, next: NextFunction) => {
@@ -576,7 +635,8 @@ export class TicketController {
           eliminadoLogico: false
         },
         include: {
-          categoria: true
+          categoria: true,
+          imagenes: true
         }
       });
 
@@ -586,14 +646,6 @@ export class TicketController {
 
       if (!body.titulo) {
         return next(AppError.badRequest("El título es requerido"));
-      }
-
-      if (!categoriaId) {
-        return next(AppError.badRequest("La categoría es requerida"));
-      }
-
-      if (!etiquetaId) {
-        return next(AppError.badRequest("La etiqueta es requerida"));
       }
 
       const categoria = await this.prisma.categoria.findFirst({
@@ -698,6 +750,41 @@ export class TicketController {
         }
       });
 
+      if (body.imagenesAEliminar && Array.isArray(body.imagenesAEliminar)) {
+        for (const imagenId of body.imagenesAEliminar) {
+          const imagen = await this.prisma.imagenTicket.findFirst({
+            where: { id: imagenId, ticketId: ticketId }
+          });
+          
+          if (imagen) {
+            const filePath = path.join(this.directoryPath, imagen.nombreArchivo);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+            
+            await this.prisma.imagenTicket.delete({
+              where: { id: imagenId }
+            });
+          }
+        }
+      }
+
+      if (body.nuevasImagenes && Array.isArray(body.nuevasImagenes)) {
+        for (const imagenData of body.nuevasImagenes) {
+          await this.prisma.imagenTicket.create({
+            data: {
+              ticketId: ticketId,
+              nombreArchivo: imagenData.nombreArchivo,
+              url: `${this.baseUrl}${imagenData.nombreArchivo}`,
+              tipo: imagenData.tipo,
+              tamaño: imagenData.tamaño,
+              descripcion: imagenData.descripcion,
+              subidoPorId: userId
+            }
+          });
+        }
+      }
+
       if (body.estado !== ticketExistente.estado) {
         await this.prisma.ticketHistorial.create({
           data: {
@@ -710,32 +797,132 @@ export class TicketController {
         });
       }
 
+      const ticketActualizado = await this.prisma.ticket.findFirst({
+        where: { id: ticketId },
+        include: {
+          solicitante: {
+            select: {
+              nombre: true,
+              correo: true
+            }
+          },
+          categoria: {
+            include: {
+              categoriaEtiquetas: {
+                include: {
+                  etiqueta: true
+                }
+              }
+            }
+          },
+          asignaciones: {
+            where: {
+              activo: true
+            },
+            include: {
+              tecnico: {
+                select: {
+                  nombre: true,
+                  correo: true
+                }
+              }
+            }
+          },
+          historial: {
+            include: {
+              usuario: {
+                select: {
+                  nombre: true
+                }
+              }
+            },
+            orderBy: {
+              creadoEn: 'desc'
+            }
+          },
+          valoracion: {
+            include: {
+              usuario: {
+                select: {
+                  nombre: true,
+                  correo: true
+                }
+              }
+            }
+          },
+          imagenes: true
+        }
+      });
+
       const ahora = new Date();
       let tiempoRestanteSLAHoras = null;
-      if (updatedTicket.fechaLimiteResolucion) {
-        const diff = updatedTicket.fechaLimiteResolucion.getTime() - ahora.getTime();
+      if (ticketActualizado!.fechaLimiteResolucion) {
+        const diff = ticketActualizado!.fechaLimiteResolucion.getTime() - ahora.getTime();
         tiempoRestanteSLAHoras = Math.ceil(diff / (1000 * 3600));
       }
 
       const ticketCompleto = {
-        ...updatedTicket,
-        diasResolucion: updatedTicket.fechaCierre ?
-          Math.ceil((updatedTicket.fechaCierre.getTime() - updatedTicket.fechaCreacion.getTime()) / (1000 * 3600 * 24)) : null,
-        cumplimientoRespuesta: updatedTicket.fechaRespuesta && updatedTicket.fechaLimiteRespuesta ?
-          updatedTicket.fechaRespuesta <= updatedTicket.fechaLimiteRespuesta : null,
-        cumplimientoResolucion: updatedTicket.fechaCierre && updatedTicket.fechaLimiteResolucion ?
-          updatedTicket.fechaCierre <= updatedTicket.fechaLimiteResolucion : null,
-        tecnicoAsignado: updatedTicket.asignaciones.length > 0 ? updatedTicket.asignaciones[0].tecnico : null,
+        ...ticketActualizado,
+        diasResolucion: ticketActualizado!.fechaCierre ?
+          Math.ceil((ticketActualizado!.fechaCierre.getTime() - ticketActualizado!.fechaCreacion.getTime()) / (1000 * 3600 * 24)) : null,
+        cumplimientoRespuesta: ticketActualizado!.fechaRespuesta && ticketActualizado!.fechaLimiteRespuesta ?
+          ticketActualizado!.fechaRespuesta <= ticketActualizado!.fechaLimiteRespuesta : null,
+        cumplimientoResolucion: ticketActualizado!.fechaCierre && ticketActualizado!.fechaLimiteResolucion ?
+          ticketActualizado!.fechaCierre <= ticketActualizado!.fechaLimiteResolucion : null,
+        tecnicoAsignado: ticketActualizado!.asignaciones.length > 0 ? ticketActualizado!.asignaciones[0].tecnico : null,
         tiempoRestanteSLAHoras,
         slaRespuesta: categoria.slaTiempoMaxRespuestaMin,
         slaResolucion: categoria.slaTiempoMaxResolucionMin,
-        modoAsignacion: updatedTicket.modoAsignacion,
-        etiquetas: updatedTicket.categoria?.categoriaEtiquetas?.map(ce => ce.etiqueta) || []
+        modoAsignacion: ticketActualizado!.modoAsignacion,
+        etiquetas: ticketActualizado!.categoria?.categoriaEtiquetas?.map(ce => ce.etiqueta) || []
       };
 
       response.json(ticketCompleto);
     } catch (error) {
       console.error("Error actualizando ticket:", error);
+      next(error);
+    }
+  };
+
+  eliminarImagen = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const imagenId = parseInt(request.params.imagenId);
+      const userId = parseInt(request.headers['user-id'] as string);
+
+      if (isNaN(imagenId)) {
+        return next(AppError.badRequest("El ID de la imagen no es válido"));
+      }
+
+      const imagen = await this.prisma.imagenTicket.findFirst({
+        where: { id: imagenId },
+        include: {
+          ticket: true
+        }
+      });
+
+      if (!imagen) {
+        return next(AppError.notFound("No existe la imagen"));
+      }
+
+      if (imagen.ticket.solicitanteId !== userId && request.headers['user-role'] !== 'ADM') {
+        return next(AppError.forbidden("No tienes permisos para eliminar esta imagen"));
+      }
+
+      const filePath = path.join(this.directoryPath, imagen.nombreArchivo);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      await this.prisma.imagenTicket.delete({
+        where: { id: imagenId }
+      });
+
+      response.json({
+        message: "Imagen eliminada exitosamente",
+        id: imagenId
+      });
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
       next(error);
     }
   };

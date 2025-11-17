@@ -46,6 +46,14 @@ export class TicketService extends BaseAPI<Ticket> {
     });
   }
 
+  eliminarImagen(ticketId: number, imagenId: number): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.delete<any>(
+      `${this.urlAPI}/${this.endpoint}/${ticketId}/imagenes/${imagenId}`,
+      { headers }
+    );
+  }
+
   getEtiquetasByCategoria(categoriaId: number): Observable<{success: boolean, categoria: any, etiquetas: Etiqueta[]}> {
     const headers = this.getHeaders();
     return this.http.get<{success: boolean, categoria: any, etiquetas: Etiqueta[]}>(

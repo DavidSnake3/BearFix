@@ -23,6 +23,7 @@ export class TicketRoutes {
         
         router.get('/', controller.get)  
         router.get('/:id', controller.getById) 
+        router.delete('/:id/imagenes/:imagenId', controller.eliminarImagen);
 
         return router
     }
