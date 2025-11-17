@@ -12,6 +12,7 @@ import { DetalleAsignacionComponent } from './components/asignaciones/detalle-as
 import { HistorialComponent } from './components/tickets/historial/historial';
 import { TodasAsignacionesComponent } from './components/asignaciones/todas-asignaciones/todas-asignaciones';
 import { PageNotFound } from './share/page-not-found/page-not-found';
+import { TicketsUserComponent } from './components/tickets/tickets-user/tickets-user';
 
 const routes: Routes = [
 
@@ -64,6 +65,12 @@ const routes: Routes = [
   {
     path: 'historial',
     component: HistorialComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { expectedRole: ['TEC', 'ADM', 'USR'] }
+  },
+  {
+    path: 'tickets-user',
+    component: TicketsUserComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: ['TEC', 'ADM', 'USR'] }
   },

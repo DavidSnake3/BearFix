@@ -98,7 +98,7 @@ export class DashboardComponent {
   }
 
   nuevoTicket() {
-    this.router.navigate(['/tickets/nuevo']);
+    this.router.navigate(['/tickets-user']);
   }
 
   refreshData() {

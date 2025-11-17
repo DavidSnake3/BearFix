@@ -2,20 +2,23 @@ import { NgModule } from '@angular/core';
 
 
 import { TicketsRoutingModule } from './tickets-routing-module';
-import {  TicketsComponent } from './tickets/tickets';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HistorialComponent } from './historial/historial';
 import { CommonModule } from '@angular/common';
-
+import { HistorialComponent } from './historial/historial';
+import { TicketsComponent } from './tickets/tickets';
+import { TicketsUserComponent } from './tickets-user/tickets-user';
+import {MatIconModule} from '@angular/material/icon';
 
 @NgModule({
   declarations: [
+    HistorialComponent,
     TicketsComponent,
-    HistorialComponent
+    TicketsUserComponent,
   ],
   imports: [
     CommonModule,
     TicketsRoutingModule,
+    MatIconModule,
     FormsModule,
     ReactiveFormsModule,
   ]
