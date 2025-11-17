@@ -1,0 +1,156 @@
+<div class="tickets-container">
+  <div class="tickets-header">
+    <div class="header-content">
+      <div class="info-row">
+        <div class="header-info">
+          <h1 class="page-title">
+            <i class="bi bi-ticket-perforated"></i>
+            Creación de Tickets
+          </h1>
+          <p class="page-subtitle">Creación de tickets por parte de los usuarios</p>
+        </div>
+      </div>
+      
+      <div class="info-row form-group">
+        <button type="button" class="btn-action primary" (click)="createTicket()" 
+          [disabled]="!newTicket().titulo || !newTicket().categoriaId || !newTicket().etiquetaId">
+          <i class="bi bi-check-circle"></i>
+          Crear Ticket
+        </button>
+      </div>
+
+      <div class="card-body">
+        <div class="create-ticket-form">
+          <div class="modal-grid">
+            <div class="modal-section">
+              <div class="section-card equal-height">
+                <div class="section-header">
+                  <i class="bi bi-info-circle"></i>
+                  <h4>Información del Ticket</h4>
+                </div>
+                <div class="section-body">
+                  <div class="info-grid">
+                    <div class="info-item full-width">
+                      <label class="form-label required">Título</label>
+                      <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="Ingrese el título del ticket">
+                    </div>
+
+                    <div class="info-item full-width">
+                      <label class="form-label">Descripción</label>
+                      <textarea class="form-textarea" rows="3" [(ngModel)]="newTicket().descripcion" placeholder="Describa el problema o solicitud"></textarea>
+                    </div>
+
+                    <div class="info-row">
+                      <div class="info-item">
+                        <label class="form-label required">Prioridad</label>
+                        <select class="form-select" [(ngModel)]="newTicket().prioridad">
+                          <option value="">Seleccione prioridad</option>
+                          @for (prioridad of prioridadesList(); track prioridad) {
+                          <option [value]="prioridad">{{ prioridad }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="info-item">
+                        <label class="form-label required">Categoría</label>
+                        <select class="form-select" [(ngModel)]="newTicket().categoriaId" (change)="onCategoriaChange($any($event.target).value)">
+                          <option value="">Seleccione categoría</option>
+                          @for (categoria of categoriasConEtiquetas(); track categoria.id) {
+                          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="info-row">
+
+                      <div class="info-item">
+                        <label class="form-label required">Etiqueta</label>
+                        <select class="form-select" [(ngModel)]="newTicket().etiquetaId" [disabled]="!newTicket().categoriaId">
+                          <option value="">Seleccione etiqueta</option>
+                          @for (etiqueta of etiquetasFiltradasCreacion(); track etiqueta.id) {
+                          <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+
+                      <div class="info-item">
+                        <label class="form-label">Usuario Solicitante</label>
+                        <div class="user-select-container">
+                              @for (usuario of usuariosList(); track usuario.id) {
+                                <div class="user-info">
+                                  <input type="text" value="{{ usuario.nombre }}" class="form-input" disabled>
+                                </div>
+                              }
+                        </div>
+                      </div>
+                      
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-section">
+              <div class="section-card equal-height">
+                <div class="section-header">
+                  <i class="bi bi-person"></i>
+                  <h4>Información del Sistema</h4>
+                </div>
+                <div class="section-body">
+                  @for (usuario of usuariosList(); track usuario.id) {
+                  <div class="user-info-display">
+                    <h5>Usuario Seleccionado</h5>
+                    <div class="info-row">
+                      <div class="info-item">
+                        <label>Nombre</label>
+                        <div class="info-value">{{ usuario.nombre }}</div>
+                      </div>
+                      <div class="info-item">
+                        <label>Correo</label>
+                        <div class="info-value">{{ usuario.correo }}</div>
+                      </div>
+                    </div>
+                    <div class="info-row">
+                      <div class="info-item">
+                        <label>Rol</label>
+                        <div class="info-value">{{ usuario.rol }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  }
+
+                  <div class="dates-info">
+                    <div class="info-row">
+                      <div class="date-item">
+                        <label>Fecha de Creación</label>
+                        <div class="date-value">
+                          <i class="bi bi-calendar"></i>
+                          <span>{{ today | date:'dd/MM/yyyy HH:mm' }}</span>
+                        </div>
+                      </div>
+
+                      <div class="date-item">
+                        <label>Estado Inicial</label>
+                        <div class="date-value">
+                          <i class="bi bi-clock"></i>
+                          <span>PENDIENTE</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+
+
+</div>

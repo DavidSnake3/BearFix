@@ -6,6 +6,7 @@ import { CategoriaRoutes } from './categoria.routes';
 import { TicketRoutes } from './ticket.routes';
 import { EspecialidadRoutes } from './especialidad.routes';
 import { EtiquetaRoutes } from './etiquetas.route';
+import { TicketUserRoutes } from './ticketUser.routes';
 
 export class AppRoutes {
   static get routes(): Router {
@@ -16,6 +17,7 @@ export class AppRoutes {
         router.use('/tickets', TicketRoutes.routes);
         router.use('/especialidades', EspecialidadRoutes.routes); 
         router.use('/etiquetas', EtiquetaRoutes.routes);
+        router.use('/tickets-user', TicketUserRoutes.routes);
         
     return router;
   }

@@ -32,7 +32,7 @@ import { TicketsModule } from './components/tickets/tickets-module';
     CoreModule,
     CategoriasModule,
     TicketsModule,
-    AsignacionesModule
+    AsignacionesModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
