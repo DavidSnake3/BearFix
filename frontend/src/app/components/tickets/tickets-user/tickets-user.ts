@@ -323,13 +323,13 @@ private ticketUserService = inject(TicketUserService);
         this.openCreateModal();
 
     // Primero subir imagen si se seleccionó archivo
-    if (this.currentFile) {
-      this.fileUploadService.upload(this.currentFile, this.previousImage)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(data => {
-          this.nameImage = data.fileName;
-        });
-    } 
+    // if (this.currentFile) {
+    //   this.fileUploadService.upload(this.currentFile, this.previousImage)
+    //     .pipe(takeUntil(this.destroy$))
+    //     .subscribe(data => {
+    //       this.nameImage = data.fileName;
+    //     });
+    // } 
       },
       error: (error) => {
         console.error('Error creando ticket:', error);
