@@ -696,16 +696,16 @@
 </div>
 }
 
-<!-- Modal para gestionar especialidades -->
+<!-- Modal para gestionar especialidades con pestañas COMPLETO -->
 @if (showEspecialidadesModal()) {
 <div class="modal-overlay" (click)="closeEspecialidadesModal()">
-  <div class="modal-content medium" (click)="$event.stopPropagation()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header primary">
       <div class="modal-title">
         <i class="bi bi-award"></i>
         <div>
           <h3>Gestionar Especialidades</h3>
-          <p class="modal-subtitle">Selecciona las especialidades del técnico</p>
+          <p class="modal-subtitle">Selecciona o gestiona las especialidades del técnico</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeEspecialidadesModal()">
@@ -713,39 +713,96 @@
       </button>
     </div>
 
-    <div class="modal-body">
-      <div class="especialidades-search-container">
-        <div class="search-box">
-          <i class="bi bi-search"></i>
-          <input type="text" 
-                 placeholder="Buscar especialidades..." 
-                 [value]="especialidadesSearch()"
-                 (input)="onEspecialidadSearchChange($event)">
-        </div>
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button" [class.active]="especialidadesTabActive() === 'select'" 
+                (click)="especialidadesTabActive.set('select')">
+          Seleccionar Especialidades
+        </button>
+        <button class="tab-button" [class.active]="especialidadesTabActive() === 'manage'" 
+                (click)="especialidadesTabActive.set('manage')">
+          Gestionar Especialidades
+        </button>
       </div>
 
-      <div class="especialidades-list">
-        @for (especialidad of especialidadesFiltradas(); track especialidad.id) {
-        <div class="especialidad-item" [class.selected]="isEspecialidadSelected(especialidad.id!)"
-             (click)="addEspecialidad(especialidad)">
-          <div class="especialidad-checkbox">
-            <div class="checkbox" [class.checked]="isEspecialidadSelected(especialidad.id!)">
-              <i class="bi bi-check"></i>
+      <div class="tab-content">
+        <!-- Pestaña de selección -->
+        <div class="tab-pane" [class.active]="especialidadesTabActive() === 'select'">
+          <div class="modal-body">
+            <div class="especialidades-search-container">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" 
+                       placeholder="Buscar especialidades..." 
+                       [value]="especialidadesSearch()"
+                       (input)="onEspecialidadSearchChange($event)">
+              </div>
+            </div>
+
+            <div class="especialidades-list">
+              @for (especialidad of especialidadesFiltradas(); track especialidad.id) {
+              <div class="especialidad-item" [class.selected]="isEspecialidadSelected(especialidad.id!)"
+                   (click)="addEspecialidad(especialidad)">
+                <div class="especialidad-checkbox">
+                  <div class="checkbox" [class.checked]="isEspecialidadSelected(especialidad.id!)">
+                    <i class="bi bi-check"></i>
+                  </div>
+                </div>
+                <div class="especialidad-info">
+                  <h4>{{ especialidad.nombre }}</h4>
+                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
+                </div>
+              </div>
+              }
+              @if (especialidadesFiltradas().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron especialidades</p>
+              </div>
+              }
             </div>
           </div>
-          <div class="especialidad-info">
-            <h4>{{ especialidad.nombre }}</h4>
-            <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
-            <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
+        </div>
+
+        <!-- Pestaña de gestión -->
+        <div class="tab-pane" [class.active]="especialidadesTabActive() === 'manage'">
+          <div class="modal-body">
+            <div class="gestion-header">
+              <h4>Lista de Especialidades</h4>
+              <button class="btn-action primary small" (click)="openGestionEspecialidadModal()">
+                <i class="bi bi-plus-circle"></i>
+                Agregar Especialidad
+              </button>
+            </div>
+
+            <div class="gestion-list">
+              @for (especialidad of especialidadesList(); track especialidad.id) {
+              <div class="gestion-item">
+                <div class="gestion-item-info">
+                  <h4>{{ especialidad.nombre }}</h4>
+                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
+                </div>
+                <div class="gestion-item-actions">
+                  <button class="btn-icon warning" (click)="openGestionEspecialidadModal(especialidad)" title="Editar especialidad">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="eliminarEspecialidad(especialidad)" title="Eliminar especialidad">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              }
+              @if (especialidadesList().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-award"></i>
+                <p>No hay especialidades creadas</p>
+              </div>
+              }
+            </div>
           </div>
         </div>
-        }
-        @if (especialidadesFiltradas().length === 0) {
-        <div class="empty-especialidades">
-          <i class="bi bi-search"></i>
-          <p>No se encontraron especialidades</p>
-        </div>
-        }
       </div>
     </div>
 
@@ -758,6 +815,63 @@
         <i class="bi bi-check-circle"></i>
         Confirmar
       </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal para gestión de especialidades (CREAR/EDITAR) -->
+@if (showGestionEspecialidadModal()) {
+<div class="modal-overlay" (click)="closeGestionEspecialidadModal()">
+  <div class="modal-content medium" (click)="$event.stopPropagation()">
+    <div class="modal-header primary">
+      <div class="modal-title">
+        <i class="bi bi-award"></i>
+        <div>
+          <h3>{{ especialidadEditando() ? 'Editar Especialidad' : 'Crear Especialidad' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeGestionEspecialidadModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-container">
+        <div class="form-group">
+          <label class="form-label">Código *</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().codigo" placeholder="Código de la especialidad">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().nombre" placeholder="Nombre de la especialidad">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" rows="3" [(ngModel)]="nuevaEspecialidad().descripcion" placeholder="Descripción de la especialidad"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeGestionEspecialidadModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+
+      @if (especialidadEditando()) {
+      <button type="button" class="btn-action success" (click)="actualizarEspecialidad()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Actualizando...' : 'Actualizar Especialidad' }}
+      </button>
+      } @else {
+      <button type="button" class="btn-action success" (click)="crearEspecialidad()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Creando...' : 'Crear Especialidad' }}
+      </button>
+      }
     </div>
   </div>
 </div>

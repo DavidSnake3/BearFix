@@ -10,12 +10,11 @@
       </div>
 
       <div class="header-actions">
-
         <button class="btn-action refresh" (click)="loadTickets()" [disabled]="isLoading()">
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
           {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
         </button>
-        <button class="btn-action primary">
+        <button class="btn-action primary" (click)="openCreateModal()">
           <i class="bi bi-plus-circle"></i>
           Crear Ticket
         </button>
@@ -40,7 +39,6 @@
               (input)="onSearchChange($event)">
           </div>
         </div>
-
 
         <div class="filter-group">
           <label class="filter-label">Estado</label>
@@ -269,6 +267,212 @@
   </div>
 </div>
 
+@if (showCreateModal()) {
+<div class="modal-overlay" (click)="closeCreateModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header creating">
+      <div class="modal-title">
+        <i class="bi bi-plus-circle"></i>
+        <div>
+          <h3>Crear Nuevo Ticket</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeCreateModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="create-ticket-form">
+        <div class="modal-grid">
+          <div class="modal-section">
+            <div class="section-card equal-height">
+              <div class="section-header">
+                <i class="bi bi-info-circle"></i>
+                <h4>Información del Ticket</h4>
+              </div>
+              <div class="section-body">
+                <div class="info-grid">
+                  <div class="info-item full-width">
+                    <label class="form-label required">Título</label>
+                    <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="Ingrese el título del ticket">
+                  </div>
+
+                  <div class="info-item full-width">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-textarea" rows="3" [(ngModel)]="newTicket().descripcion" placeholder="Describa el problema o solicitud"></textarea>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-item">
+                      <label class="form-label required">Prioridad</label>
+                      <select class="form-select" [(ngModel)]="newTicket().prioridad">
+                        <option value="">Seleccione prioridad</option>
+                        @for (prioridad of prioridadesList(); track prioridad) {
+                        <option [value]="prioridad">{{ prioridad }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="info-item">
+                      <label class="form-label required">Categoría</label>
+                      <select class="form-select" [(ngModel)]="newTicket().categoriaId" (change)="onCategoriaChange($any($event.target).value)">
+                        <option value="">Seleccione categoría</option>
+                        @for (categoria of categoriasConEtiquetas(); track categoria.id) {
+                        <option [value]="categoria.id">{{ categoria.nombre }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="info-row">
+                    <div class="info-item">
+                      <label class="form-label required">Etiqueta</label>
+                      <select class="form-select" [(ngModel)]="newTicket().etiquetaId" [disabled]="!newTicket().categoriaId">
+                        <option value="">Seleccione etiqueta</option>
+                        @for (etiqueta of etiquetasFiltradasCreacion(); track etiqueta.id) {
+                        <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="info-item">
+                      <label class="form-label required">Usuario Solicitante</label>
+                      <div class="user-select-container">
+                        <button type="button" class="btn-action secondary" (click)="openUserModal()">
+                          <i class="bi bi-person-plus"></i>
+                          Seleccionar Usuario
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="section-card equal-height">
+              <div class="section-header">
+                <i class="bi bi-person"></i>
+                <h4>Información del Sistema</h4>
+              </div>
+              <div class="section-body">
+                @if (usuarioSolicitante()) {
+                <div class="user-info-display">
+                  <h5>Usuario Seleccionado</h5>
+                  <div class="info-row">
+                    <div class="info-item">
+                      <label>Nombre</label>
+                      <div class="info-value">{{ usuarioSolicitante()?.nombre }}</div>
+                    </div>
+                    <div class="info-item">
+                      <label>Correo</label>
+                      <div class="info-value">{{ usuarioSolicitante()?.correo }}</div>
+                    </div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-item">
+                      <label>Rol</label>
+                      <div class="info-value">{{ usuarioSolicitante()?.rol }}</div>
+                    </div>
+                  </div>
+                </div>
+                } @else {
+                <div class="empty-user">
+                  <i class="bi bi-person-x"></i>
+                  <p>No se ha seleccionado un usuario</p>
+                  <small>Haz clic en "Seleccionar Usuario" para asignar un solicitante</small>
+                </div>
+                }
+
+                <div class="dates-info">
+                  <div class="info-row">
+                    <div class="date-item">
+                      <label>Fecha de Creación</label>
+                      <div class="date-value">
+                        <i class="bi bi-calendar"></i>
+                        <span>{{ today | date:'dd/MM/yyyy HH:mm' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="date-item">
+                      <label>Estado Inicial</label>
+                      <div class="date-value">
+                        <i class="bi bi-clock"></i>
+                        <span>PENDIENTE</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeCreateModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+
+      <button type="button" class="btn-action primary" (click)="createTicket()" 
+        [disabled]="!newTicket().titulo || !newTicket().categoriaId || !newTicket().etiquetaId || !newTicket().solicitanteId">
+        <i class="bi bi-check-circle"></i>
+        Crear Ticket
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+@if (showUserModal()) {
+<div class="modal-overlay" (click)="closeUserModal()">
+  <div class="modal-content medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="bi bi-people"></i>
+        <div>
+          <h3>Seleccionar Usuario Solicitante</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeUserModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="users-list">
+        @for (usuario of usuariosList(); track usuario.id) {
+        <div class="user-card" (click)="selectUsuario(usuario)">
+          <div class="user-avatar">
+            <i class="bi bi-person-circle"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-name">{{ usuario.nombre }}</div>
+            <div class="user-email">{{ usuario.correo }}</div>
+            <div class="user-role">{{ usuario.rol }}</div>
+          </div>
+          <div class="user-select">
+            <i class="bi bi-check-lg"></i>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeUserModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+}
+
 @if (showModal()) {
 <div class="modal-overlay" (click)="closeModal()">
   <div class="modal-content large" (click)="$event.stopPropagation()">
@@ -320,9 +524,9 @@
                 <option value="CERRADO">Cerrado</option>
               </select>
               <select class="form-select" [(ngModel)]="editTicketData().prioridad">
-                <option value="BAJA">Baja</option>
-                <option value="MEDIA">Media</option>
-                <option value="ALTA">Alta</option>
+                <option value="BAJO">Bajo</option>
+                <option value="MEDIO">Medio</option>
+                <option value="ALTO">Alto</option>
                 <option value="CRITICO">Crítico</option>
               </select>
             </div>
@@ -341,22 +545,20 @@
             <div class="section-body">
               @if (!isEditing()) {
               <div class="info-grid">
-         
-            <div class="info-item full-width">
-              <label>Descripción</label>
-              <div class="info-value full-width">
-                <div class="description-text">{{ selectedTicket()!.descripcion }}</div>
-              </div>
-            </div>
-      
+                <div class="info-item full-width">
+                  <label>Descripción</label>
+                  <div class="info-value full-width">
+                    <div class="description-text">{{ selectedTicket()!.descripcion }}</div>
+                  </div>
+                </div>
 
                 <div class="info-row">
                   <div class="info-item">
                     <label>Solicitante</label>
                     <div class="info-value">
-                     
                       <div class="user-info">
                         <div class="user-name">{{ selectedTicket()!.solicitante?.nombre }}</div>
+                        <div class="user-email">{{ selectedTicket()!.solicitante?.correo }}</div>
                       </div>
                     </div>
                   </div>
@@ -369,8 +571,6 @@
                     </div>
                   </div>
                 </div>
-
-
               </div>
               } @else {
               <div class="edit-grid">
@@ -380,11 +580,31 @@
                 </div>
 
                 <div class="form-group">
+                  <label class="form-label">Categoría</label>
+                  <select class="form-select" [(ngModel)]="editTicketData().categoriaId" (change)="onCategoriaChangeEdit($any($event.target).value)">
+                    <option value="">Seleccione categoría</option>
+                    @for (categoria of categoriasConEtiquetas(); track categoria.id) {
+                    <option [value]="categoria.id">{{ categoria.nombre }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Etiqueta</label>
+                  <select class="form-select" [(ngModel)]="editTicketData().etiquetaId" [disabled]="!editTicketData().categoriaId">
+                    <option value="">Seleccione etiqueta</option>
+                    @for (etiqueta of etiquetasFiltradasEdicion(); track etiqueta.id) {
+                    <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+                    }
+                  </select>
+                </div>
+
+                <div class="form-group">
                   <label class="form-label">Prioridad</label>
                   <select class="form-select" [(ngModel)]="editTicketData().prioridad">
-                    <option value="BAJA">Baja</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="ALTA">Alta</option>
+                    <option value="BAJO">Bajo</option>
+                    <option value="MEDIO">Medio</option>
+                    <option value="ALTO">Alto</option>
                     <option value="CRITICO">Crítico</option>
                   </select>
                 </div>
@@ -489,8 +709,6 @@
             </div>
           </div>
         </div>
-
-
       </div>
 
       @if (selectedTicket()!.asignaciones && selectedTicket()!.asignaciones.length > 0) {
@@ -509,7 +727,6 @@
                   <h5>{{ asignacion.tecnico?.nombre }}</h5>
                 </div>
                 <p class="assignment-description">{{ asignacion.justificacion }}</p>
-
               </div>
               }
             </div>
@@ -568,10 +785,8 @@
                     class="ticket-image" (click)="openImageModal(imagen)"
                     title="Haz clic para ver en tamaño completo" />
                   <div class="image-info">
-
                     <p>{{ imagen.descripcion || 'Sin descripción' }}</p>
                     <div class="image-meta">
-
                       @if (imagen.fechaCreacion) {
                       <small class="upload-date">
                         {{ imagen.fechaCreacion | date:'dd/MM/yyyy' }}
@@ -666,35 +881,6 @@
         </div>
       </div>
       }
-
-      @if ((!selectedTicket()!.asignaciones || selectedTicket()!.asignaciones.length === 0) && !isEditing()) {
-      <div class="empty-section">
-        <i class="bi bi-people"></i>
-        <p>No hay asignaciones registradas</p>
-      </div>
-      }
-
-      @if ((!selectedTicket()!.historial || selectedTicket()!.historial.length === 0) && !isEditing()) {
-      <div class="empty-section">
-        <i class="bi bi-clock-history"></i>
-        <p>No hay historial de cambios</p>
-      </div>
-      }
-
-      @if ((!selectedTicket()!.imagenes || selectedTicket()!.imagenes.length === 0) && !isEditing()) {
-      <div class="empty-section">
-        <i class="bi bi-images"></i>
-        <p>No hay imágenes adjuntas</p>
-      </div>
-      }
-
-      @if (!selectedTicket()!.valoracion && !isEditing() && selectedTicket()!.estado !== 'CERRADO') {
-      <div class="empty-section">
-        <i class="bi bi-star"></i>
-        <p>Este ticket aún no puede ser valorado</p>
-        <small>Solo los tickets cerrados pueden ser valorados</small>
-      </div>
-      }
     </div>
     }
 
@@ -725,11 +911,9 @@
 @if (showImageModal()) {
 <div class="image-modal-overlay" (click)="closeImageModal()">
   <div class="image-modal-container" (click)="$event.stopPropagation()">
-
     <div class="image-modal-header">
       <div class="image-info">
         <p>{{ selectedImage()?.descripcion || 'Sin descripción' }}</p>
-
       </div>
 
       <div class="image-actions">

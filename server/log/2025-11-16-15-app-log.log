@@ -1,0 +1,20 @@
+2025-11-16 15:38:52.871 error: 	david--Se produjo un error interno del servidor 
+Invalid `prisma.etiqueta.findFirst()` invocation:
+
+{
+  where: {
+    id: "19",
+        ~~~~
+    activa: true
+  },
+  include: {
+    categoriaEtiquetas: {
+      include: {
+        categoria: true
+      }
+    }
+  }
+}
+
+Argument `id`: Invalid value provided. Expected IntFilter or Int, provided String.
+2025-11-16 15:41:07.434 error: 	david--La categoría es requerida La categoría es requerida

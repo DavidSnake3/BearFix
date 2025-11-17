@@ -14,6 +14,13 @@ export class TicketRoutes {
         router.get('/asignaciones/:id', controller.getAsignacionesByID);
         router.get("/asignaciones/admin/:id", controller.getAsignacionByTicketIdForAdmin);
         
+        router.get('/prioridades', controller.getPrioridades);
+        router.get('/usuarios', controller.getUsuarios);
+        router.get('/categorias-con-etiquetas', controller.getCategoriasConEtiquetas);
+        router.post('/', controller.create);
+        router.put('/:id', controller.update);
+        router.delete('/:id', controller.delete);
+        
         router.get('/', controller.get)  
         router.get('/:id', controller.getById) 
 

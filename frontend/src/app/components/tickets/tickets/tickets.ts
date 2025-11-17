@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
-import { Ticket } from '../../../share/models/TicketModel';
+import { Ticket, Etiqueta } from '../../../share/models/TicketModel';
 import { TicketService } from '../../../share/services/api/ticket.service';
 import { FileUploadService } from '../../../share/services/api/file-upload.service';
+import { EtiquetaService } from '../../../share/services/api/etiqueta.service';
 import { environment } from '../../../../environments/environment.development';
 import { AuthService } from '../../../share/services/api/auth.service';
+import { NotificationService } from '../../../share/services/app/notification.service';
 
 @Component({
   selector: 'app-tickets',
@@ -18,7 +20,9 @@ import { AuthService } from '../../../share/services/api/auth.service';
 export class TicketsComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private fileUploadService = inject(FileUploadService);
+  private etiquetaService = inject(EtiquetaService);
   private authService = inject(AuthService);
+  private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   tickets = signal<Ticket[]>([]);
@@ -28,6 +32,24 @@ export class TicketsComponent implements OnInit, OnDestroy {
   isEditing = signal(false);
   originalTicket = signal<any>(null);
   editTicketData = signal<any>(null);
+
+  showCreateModal = signal(false);
+  showUserModal = signal(false);
+  newTicket = signal<any>({
+    titulo: '',
+    descripcion: '',
+    prioridad: 'MEDIO',
+    categoriaId: null,
+    etiquetaId: null,
+    solicitanteId: null
+  });
+
+  prioridadesList = signal<string[]>([]);
+  categoriasConEtiquetas = signal<any[]>([]);
+  usuariosList = signal<any[]>([]);
+  usuarioSolicitante = signal<any>(null);
+  etiquetasFiltradasCreacion = signal<Etiqueta[]>([]);
+  etiquetasFiltradasEdicion = signal<Etiqueta[]>([]);
 
   imageZoom = signal(1);
   selectedImage = signal<any>(null);
@@ -65,13 +87,17 @@ export class TicketsComponent implements OnInit, OnDestroy {
   userRole = signal<string>('');
   searchInput = signal<string>('');
 
+  today = new Date();
+
   private searchSubject = new Subject<string>();
 
   ngOnInit(): void {
     this.loadUserInfo();
     this.setupSearchDebounce();
     this.loadTickets();
-    this.loadCategorias();
+    this.loadCategoriasConEtiquetas();
+    this.loadPrioridades();
+    this.loadUsuarios();
   }
 
   ngOnDestroy(): void {
@@ -95,13 +121,91 @@ export class TicketsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadPrioridades(): void {
+    this.ticketService.getPrioridades().subscribe({
+      next: (prioridades) => {
+        this.prioridadesList.set(prioridades);
+      },
+      error: (error) => {
+        console.error('Error cargando prioridades:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar las prioridades', 4000);
+      }
+    });
+  }
+
+  private loadCategoriasConEtiquetas(): void {
+    this.ticketService.getCategoriasConEtiquetas().subscribe({
+      next: (categorias) => {
+        this.categoriasConEtiquetas.set(categorias);
+      },
+      error: (error) => {
+        console.error('Error cargando categorías:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar las categorías', 4000);
+      }
+    });
+  }
+
+  private loadUsuarios(): void {
+    this.ticketService.getUsuarios().subscribe({
+      next: (usuarios) => {
+        this.usuariosList.set(usuarios);
+      },
+      error: (error) => {
+        console.error('Error cargando usuarios:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar los usuarios', 4000);
+      }
+    });
+  }
+
   onSearchChange(event: any): void {
     this.searchInput.set(event.target.value);
     this.searchSubject.next(event.target.value);
   }
 
-  loadCategorias(): void {
-    this.categorias.set(['Hardware', 'Software', 'Red', 'Sistema', 'General']);
+  onCategoriaChange(categoriaId: number): void {
+    this.newTicket.update(ticket => ({ 
+      ...ticket, 
+      categoriaId: categoriaId,
+      etiquetaId: null
+    }));
+
+    // Limpiar etiquetas mientras se cargan
+    this.etiquetasFiltradasCreacion.set([]);
+
+    if (categoriaId) {
+      this.ticketService.getEtiquetasByCategoria(categoriaId).subscribe({
+        next: (response) => {
+          this.etiquetasFiltradasCreacion.set(response.etiquetas);
+        },
+        error: (error) => {
+          console.error('Error cargando etiquetas:', error);
+          this.notificationService.error('Error', 'No se pudieron cargar las etiquetas', 4000);
+        }
+      });
+    }
+  }
+
+  onCategoriaChangeEdit(categoriaId: number): void {
+    this.editTicketData.update(ticket => ({ 
+      ...ticket, 
+      categoriaId: categoriaId,
+      etiquetaId: null
+    }));
+
+    // Limpiar etiquetas mientras se cargan
+    this.etiquetasFiltradasEdicion.set([]);
+
+    if (categoriaId) {
+      this.ticketService.getEtiquetasByCategoria(categoriaId).subscribe({
+        next: (response) => {
+          this.etiquetasFiltradasEdicion.set(response.etiquetas);
+        },
+        error: (error) => {
+          console.error('Error cargando etiquetas:', error);
+          this.notificationService.error('Error', 'No se pudieron cargar las etiquetas', 4000);
+        }
+      });
+    }
   }
 
   loadTickets(): void {
@@ -135,6 +239,63 @@ export class TicketsComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando tickets:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudieron cargar los tickets', 4000);
+      }
+    });
+  }
+
+  openCreateModal(): void {
+    this.showCreateModal.set(true);
+    this.newTicket.set({
+      titulo: '',
+      descripcion: '',
+      prioridad: 'MEDIO',
+      categoriaId: null,
+      etiquetaId: null,
+      solicitanteId: null
+    });
+    this.usuarioSolicitante.set(null);
+    this.etiquetasFiltradasCreacion.set([]);
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal.set(false);
+  }
+
+  openUserModal(): void {
+    this.showUserModal.set(true);
+  }
+
+  closeUserModal(): void {
+    this.showUserModal.set(false);
+  }
+
+  selectUsuario(usuario: any): void {
+    this.usuarioSolicitante.set(usuario);
+    this.newTicket.update(ticket => ({ ...ticket, solicitanteId: usuario.id }));
+    this.closeUserModal();
+  }
+
+  createTicket(): void {
+    const ticketData = this.newTicket();
+
+    if (!ticketData.titulo || !ticketData.categoriaId || !ticketData.etiquetaId || !ticketData.solicitanteId) {
+      this.notificationService.warning('Formulario incompleto', 'Por favor completa todos los campos requeridos', 4000);
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.ticketService.createTicket(ticketData).subscribe({
+      next: (ticketCreado) => {
+        this.showCreateModal.set(false);
+        this.loadTickets();
+        this.isLoading.set(false);
+        this.notificationService.success('Éxito', 'Ticket creado exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error creando ticket:', error);
+        this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo crear el ticket', 4000);
       }
     });
   }
@@ -325,6 +486,7 @@ export class TicketsComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando detalle del ticket:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo cargar el detalle del ticket', 4000);
       }
     });
   }
@@ -338,7 +500,7 @@ export class TicketsComponent implements OnInit, OnDestroy {
     const valoracion = this.nuevaValoracion();
 
     if (!selectedTicket || valoracion.puntuacion === 0) {
-      alert('Por favor selecciona una puntuación');
+      this.notificationService.warning('Validación', 'Por favor selecciona una puntuación', 4000);
       return;
     }
 
@@ -346,11 +508,11 @@ export class TicketsComponent implements OnInit, OnDestroy {
       next: (valoracionCreada) => {
         this.selectedTicket.update(ticket => ({ ...ticket, valoracion: valoracionCreada }));
         this.nuevaValoracion.set({ puntuacion: 0, comentario: '' });
-        alert('Valoración enviada exitosamente');
+        this.notificationService.success('Éxito', 'Valoración enviada exitosamente', 4000);
       },
       error: (error) => {
         console.error('Error enviando valoración:', error);
-        alert('Error al enviar la valoración');
+        this.notificationService.error('Error', 'Error al enviar la valoración', 4000);
       }
     });
   }
@@ -367,6 +529,7 @@ export class TicketsComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error cargando detalle del ticket:', error);
         this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo cargar el detalle del ticket', 4000);
       }
     });
   }
@@ -375,6 +538,20 @@ export class TicketsComponent implements OnInit, OnDestroy {
     this.isEditing.set(true);
     this.originalTicket.set(JSON.parse(JSON.stringify(this.selectedTicket())));
     this.editTicketData.set(JSON.parse(JSON.stringify(this.selectedTicket())));
+    
+    // Cargar etiquetas de la categoría actual en edición
+    const categoriaId = this.editTicketData().categoriaId;
+    if (categoriaId) {
+      this.ticketService.getEtiquetasByCategoria(categoriaId).subscribe({
+        next: (response) => {
+          this.etiquetasFiltradasEdicion.set(response.etiquetas);
+        },
+        error: (error) => {
+          console.error('Error cargando etiquetas:', error);
+          this.notificationService.error('Error', 'No se pudieron cargar las etiquetas', 4000);
+        }
+      });
+    }
   }
 
   cancelEdit() {
@@ -385,12 +562,31 @@ export class TicketsComponent implements OnInit, OnDestroy {
   }
 
   saveTicket() {
-    console.log('Guardando ticket:', this.editTicketData());
+    const updateData = {
+      id: this.editTicketData().id,
+      titulo: this.editTicketData().titulo,
+      descripcion: this.editTicketData().descripcion,
+      categoriaId: this.editTicketData().categoriaId,
+      etiquetaId: this.editTicketData().etiquetaId,
+      prioridad: this.editTicketData().prioridad,
+      estado: this.editTicketData().estado,
+      observacionesCambioEstado: 'Ticket actualizado'
+    };
 
-    this.selectedTicket.set({ ...this.editTicketData() });
-    this.isEditing.set(false);
-    this.originalTicket.set(null);
-    this.editTicketData.set(null);
+    this.ticketService.updateTicket(updateData).subscribe({
+      next: (ticketActualizado) => {
+        this.selectedTicket.set(ticketActualizado);
+        this.isEditing.set(false);
+        this.originalTicket.set(null);
+        this.editTicketData.set(null);
+        this.loadTickets();
+        this.notificationService.success('Éxito', 'Ticket actualizado exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error actualizando ticket:', error);
+        this.notificationService.error('Error', 'No se pudo actualizar el ticket', 4000);
+      }
+    });
   }
 
   closeModal() {
@@ -404,12 +600,14 @@ export class TicketsComponent implements OnInit, OnDestroy {
 
   deleteTicket(ticket: Ticket): void {
     if (confirm(`¿Estás seguro de eliminar el ticket "${ticket.titulo}"?`)) {
-      this.ticketService.delete(ticket).subscribe({
+      this.ticketService.deleteTicket(ticket.id!).subscribe({
         next: () => {
           this.loadTickets();
+          this.notificationService.success('Éxito', 'Ticket eliminado exitosamente', 4000);
         },
         error: (error) => {
           console.error('Error eliminando ticket:', error);
+          this.notificationService.error('Error', 'No se pudo eliminar el ticket', 4000);
         }
       });
     }
@@ -442,11 +640,11 @@ export class TicketsComponent implements OnInit, OnDestroy {
     switch (prioridadLower) {
       case 'critico':
         return 'bg-danger text-white';
-      case 'alta':
+      case 'alto':
         return 'bg-warning text-dark';
-      case 'media':
+      case 'medio':
         return 'bg-info text-white';
-      case 'baja':
+      case 'bajo':
         return 'bg-success text-white';
       default:
         return 'bg-secondary text-white';

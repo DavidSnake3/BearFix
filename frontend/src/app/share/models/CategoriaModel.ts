@@ -32,3 +32,30 @@ export interface CreateCategoriaDto {
   slaDescripcion?: string;
   slaNivelUrgencia?: Prioridad;
 }
+
+export interface CreateCategoriaRequest {
+  codigo: string;
+  nombre: string;
+  descripcion?: string;
+  slaNombre?: string;
+  slaTiempoMaxRespuestaMin?: number;
+  slaTiempoMaxResolucionMin?: number;
+  slaDescripcion?: string;
+  slaNivelUrgencia?: Prioridad;
+  etiquetas?: number[];
+  especialidades?: number[];
+}
+
+export interface UpdateCategoriaRequest {
+  id: number;
+  codigo?: string;
+  nombre?: string;
+  descripcion?: string;
+  slaNombre?: string;
+  slaTiempoMaxRespuestaMin?: number;
+  slaTiempoMaxResolucionMin?: number;
+  slaDescripcion?: string;
+  slaNivelUrgencia?: Prioridad;
+  etiquetas?: number[];
+  especialidades?: number[];
+}

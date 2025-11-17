@@ -40,3 +40,43 @@ export interface CreateTicketDto {
   fechaLimiteRespuesta?: Date;
   fechaLimiteResolucion?: Date;
 }
+
+export interface CreateTicketRequest {
+  titulo: string;
+  descripcion?: string;
+  categoriaId: number;
+  etiquetaId: number;
+  prioridad?: string;
+}
+
+export interface UpdateTicketRequest {
+  id: number;
+  titulo: string;
+  descripcion?: string;
+  categoriaId: number;
+  etiquetaId: number;
+  prioridad?: string;
+  estado?: string;
+  observacionesCambioEstado?: string;
+}
+
+export interface CategoriaConEtiquetas {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  etiquetas: Etiqueta[];
+}
+
+export interface Etiqueta {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  activa: boolean;
+}
+
+export interface Usuario {
+  id: number;
+  nombre?: string;
+  correo: string;
+  rol: string;
+}

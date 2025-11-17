@@ -1850,3 +1850,203 @@
     justify-content: space-between;
   }
 }
+/* Agregar estos estilos al archivo tickets.css */
+
+.modal-header.creating {
+  background: #ffc107;
+  color: black;
+}
+
+.user-info-display {
+  margin-bottom: 20px;
+}
+
+.user-info-display h5 {
+  color: #2c3e50;
+  margin-bottom: 16px;
+  font-size: 1.1em;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.empty-user {
+  text-align: center;
+  padding: 40px 20px;
+  color: #adb5bd;
+  margin-bottom: 20px;
+}
+
+.empty-user i {
+  font-size: 3em;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-user p {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.empty-user small {
+  font-size: 0.9em;
+}
+
+.create-ticket-form .info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.create-ticket-form .info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.create-ticket-form .info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-ticket-form .info-item.full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.create-ticket-form .form-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9em;
+}
+
+.create-ticket-form .form-label.required::after {
+  content: " *";
+  color: #dc3545;
+}
+
+.user-select-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-select-container .btn-action {
+  width: 100%;
+  justify-content: center;
+}
+
+.users-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-card:hover {
+  background-color: #f8f9fa;
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.user-email {
+  color: #6c757d;
+  font-size: 0.9em;
+  margin-bottom: 2px;
+}
+
+.user-role {
+  color: #adb5bd;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.user-select {
+  color: #28a745;
+  font-size: 1.2em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.user-card:hover .user-select {
+  opacity: 1;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+

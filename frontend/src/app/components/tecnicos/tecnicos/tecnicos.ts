@@ -47,8 +47,8 @@ export class TecnicosComponent implements OnInit, OnDestroy {
   especialidadesSearch = signal('');
   especialidadesFiltradas = computed(() => {
     const search = this.especialidadesSearch().toLowerCase();
-    return this.especialidadesList().filter(esp => 
-      esp.nombre.toLowerCase().includes(search) || 
+    return this.especialidadesList().filter(esp =>
+      esp.nombre.toLowerCase().includes(search) ||
       (esp.descripcion && esp.descripcion.toLowerCase().includes(search))
     );
   });
@@ -65,6 +65,112 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     hasNextPage: false,
     hasPrevPage: false
   });
+
+  especialidadesTabActive = signal<'select' | 'manage'>('select');
+  showGestionEspecialidadModal = signal(false);
+  especialidadEditando = signal<Especialidad | null>(null);
+  nuevaEspecialidad = signal({ codigo: '', nombre: '', descripcion: '' });
+
+  openEspecialidadesModal(forCreate: boolean): void {
+    this.isEspecialidadesForCreate.set(forCreate);
+    this.showEspecialidadesModal.set(true);
+    this.especialidadesSearch.set('');
+    this.especialidadesTabActive.set('select'); // Reset a la pestaña de selección
+  }
+
+  openGestionEspecialidadModal(especialidad?: Especialidad): void {
+    this.especialidadEditando.set(especialidad || null);
+    if (especialidad) {
+      this.nuevaEspecialidad.set({
+        codigo: especialidad.codigo,
+        nombre: especialidad.nombre,
+        descripcion: especialidad.descripcion || ''
+      });
+    } else {
+      this.nuevaEspecialidad.set({ codigo: '', nombre: '', descripcion: '' });
+    }
+    this.showGestionEspecialidadModal.set(true);
+  }
+
+  closeGestionEspecialidadModal(): void {
+    this.showGestionEspecialidadModal.set(false);
+    this.especialidadEditando.set(null);
+    this.nuevaEspecialidad.set({ codigo: '', nombre: '', descripcion: '' });
+  }
+
+  crearEspecialidad(): void {
+    const especialidadData = this.nuevaEspecialidad();
+
+    if (!especialidadData.codigo || !especialidadData.nombre) {
+      this.notificationService.warning('Formulario incompleto', 'El código y nombre son requeridos', 4000);
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.especialidadService.createEspecialidad(especialidadData).subscribe({
+      next: (especialidadCreada) => {
+        this.loadEspecialidades();
+        this.closeGestionEspecialidadModal();
+        this.isLoading.set(false);
+        this.notificationService.success('Éxito', 'Especialidad creada exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error creando especialidad:', error);
+        this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo crear la especialidad', 4000);
+      }
+    });
+  }
+
+  actualizarEspecialidad(): void {
+    const especialidadData = this.nuevaEspecialidad();
+    const especialidadId = this.especialidadEditando()?.id;
+
+    if (!especialidadId || !especialidadData.codigo || !especialidadData.nombre) {
+      this.notificationService.warning('Formulario incompleto', 'El código y nombre son requeridos', 4000);
+      return;
+    }
+
+    const updateData = {
+      id: especialidadId,
+      codigo: especialidadData.codigo,
+      nombre: especialidadData.nombre,
+      descripcion: especialidadData.descripcion
+    };
+
+    this.isLoading.set(true);
+    this.especialidadService.updateEspecialidad(updateData).subscribe({
+      next: (especialidadActualizada) => {
+        this.loadEspecialidades();
+        this.closeGestionEspecialidadModal();
+        this.isLoading.set(false);
+        this.notificationService.success('Éxito', 'Especialidad actualizada exitosamente', 4000);
+      },
+      error: (error) => {
+        console.error('Error actualizando especialidad:', error);
+        this.isLoading.set(false);
+        this.notificationService.error('Error', 'No se pudo actualizar la especialidad', 4000);
+      }
+    });
+  }
+
+  eliminarEspecialidad(especialidad: Especialidad): void {
+    if (confirm(`¿Estás seguro de eliminar la especialidad "${especialidad.nombre}"?`)) {
+      this.isLoading.set(true);
+      this.especialidadService.deleteEspecialidad(especialidad.id!).subscribe({
+        next: () => {
+          this.loadEspecialidades();
+          this.isLoading.set(false);
+          this.notificationService.success('Éxito', 'Especialidad eliminada exitosamente', 4000);
+        },
+        error: (error) => {
+          console.error('Error eliminando especialidad:', error);
+          this.isLoading.set(false);
+          this.notificationService.error('Error', 'No se pudo eliminar la especialidad', 4000);
+        }
+      });
+    }
+  }
 
   ngOnInit(): void {
     this.setupSearchDebounce();
@@ -113,14 +219,14 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   loadTecnicos(): void {
     this.isLoading.set(true);
-    
+
     const filtros = {
       search: this.searchInput(),
       disponible: this.filtroDisponible(),
       page: this.paginacion().currentPage,
       limit: this.paginacion().itemsPerPage
     };
-    
+
     this.tecnicoService.get(filtros).subscribe({
       next: (response) => {
         if (response.tecnicos && response.pagination) {
@@ -149,7 +255,7 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   cambiarPagina(pagina: number | string): void {
     const paginaNum = typeof pagina === 'string' ? parseInt(pagina) : pagina;
-    
+
     if (paginaNum >= 1 && paginaNum <= this.paginacion().totalPages) {
       this.paginacion.update(p => ({ ...p, currentPage: paginaNum }));
       this.loadTecnicos();
@@ -157,10 +263,10 @@ export class TecnicosComponent implements OnInit, OnDestroy {
   }
 
   cambiarItemsPorPagina(items: number): void {
-    this.paginacion.update(p => ({ 
-      ...p, 
+    this.paginacion.update(p => ({
+      ...p,
       itemsPerPage: items,
-      currentPage: 1 
+      currentPage: 1
     }));
     this.loadTecnicos();
   }
@@ -178,9 +284,9 @@ export class TecnicosComponent implements OnInit, OnDestroy {
       }
     }
 
-    let l: number | null = null; 
+    let l: number | null = null;
     for (let i of range) {
-      if (l !== null) { 
+      if (l !== null) {
         if (i - l === 2) {
           rangeWithDots.push(l + 1);
         } else if (i - l !== 1) {
@@ -249,10 +355,10 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   saveTecnico(): void {
     const tecnicoData = this.editTecnicoData();
-    
+
     if (!tecnicoData?.nombre || !tecnicoData?.correo) {
       this.notificationService.warning(
-        'Formulario incompleto', 
+        'Formulario incompleto',
         'Por favor completa todos los campos requeridos correctamente',
         4000
       );
@@ -296,7 +402,6 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     this.editTecnicoData.set(null);
   }
 
-  // Métodos para crear técnico
   openCreateModal(): void {
     this.showCreateModal.set(true);
     this.newTecnico.set({
@@ -315,10 +420,10 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   createTecnico(): void {
     const tecnicoData = this.newTecnico();
-    
+
     if (!tecnicoData.nombre || !tecnicoData.correo) {
       this.notificationService.warning(
-        'Formulario incompleto', 
+        'Formulario incompleto',
         'Por favor completa todos los campos requeridos correctamente',
         4000
       );
@@ -341,13 +446,6 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Métodos para el modal de especialidades
-  openEspecialidadesModal(forCreate: boolean): void {
-    this.isEspecialidadesForCreate.set(forCreate);
-    this.showEspecialidadesModal.set(true);
-    this.especialidadesSearch.set('');
-  }
-
   closeEspecialidadesModal(): void {
     this.showEspecialidadesModal.set(false);
     this.especialidadesSearch.set('');
@@ -359,14 +457,12 @@ export class TecnicosComponent implements OnInit, OnDestroy {
 
   addEspecialidad(especialidad: Especialidad): void {
     if (this.isEspecialidadesForCreate()) {
-      // Para creación
       const especialidades = [...(this.newTecnico().especialidades || [])];
       if (especialidad.id && !especialidades.includes(especialidad.id)) {
         especialidades.push(especialidad.id);
         this.newTecnico.update(data => ({ ...data, especialidades }));
       }
     } else {
-      // Para edición
       const especialidades = [...(this.editTecnicoData().especialidades || [])];
       if (especialidad.id && !especialidades.includes(especialidad.id)) {
         especialidades.push(especialidad.id);
@@ -375,15 +471,15 @@ export class TecnicosComponent implements OnInit, OnDestroy {
     }
   }
 
-removeEspecialidad(especialidadId: number, forCreate: boolean): void {
-  if (forCreate) {
-    const especialidades = this.newTecnico().especialidades?.filter((id: number) => id !== especialidadId) || [];
-    this.newTecnico.update(data => ({ ...data, especialidades }));
-  } else {
-    const especialidades = this.editTecnicoData().especialidades?.filter((id: number) => id !== especialidadId) || [];
-    this.editTecnicoData.update(data => ({ ...data, especialidades }));
+  removeEspecialidad(especialidadId: number, forCreate: boolean): void {
+    if (forCreate) {
+      const especialidades = this.newTecnico().especialidades?.filter((id: number) => id !== especialidadId) || [];
+      this.newTecnico.update(data => ({ ...data, especialidades }));
+    } else {
+      const especialidades = this.editTecnicoData().especialidades?.filter((id: number) => id !== especialidadId) || [];
+      this.editTecnicoData.update(data => ({ ...data, especialidades }));
+    }
   }
-}
   isEspecialidadSelected(especialidadId: number): boolean {
     if (this.isEspecialidadesForCreate()) {
       return this.newTecnico().especialidades?.includes(especialidadId) || false;

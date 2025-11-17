@@ -5,6 +5,7 @@ import { TecnicoRoutes } from './tecnico.routes';
 import { CategoriaRoutes } from './categoria.routes';
 import { TicketRoutes } from './ticket.routes';
 import { EspecialidadRoutes } from './especialidad.routes';
+import { EtiquetaRoutes } from './etiquetas.route';
 
 export class AppRoutes {
   static get routes(): Router {
@@ -14,6 +15,7 @@ export class AppRoutes {
         router.use('/categorias', CategoriaRoutes.routes);
         router.use('/tickets', TicketRoutes.routes);
         router.use('/especialidades', EspecialidadRoutes.routes); 
+        router.use('/etiquetas', EtiquetaRoutes.routes);
         
     return router;
   }

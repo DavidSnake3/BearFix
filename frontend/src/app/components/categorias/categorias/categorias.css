@@ -940,3 +940,306 @@
   padding: 8px 12px;
   color: #6c757d;
 }
+
+/* Estilos para los tags de especialidades y etiquetas */
+.especialidades-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.especialidad-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e9ecef;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9em;
+}
+
+.tag-text {
+  color: #495057;
+  font-weight: 500;
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.tag-remove:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.empty-especialidades {
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+}
+
+.empty-especialidades i {
+  font-size: 2em;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.empty-especialidades p {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+/* Estilos para los modales de selección */
+.especialidades-search-container {
+  margin-bottom: 16px;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.especialidades-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+}
+
+.especialidad-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.especialidad-item:last-child {
+  border-bottom: none;
+}
+
+.especialidad-item:hover {
+  background-color: #f8f9fa;
+}
+
+.especialidad-item.selected {
+  background-color: rgba(102, 126, 234, 0.1);
+  border-left: 4px solid #667eea;
+}
+
+.especialidad-checkbox {
+  margin-top: 2px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #dee2e6;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.checkbox.checked {
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+}
+
+.checkbox i {
+  font-size: 0.8em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.checkbox.checked i {
+  opacity: 1;
+}
+
+.especialidad-info {
+  flex: 1;
+}
+
+.especialidad-info h4 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+  font-size: 1em;
+}
+
+.especialidad-info p {
+  margin: 0 0 8px 0;
+  color: #6c757d;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.especialidad-codigo {
+  font-size: 0.8em;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* Estilos para el formulario de SLA en modo edición */
+.sla-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sla-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+
+/* Estilos para gestión de etiquetas y especialidades */
+.gestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.gestion-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.gestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.gestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.gestion-item:last-child {
+  border-bottom: none;
+}
+
+.gestion-item-info {
+  flex: 1;
+}
+
+.gestion-item-info h4 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+  font-size: 1em;
+}
+
+.gestion-item-info p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9em;
+}
+
+.gestion-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.especialidad-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.tab-button.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.tab-button:hover:not(.active) {
+  color: #495057;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}

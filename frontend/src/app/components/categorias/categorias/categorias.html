@@ -14,7 +14,7 @@
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
           {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
         </button>
-        <button class="btn-action primary">
+        <button class="btn-action primary" (click)="openCreateModal()">
           <i class="bi bi-plus-circle"></i>
           Agregar Categoría
         </button>
@@ -238,7 +238,6 @@
               <div class="section-body">
                 @if (!isEditing()) {
                 <div class="info-grid">
-
                   <div class="info-item">
                     <label>Descripción</label>
                     <div class="info-value">
@@ -267,7 +266,6 @@
                 <div class="dates-info">
                   <div class="info-row">
                     <div class="date-item">
-
                       <label>Fecha de Registro</label>
                       <div class="date-value">
                         <i class="bi bi-calendar"></i>
@@ -284,7 +282,6 @@
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -296,6 +293,7 @@
                 <h4>SLA</h4>
               </div>
               <div class="section-body">
+                @if (!isEditing()) {
                 <div class="sla-grid">
                   <div class="info-row">
                     <div class="sla-item">
@@ -346,28 +344,114 @@
                   </div>
                   }
                 </div>
+                } @else {
+                <!-- NUEVO DISEÑO SLA EN 2 COLUMNAS -->
+                <div class="sla-edit-grid">
+                  <!-- Primera fila: 2 columnas -->
+                  <div class="sla-form-row">
+                    <div class="form-group">
+                      <label class="form-label">Nombre del SLA</label>
+                      <input type="text" class="form-input" [(ngModel)]="editCategoriaData().slaNombre" placeholder="Nombre del SLA">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Nivel de Urgencia</label>
+                      <select class="form-select" [(ngModel)]="editCategoriaData().slaNivelUrgencia">
+                        <option value="">Seleccionar nivel</option>
+                        <option value="BAJO">Bajo</option>
+                        <option value="MEDIO">Medio</option>
+                        <option value="ALTO">Alto</option>
+                        <option value="CRITICO">Crítico</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Segunda fila: 2 columnas -->
+                  <div class="sla-form-row">
+                    <div class="form-group">
+                      <label class="form-label">Tiempo Máx. Respuesta (min)</label>
+                      <input type="number" class="form-input" [(ngModel)]="editCategoriaData().slaTiempoMaxRespuestaMin" min="1" placeholder="Minutos">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Tiempo Máx. Resolución (min)</label>
+                      <input type="number" class="form-input" [(ngModel)]="editCategoriaData().slaTiempoMaxResolucionMin" min="1" placeholder="Minutos">
+                    </div>
+                  </div>
+
+                  <!-- Tercera fila: 1 columna completa para descripción -->
+                  <div class="sla-form-row-full">
+                    <div class="form-group">
+                      <label class="form-label">Descripción del SLA</label>
+                      <textarea class="form-textarea" rows="3" [(ngModel)]="editCategoriaData().slaDescripcion" placeholder="Descripción detallada del SLA..."></textarea>
+                    </div>
+                  </div>
+                </div>
+                }
               </div>
             </div>
           </div>
         </div>
 
-        @if (selectedCategoria()!.etiquetas && selectedCategoria()!.etiquetas.length > 0) {
-        <div class="modal-section">
-          <div class="section-card">
-            <div class="section-header">
-              <i class="bi bi-bookmark"></i>
-              <h4>Etiquetas Asociadas</h4>
-              <span class="section-badge">{{ selectedCategoria()!.etiquetas.length }}</span>
-            </div>
-            <div class="section-body">
-              <div class="tags-grid">
-                @for (etiqueta of selectedCategoria()!.etiquetas; track etiqueta.id) {
-                <div class="tag-card">
-                  <div class="tag-header">
-                    <h5>{{ etiqueta.nombre }}</h5>
-
+        <!-- SECCIÓN AGREGADA: Gestión de Etiquetas y Especialidades en modo edición -->
+        @if (isEditing()) {
+        <div class="modal-grid">
+          <div class="modal-section">
+            <div class="section-card">
+              <div class="section-header">
+                <i class="bi bi-bookmark"></i>
+                <h4>Etiquetas Asociadas</h4>
+                <button class="btn-action primary small" (click)="openEtiquetasModal(false)">
+                  <i class="bi bi-plus-circle"></i>
+                  Gestionar Etiquetas
+                </button>
+              </div>
+              <div class="section-body">
+                @if (editCategoriaData().etiquetas?.length) {
+                <div class="especialidades-tags">
+                  @for (etqId of editCategoriaData().etiquetas; track etqId) {
+                  <div class="especialidad-tag">
+                    <span class="tag-text">{{ getEtiquetaNombre(etqId) }}</span>
+                    <button class="tag-remove" (click)="removeEtiqueta(etqId, false)">
+                      <i class="bi bi-x"></i>
+                    </button>
                   </div>
-                  <p class="tag-description">{{ etiqueta.descripcion }}</p>
+                  }
+                </div>
+                } @else {
+                <div class="empty-especialidades">
+                  <i class="bi bi-bookmark"></i>
+                  <p>No hay etiquetas asociadas</p>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-section">
+            <div class="section-card">
+              <div class="section-header">
+                <i class="bi bi-award"></i>
+                <h4>Especialidades Asociadas</h4>
+                <button class="btn-action primary small" (click)="openEspecialidadesModal(false)">
+                  <i class="bi bi-plus-circle"></i>
+                  Gestionar Especialidades
+                </button>
+              </div>
+              <div class="section-body">
+                @if (editCategoriaData().especialidades?.length) {
+                <div class="especialidades-tags">
+                  @for (espId of editCategoriaData().especialidades; track espId) {
+                  <div class="especialidad-tag">
+                    <span class="tag-text">{{ getEspecialidadNombre(espId) }}</span>
+                    <button class="tag-remove" (click)="removeEspecialidad(espId, false)">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                  }
+                </div>
+                } @else {
+                <div class="empty-especialidades">
+                  <i class="bi bi-award"></i>
+                  <p>No hay especialidades asociadas</p>
                 </div>
                 }
               </div>
@@ -376,43 +460,69 @@
         </div>
         }
 
-        @if (selectedCategoria()!.especialidades && selectedCategoria()!.especialidades.length > 0) {
-        <div class="modal-section">
-          <div class="section-card">
-            <div class="section-header">
-              <i class="bi bi-award"></i>
-              <h4>Especialidades Asociadas</h4>
-              <span class="section-badge">{{ selectedCategoria()!.especialidades.length }}</span>
-            </div>
-            <div class="section-body">
-              <div class="specialties-grid">
-                @for (especialidad of selectedCategoria()!.especialidades; track especialidad.id) {
-                <div class="specialty-card">
-                  <div class="specialty-header">
-                    <h5>{{ especialidad.nombre }}</h5>
+        <!-- Mostrar etiquetas y especialidades en modo visualización (no edición) -->
+        @if (!isEditing()) {
+          @if (selectedCategoria()!.etiquetas && selectedCategoria()!.etiquetas.length > 0) {
+          <div class="modal-section">
+            <div class="section-card">
+              <div class="section-header">
+                <i class="bi bi-bookmark"></i>
+                <h4>Etiquetas Asociadas</h4>
+                <span class="section-badge">{{ selectedCategoria()!.etiquetas.length }}</span>
+              </div>
+              <div class="section-body">
+                <div class="tags-grid">
+                  @for (etiqueta of selectedCategoria()!.etiquetas; track etiqueta.id) {
+                  <div class="tag-card">
+                    <div class="tag-header">
+                      <h5>{{ etiqueta.nombre }}</h5>
+                    </div>
+                    <p class="tag-description">{{ etiqueta.descripcion }}</p>
                   </div>
-                  <p class="specialty-description">{{ especialidad.descripcion }}</p>
+                  }
                 </div>
-                }
               </div>
             </div>
           </div>
-        </div>
-        }
+          }
 
-        @if ((!selectedCategoria()!.etiquetas || selectedCategoria()!.etiquetas.length === 0) && !isEditing()) {
-        <div class="empty-section">
-          <i class="bi bi-bookmark"></i>
-          <p>No hay etiquetas asociadas</p>
-        </div>
-        }
+          @if (selectedCategoria()!.especialidades && selectedCategoria()!.especialidades.length > 0) {
+          <div class="modal-section">
+            <div class="section-card">
+              <div class="section-header">
+                <i class="bi bi-award"></i>
+                <h4>Especialidades Asociadas</h4>
+                <span class="section-badge">{{ selectedCategoria()!.especialidades.length }}</span>
+              </div>
+              <div class="section-body">
+                <div class="specialties-grid">
+                  @for (especialidad of selectedCategoria()!.especialidades; track especialidad.id) {
+                  <div class="specialty-card">
+                    <div class="specialty-header">
+                      <h5>{{ especialidad.nombre }}</h5>
+                    </div>
+                    <p class="specialty-description">{{ especialidad.descripcion }}</p>
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+          }
 
-        @if ((!selectedCategoria()!.especialidades || selectedCategoria()!.especialidades.length === 0) && !isEditing())
-        {
-        <div class="empty-section">
-          <i class="bi bi-award"></i>
-          <p>No hay especialidades asociadas</p>
-        </div>
+          @if ((!selectedCategoria()!.etiquetas || selectedCategoria()!.etiquetas.length === 0)) {
+          <div class="empty-section">
+            <i class="bi bi-bookmark"></i>
+            <p>No hay etiquetas asociadas</p>
+          </div>
+          }
+
+          @if ((!selectedCategoria()!.especialidades || selectedCategoria()!.especialidades.length === 0)) {
+          <div class="empty-section">
+            <i class="bi bi-award"></i>
+            <p>No hay especialidades asociadas</p>
+          </div>
+          }
         }
       </div>
       }
@@ -440,3 +550,541 @@
     </div>
   </div>
   }
+
+  <!-- Modal para crear categoría -->
+@if (showCreateModal()) {
+<div class="modal-overlay" (click)="closeCreateModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header editing">
+      <div class="modal-title">
+        <i class="bi bi-tag-fill"></i>
+        <div>
+          <h3>Crear Nueva Categoría</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeCreateModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="categoria-header">
+        <div class="categoria-avatar">
+          <i class="fas fa-tag"></i>
+        </div>
+        <div class="categoria-edit">
+          <div class="edit-fields">
+            <input type="text" class="form-input large" [(ngModel)]="newCategoria().codigo" placeholder="Código">
+            <input type="text" class="form-input large" [(ngModel)]="newCategoria().nombre" placeholder="Nombre de la categoría">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-info-circle"></i>
+              <h4>Información Básica</h4>
+            </div>
+            <div class="section-body">
+              <div class="edit-grid">
+                <div class="form-group">
+                  <label class="form-label">Descripción</label>
+                  <textarea class="form-textarea" rows="3" [(ngModel)]="newCategoria().descripcion"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-card equal-height">
+            <div class="section-header">
+              <i class="bi bi-clock"></i>
+              <h4>SLA</h4>
+            </div>
+            <div class="section-body">
+              <!-- NUEVO DISEÑO SLA EN 2 COLUMNAS PARA CREACIÓN -->
+              <div class="sla-edit-grid">
+                <!-- Primera fila: 2 columnas -->
+                <div class="sla-form-row">
+                  <div class="form-group">
+                    <label class="form-label">Nombre del SLA</label>
+                    <input type="text" class="form-input" [(ngModel)]="newCategoria().slaNombre" placeholder="Nombre del SLA">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Nivel de Urgencia</label>
+                    <select class="form-select" [(ngModel)]="newCategoria().slaNivelUrgencia">
+                      <option value="">Seleccionar nivel</option>
+                      <option value="BAJO">Bajo</option>
+                      <option value="MEDIO">Medio</option>
+                      <option value="ALTO">Alto</option>
+                      <option value="CRITICO">Crítico</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Segunda fila: 2 columnas -->
+                <div class="sla-form-row">
+                  <div class="form-group">
+                    <label class="form-label">Tiempo Máx. Respuesta (min)</label>
+                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxRespuestaMin" min="1" placeholder="Minutos">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Tiempo Máx. Resolución (min)</label>
+                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxResolucionMin" min="1" placeholder="Minutos">
+                  </div>
+                </div>
+
+                <!-- Tercera fila: 1 columna completa para descripción -->
+                <div class="sla-form-row-full">
+                  <div class="form-group">
+                    <label class="form-label">Descripción del SLA</label>
+                    <textarea class="form-textarea" rows="3" [(ngModel)]="newCategoria().slaDescripcion" placeholder="Descripción detallada del SLA..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-grid">
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-bookmark"></i>
+              <h4>Etiquetas Asociadas</h4>
+              <button class="btn-action primary small" (click)="openEtiquetasModal(true)">
+                <i class="bi bi-plus-circle"></i>
+                Gestionar Etiquetas
+              </button>
+            </div>
+            <div class="section-body">
+              @if (newCategoria().etiquetas?.length) {
+              <div class="especialidades-tags">
+                @for (etqId of newCategoria().etiquetas; track etqId) {
+                <div class="especialidad-tag">
+                  <span class="tag-text">{{ getEtiquetaNombre(etqId) }}</span>
+                  <button class="tag-remove" (click)="removeEtiqueta(etqId, true)">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+                }
+              </div>
+              } @else {
+              <div class="empty-especialidades">
+                <i class="bi bi-bookmark"></i>
+                <p>No hay etiquetas asociadas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-card">
+            <div class="section-header">
+              <i class="bi bi-award"></i>
+              <h4>Especialidades Asociadas</h4>
+              <button class="btn-action primary small" (click)="openEspecialidadesModal(true)">
+                <i class="bi bi-plus-circle"></i>
+                Gestionar Especialidades
+              </button>
+            </div>
+            <div class="section-body">
+              @if (newCategoria().especialidades?.length) {
+              <div class="especialidades-tags">
+                @for (espId of newCategoria().especialidades; track espId) {
+                <div class="especialidad-tag">
+                  <span class="tag-text">{{ getEspecialidadNombre(espId) }}</span>
+                  <button class="tag-remove" (click)="removeEspecialidad(espId, true)">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+                }
+              </div>
+              } @else {
+              <div class="empty-especialidades">
+                <i class="bi bi-award"></i>
+                <p>No hay especialidades asociadas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeCreateModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+
+      <button type="button" class="btn-action success" (click)="createCategoria()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Creando...' : 'Crear Categoría' }}
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Los modales de gestión de etiquetas y especialidades se mantienen igual que antes -->
+<!-- Modal para gestionar etiquetas con pestañas -->
+@if (showEtiquetasModal()) {
+<div class="modal-overlay" (click)="closeEtiquetasModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header primary">
+      <div class="modal-title">
+        <i class="bi bi-bookmark"></i>
+        <div>
+          <h3>Gestionar Etiquetas</h3>
+          <p class="modal-subtitle">Selecciona o gestiona las etiquetas de la categoría</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeEtiquetasModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button" [class.active]="etiquetasTabActive() === 'select'" 
+                (click)="etiquetasTabActive.set('select')">
+          Seleccionar Etiquetas
+        </button>
+        <button class="tab-button" [class.active]="etiquetasTabActive() === 'manage'" 
+                (click)="etiquetasTabActive.set('manage')">
+          Gestionar Etiquetas
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Pestaña de selección -->
+        <div class="tab-pane" [class.active]="etiquetasTabActive() === 'select'">
+          <div class="modal-body">
+            <div class="especialidades-search-container">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" 
+                       placeholder="Buscar etiquetas..." 
+                       [value]="etiquetasSearch()"
+                       (input)="onEtiquetaSearchChange($event)">
+              </div>
+            </div>
+
+            <div class="especialidades-list">
+              @for (etiqueta of etiquetasFiltradas(); track etiqueta.id) {
+              <div class="especialidad-item" [class.selected]="isEtiquetaSelected(etiqueta.id!)"
+                   (click)="addEtiqueta(etiqueta)">
+                <div class="especialidad-checkbox">
+                  <div class="checkbox" [class.checked]="isEtiquetaSelected(etiqueta.id!)">
+                    <i class="bi bi-check"></i>
+                  </div>
+                </div>
+                <div class="especialidad-info">
+                  <h4>{{ etiqueta.nombre }}</h4>
+                  <p>{{ etiqueta.descripcion || 'Sin descripción' }}</p>
+                </div>
+              </div>
+              }
+              @if (etiquetasFiltradas().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron etiquetas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña de gestión -->
+        <div class="tab-pane" [class.active]="etiquetasTabActive() === 'manage'">
+          <div class="modal-body">
+            <div class="gestion-header">
+              <h4>Lista de Etiquetas</h4>
+              <button class="btn-action primary small" (click)="openGestionEtiquetaModal()">
+                <i class="bi bi-plus-circle"></i>
+                Agregar Etiqueta
+              </button>
+            </div>
+
+            <div class="gestion-list">
+              @for (etiqueta of etiquetasList(); track etiqueta.id) {
+              <div class="gestion-item">
+                <div class="gestion-item-info">
+                  <h4>{{ etiqueta.nombre }}</h4>
+                  <p>{{ etiqueta.descripcion || 'Sin descripción' }}</p>
+                </div>
+                <div class="gestion-item-actions">
+                  <button class="btn-icon warning" (click)="openGestionEtiquetaModal(etiqueta)" title="Editar etiqueta">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="eliminarEtiqueta(etiqueta)" title="Eliminar etiqueta">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              }
+              @if (etiquetasList().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-bookmark"></i>
+                <p>No hay etiquetas creadas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeEtiquetasModal()">
+        <i class="bi bi-x-circle"></i>
+        Cerrar
+      </button>
+      <button type="button" class="btn-action success" (click)="closeEtiquetasModal()">
+        <i class="bi bi-check-circle"></i>
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal para gestionar especialidades con pestañas -->
+@if (showEspecialidadesModal()) {
+<div class="modal-overlay" (click)="closeEspecialidadesModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header primary">
+      <div class="modal-title">
+        <i class="bi bi-award"></i>
+        <div>
+          <h3>Gestionar Especialidades</h3>
+          <p class="modal-subtitle">Selecciona o gestiona las especialidades de la categoría</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeEspecialidadesModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="tabs-container">
+      <div class="tabs-header">
+        <button class="tab-button" [class.active]="especialidadesTabActive() === 'select'" 
+                (click)="especialidadesTabActive.set('select')">
+          Seleccionar Especialidades
+        </button>
+        <button class="tab-button" [class.active]="especialidadesTabActive() === 'manage'" 
+                (click)="especialidadesTabActive.set('manage')">
+          Gestionar Especialidades
+        </button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Pestaña de selección -->
+        <div class="tab-pane" [class.active]="especialidadesTabActive() === 'select'">
+          <div class="modal-body">
+            <div class="especialidades-search-container">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" 
+                       placeholder="Buscar especialidades..." 
+                       [value]="especialidadesSearch()"
+                       (input)="onEspecialidadSearchChange($event)">
+              </div>
+            </div>
+
+            <div class="especialidades-list">
+              @for (especialidad of especialidadesFiltradas(); track especialidad.id) {
+              <div class="especialidad-item" [class.selected]="isEspecialidadSelected(especialidad.id!)"
+                   (click)="addEspecialidad(especialidad)">
+                <div class="especialidad-checkbox">
+                  <div class="checkbox" [class.checked]="isEspecialidadSelected(especialidad.id!)">
+                    <i class="bi bi-check"></i>
+                  </div>
+                </div>
+                <div class="especialidad-info">
+                  <h4>{{ especialidad.nombre }}</h4>
+                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
+                </div>
+              </div>
+              }
+              @if (especialidadesFiltradas().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-search"></i>
+                <p>No se encontraron especialidades</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña de gestión -->
+        <div class="tab-pane" [class.active]="especialidadesTabActive() === 'manage'">
+          <div class="modal-body">
+            <div class="gestion-header">
+              <h4>Lista de Especialidades</h4>
+              <button class="btn-action primary small" (click)="openGestionEspecialidadModal()">
+                <i class="bi bi-plus-circle"></i>
+                Agregar Especialidad
+              </button>
+            </div>
+
+            <div class="gestion-list">
+              @for (especialidad of especialidadesList(); track especialidad.id) {
+              <div class="gestion-item">
+                <div class="gestion-item-info">
+                  <h4>{{ especialidad.nombre }}</h4>
+                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
+                </div>
+                <div class="gestion-item-actions">
+                  <button class="btn-icon warning" (click)="openGestionEspecialidadModal(especialidad)" title="Editar especialidad">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn-icon danger" (click)="eliminarEspecialidad(especialidad)" title="Eliminar especialidad">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+              }
+              @if (especialidadesList().length === 0) {
+              <div class="empty-especialidades">
+                <i class="bi bi-award"></i>
+                <p>No hay especialidades creadas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeEspecialidadesModal()">
+        <i class="bi bi-x-circle"></i>
+        Cerrar
+      </button>
+      <button type="button" class="btn-action success" (click)="closeEspecialidadesModal()">
+        <i class="bi bi-check-circle"></i>
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal para gestión de etiquetas -->
+@if (showGestionEtiquetaModal()) {
+<div class="modal-overlay" (click)="closeGestionEtiquetaModal()">
+  <div class="modal-content medium" (click)="$event.stopPropagation()">
+    <div class="modal-header primary">
+      <div class="modal-title">
+        <i class="bi bi-bookmark"></i>
+        <div>
+          <h3>{{ etiquetaEditando() ? 'Editar Etiqueta' : 'Crear Etiqueta' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeGestionEtiquetaModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-container">
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevaEtiqueta().nombre" placeholder="Nombre de la etiqueta">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" rows="3" [(ngModel)]="nuevaEtiqueta().descripcion" placeholder="Descripción de la etiqueta"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeGestionEtiquetaModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+
+      @if (etiquetaEditando()) {
+      <button type="button" class="btn-action success" (click)="actualizarEtiqueta()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Actualizando...' : 'Actualizar Etiqueta' }}
+      </button>
+      } @else {
+      <button type="button" class="btn-action success" (click)="crearEtiqueta()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Creando...' : 'Crear Etiqueta' }}
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal para gestión de especialidades -->
+@if (showGestionEspecialidadModal()) {
+<div class="modal-overlay" (click)="closeGestionEspecialidadModal()">
+  <div class="modal-content medium" (click)="$event.stopPropagation()">
+    <div class="modal-header primary">
+      <div class="modal-title">
+        <i class="bi bi-award"></i>
+        <div>
+          <h3>{{ especialidadEditando() ? 'Editar Especialidad' : 'Crear Especialidad' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeGestionEspecialidadModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-container">
+        <div class="form-group">
+          <label class="form-label">Código *</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().codigo" placeholder="Código de la especialidad">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().nombre" placeholder="Nombre de la especialidad">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" rows="3" [(ngModel)]="nuevaEspecialidad().descripcion" placeholder="Descripción de la especialidad"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-action secondary" (click)="closeGestionEspecialidadModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+
+      @if (especialidadEditando()) {
+      <button type="button" class="btn-action success" (click)="actualizarEspecialidad()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Actualizando...' : 'Actualizar Especialidad' }}
+      </button>
+      } @else {
+      <button type="button" class="btn-action success" (click)="crearEspecialidad()" [disabled]="isLoading()">
+        <i class="bi bi-check-circle"></i>
+        {{ isLoading() ? 'Creando...' : 'Crear Especialidad' }}
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}
+</div>

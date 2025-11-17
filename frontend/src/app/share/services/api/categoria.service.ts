@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
-import { Categoria } from '../../models/CategoriaModel';
+import { Categoria, CreateCategoriaRequest, UpdateCategoriaRequest } from '../../models/CategoriaModel';
 import { BaseAPI } from './base-apis';
 
 @Injectable({
@@ -32,5 +32,16 @@ export class CategoriaService extends BaseAPI<Categoria> {
       params 
     });
   }
-}
 
+  createCategoria(categoriaData: CreateCategoriaRequest): Observable<Categoria> {
+    return this.http.post<Categoria>(`${this.urlAPI}/${this.endpoint}`, categoriaData);
+  }
+
+  updateCategoria(categoriaData: UpdateCategoriaRequest): Observable<Categoria> {
+    return this.http.put<Categoria>(`${this.urlAPI}/${this.endpoint}/${categoriaData.id}`, categoriaData);
+  }
+
+  deleteCategoria(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.urlAPI}/${this.endpoint}/${id}`);
+  }
+}

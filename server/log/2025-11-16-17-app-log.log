@@ -1,0 +1,32 @@
+2025-11-16 17:54:06.391 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.categoria.findFirst()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\ticketController.ts:424:53
+
+  421   return next(AppError.badRequest("El usuario solicitante no existe o no está activo"));
+  422 }
+  423 
+→ 424 const categoria = await this.prisma.categoria.findFirst({
+        where: {
+          id: "1",
+              ~~~
+          activa: true
+        }
+      })
+
+Argument `id`: Invalid value provided. Expected IntFilter or Int, provided String.
+2025-11-16 17:54:16.146 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.categoria.findFirst()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\ticketController.ts:424:53
+
+  421   return next(AppError.badRequest("El usuario solicitante no existe o no está activo"));
+  422 }
+  423 
+→ 424 const categoria = await this.prisma.categoria.findFirst({
+        where: {
+          id: "1",
+              ~~~
+          activa: true
+        }
+      })
+
+Argument `id`: Invalid value provided. Expected IntFilter or Int, provided String.
