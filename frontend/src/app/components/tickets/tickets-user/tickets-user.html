@@ -41,15 +41,6 @@
                     </div>
 
                     <div class="info-row">
-                      <div class="info-item">
-                        <label class="form-label required">Prioridad</label>
-                        <select class="form-select" [(ngModel)]="newTicket().prioridad">
-                          <option value="">Seleccione prioridad</option>
-                          @for (prioridad of prioridadesList(); track prioridad) {
-                          <option [value]="prioridad">{{ prioridad }}</option>
-                          }
-                        </select>
-                      </div>
 
                       <div class="info-item">
                         <label class="form-label required">Categoría</label>
@@ -60,9 +51,7 @@
                           }
                         </select>
                       </div>
-                    </div>
 
-                    <div class="info-row">
 
                       <div class="info-item">
                         <label class="form-label required">Etiqueta</label>
@@ -70,6 +59,21 @@
                           <option value="">Seleccione etiqueta</option>
                           @for (etiqueta of etiquetasFiltradasCreacion(); track etiqueta.id) {
                           <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+                          }
+                        </select>
+                      </div>
+
+                    </div>
+
+                    <div class="info-row">
+
+                      <div class="info-item">
+                        <label class="form-label required">Prioridad</label>
+                        <!-- <select class="form-select" [(ngModel)]="newTicket().prioridad" disabled> -->
+                        <select class="form-select" [(ngModel)]="newTicket().prioridad">
+                          <option value="">Seleccione prioridad</option>
+                          @for (prioridad of prioridadesList(); track prioridad) {
+                          <option [value]="prioridad">{{ prioridad }}</option>
                           }
                         </select>
                       </div>
@@ -85,6 +89,31 @@
                         </div>
                       </div>
                       
+                    </div>
+
+                    <div class="info-row">
+                      <div class="info-item">
+                      <!-- SUBIR IMAGEN -->
+                              <div class="form-label">Subir imagen</div>
+                              <div>
+                                  <div>
+                                      <input type="file" accept="image/*" (change)="selectFile($event)" #fileUpload
+                                          class="file-input btn-action refresh" />
+                                      <!-- <div class="file-upload">
+                                          @if(preview) {
+                                          <img mat-card-image height="200px" [src]="preview" alt="Imagen Videojuego">
+                                          }
+                                      </div> -->
+                                  </div>
+                                  <!-- @if(!isCreate) {
+                                  <div class="col drop_box">
+                                      <h4>Imagen videojuego</h4>
+                                      <img mat-card-image height="200px" [src]="'http://localhost:3000/images/' + previousImage"
+                                          alt="Imagen Videojuego">
+                                  </div>
+                                  } -->
+                              </div>
+                      </div>
                     </div>
 
                   </div>

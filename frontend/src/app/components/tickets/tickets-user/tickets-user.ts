@@ -50,6 +50,7 @@ private ticketUserService = inject(TicketUserService);
   usuarioSolicitante = signal<any>(null);
   etiquetasFiltradasCreacion = signal<Etiqueta[]>([]);
   etiquetasFiltradasEdicion = signal<Etiqueta[]>([]);
+  prioridadFiltradasCreacion = signal<Etiqueta[]>([]);
 
   imageZoom = signal(1);
   selectedImage = signal<any>(null);
@@ -92,6 +93,13 @@ private ticketUserService = inject(TicketUserService);
   private searchSubject = new Subject<string>();
 
   user_id = 0;
+  isCreate = true;
+
+  // Variables para gestión de imagen
+  currentFile?: File;
+  preview = '';
+  nameImage = 'image-not-found.jpg';
+  previousImage: string | null = null;
 
   ngOnInit(): void {
     this.loadUserInfo();
@@ -313,6 +321,15 @@ private ticketUserService = inject(TicketUserService);
         this.isLoading.set(false);
         this.notificationService.success('Éxito', 'Ticket creado exitosamente', 4000);
         this.openCreateModal();
+
+    // Primero subir imagen si se seleccionó archivo
+    if (this.currentFile) {
+      this.fileUploadService.upload(this.currentFile, this.previousImage)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(data => {
+          this.nameImage = data.fileName;
+        });
+    } 
       },
       error: (error) => {
         console.error('Error creando ticket:', error);
@@ -694,5 +711,25 @@ private ticketUserService = inject(TicketUserService);
 
   getSLAIcon(cumplimiento: boolean): string {
     return cumplimiento ? 'bi-check-circle' : 'bi-exclamation-circle';
+  }
+
+    /**
+   * Gestiona la selección de archivo para la imagen del videojuego
+   * @param event Evento de cambio de input file
+   */
+  selectFile(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.[0]) {
+      this.currentFile = input.files[0];
+      this.nameImage = this.currentFile.name;
+      const reader = new FileReader();
+      reader.onload = e => (this.preview = e.target?.result as string);
+      reader.readAsDataURL(this.currentFile);
+    } else {
+      // Si no se selecciona archivo, restaurar imagen previa
+      this.currentFile = undefined;
+      this.preview = '';
+      this.nameImage = this.previousImage || 'image-not-found.jpg';
+    }
   }
 }

@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { HistorialComponent } from './historial/historial';
 import { TicketsComponent } from './tickets/tickets';
 import { TicketsUserComponent } from './tickets-user/tickets-user';
+import {MatIconModule} from '@angular/material/icon';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { TicketsUserComponent } from './tickets-user/tickets-user';
   imports: [
     CommonModule,
     TicketsRoutingModule,
+    MatIconModule,
     FormsModule,
     ReactiveFormsModule,
   ]
