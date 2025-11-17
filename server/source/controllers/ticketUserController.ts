@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/custom.error";
 import { PrismaClient, Role, TicketEstado, Prioridad, ModoAsignacion } from "../../generated/prisma";
+import path from "path";
+import fs from "fs";
 
 export class TicketUserController {
   prisma = new PrismaClient();
+
+  private __basedir = path.resolve();
+  private directoryPath = path.join(this.__basedir, "/assets/uploads/");
+  private baseUrl = "http://localhost:3000/images/";
 
   private calcularTiempoRestante(fechaLimite: Date): number {
     const ahora = new Date();
@@ -516,6 +522,23 @@ export class TicketUserController {
         }
       });
 
+      // CORREGIDO: Guardar imágenes en la base de datos
+      if (body.imagenes && Array.isArray(body.imagenes)) {
+        for (const imagenData of body.imagenes) {
+          await this.prisma.imagenTicket.create({
+            data: {
+              ticketId: newTicket.id,
+              nombreArchivo: imagenData.nombreArchivo,
+              url: `${this.baseUrl}${imagenData.nombreArchivo}`,
+              tipo: imagenData.tipo,
+              tamaño: imagenData.tamaño,
+              descripcion: imagenData.descripcion,
+              subidoPorId: userId
+            }
+          });
+        }
+      }
+
       await this.prisma.ticketHistorial.create({
         data: {
           ticketId: newTicket.id,
@@ -576,7 +599,8 @@ export class TicketUserController {
           eliminadoLogico: false
         },
         include: {
-          categoria: true
+          categoria: true,
+          imagenes: true
         }
       });
 
@@ -698,6 +722,41 @@ export class TicketUserController {
         }
       });
 
+      if (body.imagenesAEliminar && Array.isArray(body.imagenesAEliminar)) {
+        for (const imagenId of body.imagenesAEliminar) {
+          const imagen = await this.prisma.imagenTicket.findFirst({
+            where: { id: imagenId, ticketId: ticketId }
+          });
+          
+          if (imagen) {
+            const filePath = path.join(this.directoryPath, imagen.nombreArchivo);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+            
+            await this.prisma.imagenTicket.delete({
+              where: { id: imagenId }
+            });
+          }
+        }
+      }
+
+      if (body.nuevasImagenes && Array.isArray(body.nuevasImagenes)) {
+        for (const imagenData of body.nuevasImagenes) {
+          await this.prisma.imagenTicket.create({
+            data: {
+              ticketId: ticketId,
+              nombreArchivo: imagenData.nombreArchivo,
+              url: `${this.baseUrl}${imagenData.nombreArchivo}`,
+              tipo: imagenData.tipo,
+              tamaño: imagenData.tamaño,
+              descripcion: imagenData.descripcion,
+              subidoPorId: userId
+            }
+          });
+        }
+      }
+
       if (body.estado !== ticketExistente.estado) {
         await this.prisma.ticketHistorial.create({
           data: {
@@ -736,6 +795,49 @@ export class TicketUserController {
       response.json(ticketCompleto);
     } catch (error) {
       console.error("Error actualizando ticket:", error);
+      next(error);
+    }
+  };
+
+  eliminarImagen = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const imagenId = parseInt(request.params.imagenId);
+      const userId = parseInt(request.headers['user-id'] as string);
+
+      if (isNaN(imagenId)) {
+        return next(AppError.badRequest("El ID de la imagen no es válido"));
+      }
+
+      const imagen = await this.prisma.imagenTicket.findFirst({
+        where: { id: imagenId },
+        include: {
+          ticket: true
+        }
+      });
+
+      if (!imagen) {
+        return next(AppError.notFound("No existe la imagen"));
+      }
+
+      if (imagen.ticket.solicitanteId !== userId && request.headers['user-role'] !== 'ADM') {
+        return next(AppError.forbidden("No tienes permisos para eliminar esta imagen"));
+      }
+
+      const filePath = path.join(this.directoryPath, imagen.nombreArchivo);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      await this.prisma.imagenTicket.delete({
+        where: { id: imagenId }
+      });
+
+      response.json({
+        message: "Imagen eliminada exitosamente",
+        id: imagenId
+      });
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
       next(error);
     }
   };

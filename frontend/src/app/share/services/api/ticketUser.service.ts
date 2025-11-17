@@ -138,4 +138,12 @@ export class TicketUserService extends BaseAPI<Ticket> {
       { headers: this.getHeaders() }
     );
   }
+
+    eliminarImagen(ticketId: number, imagenId: number): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.delete<any>(
+      `${this.urlAPI}/${this.endpoint}/${ticketId}/imagenes/${imagenId}`,
+      { headers }
+    );
+  }
 }

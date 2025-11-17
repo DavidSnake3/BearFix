@@ -6,7 +6,6 @@
   min-height: 100vh;
 }
 
-/* Estilos para la sección de filtros */
 .filters-section {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
@@ -34,7 +33,6 @@
   padding: 24px;
 }
 
-/* Corregir altura consistente en filtros */
 .filters-grid .filter-group .form-select {
   padding: 12px 16px;
   height: 48px;
@@ -52,20 +50,17 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Asegurar que el buscador tenga la misma altura */
 .search-input.large {
   height: 48px;
   box-sizing: border-box;
 }
 
-/* Para los filtros en grid específico */
 .filters-card .filters-grid .filter-group select {
   padding: 12px 16px;
   height: 48px;
   font-size: 1em;
 }
 
-/* Si usas la sección de filtros alternativa */
 .filters-section .filters-grid .filter-group select {
   padding: 12px 16px;
   height: 48px;
@@ -2049,3 +2044,121 @@
   resize: vertical;
   min-height: 80px;
 }
+
+/* Estilos para la gestión de imágenes */
+.file-upload-container {
+  margin-bottom: 16px;
+}
+
+.file-input {
+  display: none;
+}
+
+.upload-area {
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: #f0f2ff;
+}
+
+.upload-area i {
+  font-size: 2em;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.upload-area p {
+  margin: 0 0 4px 0;
+  color: #495057;
+  font-weight: 600;
+}
+
+.upload-area small {
+  color: #6c757d;
+}
+
+.upload-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #e7f3ff;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.upload-loading .spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.images-preview {
+  margin-top: 16px;
+}
+
+.images-preview h5 {
+  margin-bottom: 12px;
+  color: #495057;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.preview-item {
+  position: relative;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.preview-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.btn-icon.small {
+  width: 28px;
+  height: 28px;
+  font-size: 0.8em;
+}
+
+.empty-images {
+  text-align: center;
+  padding: 32px 20px;
+  color: #adb5bd;
+}
+
+.empty-images i {
+  font-size: 2.5em;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.empty-images p {
+  margin: 0 0 4px 0;
+}
+
+.empty-images small {
+  font-size: 0.9em;
+}
+

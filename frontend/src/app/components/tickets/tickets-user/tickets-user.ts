@@ -10,6 +10,7 @@ import { EtiquetaService } from '../../../share/services/api/etiqueta.service';
 import { environment } from '../../../../environments/environment.development';
 import { AuthService } from '../../../share/services/api/auth.service';
 import { NotificationService } from '../../../share/services/app/notification.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tickets-user',
@@ -24,6 +25,7 @@ private ticketUserService = inject(TicketUserService);
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
+   private router = inject(Router);
 
   tickets = signal<Ticket[]>([]);
   selectedTicket = signal<any>(null);
@@ -95,7 +97,9 @@ private ticketUserService = inject(TicketUserService);
   user_id = 0;
   isCreate = true;
 
-  // Variables para gestión de imagen
+  imagenesSeleccionadas = signal<any[]>([]);
+  imagenesParaEliminar = signal<number[]>([]);
+  estaSubiendoImagen = signal(false);
   currentFile?: File;
   preview = '';
   nameImage = 'image-not-found.jpg';
@@ -227,7 +231,6 @@ private ticketUserService = inject(TicketUserService);
       etiquetaId: null
     }));
 
-    // Limpiar etiquetas mientras se cargan
     this.etiquetasFiltradasEdicion.set([]);
 
     if (categoriaId) {
@@ -306,37 +309,43 @@ private ticketUserService = inject(TicketUserService);
   }
 
   createTicket(): void {
-    const ticketData = this.newTicket();
+      const ticketData = {
+        ...this.newTicket(),
+        imagenes: this.imagenesSeleccionadas()
+      };
 
-    if (!ticketData.titulo || !ticketData.categoriaId || !ticketData.etiquetaId) {
-      this.notificationService.warning('Formulario incompleto', 'Por favor completa todos los campos requeridos', 4000);
-      return;
-    }
-
-    this.isLoading.set(true);
-    this.ticketUserService.createTicket(ticketData).subscribe({
-      next: (ticketCreado) => {
-        this.showCreateModal.set(false);
-        this.loadTickets();
-        this.isLoading.set(false);
-        this.notificationService.success('Éxito', 'Ticket creado exitosamente', 4000);
-        this.openCreateModal();
-
-    // Primero subir imagen si se seleccionó archivo
-    // if (this.currentFile) {
-    //   this.fileUploadService.upload(this.currentFile, this.previousImage)
-    //     .pipe(takeUntil(this.destroy$))
-    //     .subscribe(data => {
-    //       this.nameImage = data.fileName;
-    //     });
-    // } 
-      },
-      error: (error) => {
-        console.error('Error creando ticket:', error);
-        this.isLoading.set(false);
-        this.notificationService.error('Error', 'No se pudo crear el ticket', 4000);
+      if (!ticketData.titulo || !ticketData.categoriaId || !ticketData.etiquetaId) {
+        this.notificationService.warning('Formulario incompleto', 'Por favor completa todos los campos requeridos', 4000);
+        return;
       }
-    });
+
+      this.isLoading.set(true);
+      this.ticketUserService.createTicket(ticketData).subscribe({
+        next: (ticketCreado) => {
+          this.showCreateModal.set(false);
+          this.imagenesSeleccionadas.set([]); 
+          this.loadTickets();
+          this.isLoading.set(false);
+          this.router.navigate(['/dashboard']);
+          this.notificationService.success('Éxito', 'Ticket creado exitosamente', 4000);
+          
+
+          this.newTicket.set({
+            titulo: '',
+            descripcion: '',
+            prioridad: 'MEDIO',
+            categoriaId: null,
+            etiquetaId: null,
+            solicitanteId: null
+          });
+          this.etiquetasFiltradasCreacion.set([]);
+        },
+        error: (error) => {
+          console.error('Error creando ticket:', error);
+          this.isLoading.set(false);
+          this.notificationService.error('Error', 'No se pudo crear el ticket', 4000);
+        }
+      });
   }
 
   aplicarFiltro(campo: string, valor: string): void {
@@ -573,12 +582,14 @@ private ticketUserService = inject(TicketUserService);
     });
   }
 
-  enableEdit() {
+ enableEdit() {
     this.isEditing.set(true);
     this.originalTicket.set(JSON.parse(JSON.stringify(this.selectedTicket())));
     this.editTicketData.set(JSON.parse(JSON.stringify(this.selectedTicket())));
     
-    // Cargar etiquetas de la categoría actual en edición
+    this.imagenesSeleccionadas.set(this.selectedTicket()?.imagenes || []);
+    this.imagenesParaEliminar.set([]);
+
     const categoriaId = this.editTicketData().categoriaId;
     if (categoriaId) {
       this.ticketUserService.getEtiquetasByCategoria(categoriaId).subscribe({
@@ -598,34 +609,46 @@ private ticketUserService = inject(TicketUserService);
     this.selectedTicket.set(JSON.parse(JSON.stringify(this.originalTicket())));
     this.originalTicket.set(null);
     this.editTicketData.set(null);
+    this.imagenesSeleccionadas.set([]);
+    this.imagenesParaEliminar.set([]);
   }
 
   saveTicket() {
-    const updateData = {
-      id: this.editTicketData().id,
-      titulo: this.editTicketData().titulo,
-      descripcion: this.editTicketData().descripcion,
-      categoriaId: this.editTicketData().categoriaId,
-      etiquetaId: this.editTicketData().etiquetaId,
-      prioridad: this.editTicketData().prioridad,
-      estado: this.editTicketData().estado,
-      observacionesCambioEstado: 'Ticket actualizado'
-    };
+      const updateData: any = {
+        id: this.editTicketData().id,
+        titulo: this.editTicketData().titulo,
+        descripcion: this.editTicketData().descripcion,
+        categoriaId: this.editTicketData().categoriaId,
+        etiquetaId: this.editTicketData().etiquetaId,
+        prioridad: this.editTicketData().prioridad,
+        estado: this.editTicketData().estado,
+        observacionesCambioEstado: 'Ticket actualizado'
+      };
 
-    this.ticketUserService.updateTicket(updateData).subscribe({
-      next: (ticketActualizado) => {
-        this.selectedTicket.set(ticketActualizado);
-        this.isEditing.set(false);
-        this.originalTicket.set(null);
-        this.editTicketData.set(null);
-        this.loadTickets();
-        this.notificationService.success('Éxito', 'Ticket actualizado exitosamente', 4000);
-      },
-      error: (error) => {
-        console.error('Error actualizando ticket:', error);
-        this.notificationService.error('Error', 'No se pudo actualizar el ticket', 4000);
+      if (this.imagenesSeleccionadas().length > 0) {
+        updateData.nuevasImagenes = this.imagenesSeleccionadas();
       }
-    });
+
+      if (this.imagenesParaEliminar().length > 0) {
+        updateData.imagenesAEliminar = this.imagenesParaEliminar();
+      }
+
+      this.ticketUserService.updateTicket(updateData).subscribe({
+        next: (ticketActualizado) => {
+          this.selectedTicket.set(ticketActualizado);
+          this.isEditing.set(false);
+          this.originalTicket.set(null);
+          this.editTicketData.set(null);
+          this.imagenesSeleccionadas.set([]);
+          this.imagenesParaEliminar.set([]);
+          this.loadTickets();
+          this.notificationService.success('Éxito', 'Ticket actualizado exitosamente', 4000);
+        },
+        error: (error) => {
+          console.error('Error actualizando ticket:', error);
+          this.notificationService.error('Error', 'No se pudo actualizar el ticket', 4000);
+        }
+      });
   }
 
   closeModal() {
@@ -713,6 +736,82 @@ private ticketUserService = inject(TicketUserService);
     return cumplimiento ? 'bi-check-circle' : 'bi-exclamation-circle';
   }
 
+   onFileSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.subirImagen(file);
+      }
+      event.target.value = ''; 
+    }
+  }
+
+  subirImagen(file: File): void {
+    if (file.size > 2 * 1024 * 1024) { 
+      this.notificationService.warning('Archivo muy grande', 'La imagen no debe superar los 2MB', 4000);
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      this.notificationService.warning('Tipo de archivo no válido', 'Solo se permiten imágenes JPEG, PNG, GIF y WebP', 4000);
+      return;
+    }
+
+    this.estaSubiendoImagen.set(true);
+
+    this.fileUploadService.upload(file, null).subscribe({
+      next: (response) => {
+        const nuevaImagen = {
+          nombreArchivo: response.fileName,
+          tipo: file.type,
+          tamaño: file.size,
+          descripcion: `Imagen subida el ${new Date().toLocaleDateString()}`,
+          url: `${environment.apiURL}/images/${response.fileName}`
+        };
+
+        this.imagenesSeleccionadas.update(imagenes => [...imagenes, nuevaImagen]);
+        this.estaSubiendoImagen.set(false);
+        this.notificationService.success('Éxito', 'Imagen subida correctamente', 3000);
+      },
+      error: (error) => {
+        console.error('Error subiendo imagen:', error);
+        this.estaSubiendoImagen.set(false);
+        this.notificationService.error('Error', 'No se pudo subir la imagen', 4000);
+      }
+    });
+  }
+
+  eliminarImagenSeleccionada(index: number, imagen: any): void {
+    if (imagen.id) {
+      this.imagenesParaEliminar.update(ids => [...ids, imagen.id]);
+    }
+    
+    this.imagenesSeleccionadas.update(imagenes => 
+      imagenes.filter((_, i) => i !== index)
+    );
+  }
+
+  eliminarImagenDelTicket(ticketId: number, imagenId: number): void {
+    if (confirm('¿Estás seguro de eliminar esta imagen?')) {
+      this.ticketUserService.eliminarImagen(ticketId, imagenId).subscribe({
+        next: () => {
+          this.selectedTicket.update(ticket => ({
+            ...ticket!,
+            imagenes: ticket!.imagenes.filter((img: any) => img.id !== imagenId)
+          }));
+          
+          this.notificationService.success('Éxito', 'Imagen eliminada correctamente', 3000);
+        },
+        error: (error) => {
+          console.error('Error eliminando imagen:', error);
+          this.notificationService.error('Error', 'No se pudo eliminar la imagen', 4000);
+        }
+      });
+    }
+  }
+
     /**
    * Gestiona la selección de archivo para la imagen del videojuego
    * @param event Evento de cambio de input file
@@ -732,4 +831,6 @@ private ticketUserService = inject(TicketUserService);
       this.nameImage = this.previousImage || 'image-not-found.jpg';
     }
   }
+
+
 }

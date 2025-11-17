@@ -6,11 +6,8 @@ import { CategoriaRoutes } from './categoria.routes';
 import { TicketRoutes } from './ticket.routes';
 import { EspecialidadRoutes } from './especialidad.routes';
 import { EtiquetaRoutes } from './etiquetas.route';
-<<<<<<< HEAD
 import { ImageRoutes } from './image.routes';
-=======
 import { TicketUserRoutes } from './ticketUser.routes';
->>>>>>> fa98abaee877edb205aec71647dc4aac9b9a7799
 
 export class AppRoutes {
   static get routes(): Router {
@@ -21,12 +18,9 @@ export class AppRoutes {
         router.use('/tickets', TicketRoutes.routes);
         router.use('/especialidades', EspecialidadRoutes.routes); 
         router.use('/etiquetas', EtiquetaRoutes.routes);
-<<<<<<< HEAD
         router.use('/images', ImageRoutes.routes);
-=======
         router.use('/tickets-user', TicketUserRoutes.routes);
         
->>>>>>> fa98abaee877edb205aec71647dc4aac9b9a7799
     return router;
   }
 }
