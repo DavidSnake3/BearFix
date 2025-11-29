@@ -17,6 +17,8 @@ import { CategoriasModule } from './components/categorias/categorias-module';
 import { CoreModule } from './components/core/core-module';
 import { TecnicosModule } from './components/tecnicos/tecnicos-module';
 import { TicketsModule } from './components/tickets/tickets-module';
+import { NotificationsModule } from './components/notifications/notifications-module';
+
 
 @NgModule({
   declarations: [
@@ -33,6 +35,7 @@ import { TicketsModule } from './components/tickets/tickets-module';
     CategoriasModule,
     TicketsModule,
     AsignacionesModule,
+    NotificationsModule
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

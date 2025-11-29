@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Especialidad } from '../../models/EspecialidadModel';
 import { BaseAPI } from './base-apis';
+import { AuthService } from './auth.service';
 
 export interface CreateEspecialidadRequest {
   codigo: string;
@@ -22,9 +23,8 @@ export interface UpdateEspecialidadRequest {
   providedIn: 'root'
 })
 export class EspecialidadService extends BaseAPI<Especialidad> {
-
-  constructor(httpClient: HttpClient) { 
-    super(httpClient, environment.endPointespecialidad);
+  constructor(httpClient: HttpClient, authService: AuthService) { 
+    super(httpClient, environment.endPointespecialidad, authService);
   }
 
   createEspecialidad(especialidadData: CreateEspecialidadRequest): Observable<Especialidad> {

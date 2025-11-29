@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Categoria, CreateCategoriaRequest, UpdateCategoriaRequest } from '../../models/CategoriaModel';
 import { BaseAPI } from './base-apis';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoriaService extends BaseAPI<Categoria> {
-
-  constructor(httpClient: HttpClient) { 
-    super(httpClient, environment.endPointCategoria);
+  constructor(httpClient: HttpClient, authService: AuthService ) { 
+    super(httpClient, environment.endPointCategoria, authService);
   }
 
   override get(filtros?: any): Observable<any> {

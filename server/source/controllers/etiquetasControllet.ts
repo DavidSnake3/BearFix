@@ -179,4 +179,113 @@ export class EtiquetaController {
       next(error);
     }
   };
+
+  getEtiquetasConCategoria = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const etiquetasConCategoria = await this.prisma.etiqueta.findMany({
+        where: { 
+          activa: true,
+          categoriaEtiquetas: {
+            some: {} 
+          }
+        },
+        include: {
+          categoriaEtiquetas: {
+            include: {
+              categoria: {
+                select: {
+                  id: true,
+                  nombre: true,
+                  codigo: true,
+                  descripcion: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: {
+          nombre: "asc"
+        }
+      });
+
+      const etiquetasFormateadas = etiquetasConCategoria.map(etiqueta => {
+        const categoriaPrincipal = etiqueta.categoriaEtiquetas[0]?.categoria;
+
+        return {
+          id: etiqueta.id,
+          nombre: etiqueta.nombre,
+          descripcion: etiqueta.descripcion,
+          activa: etiqueta.activa,
+          categoria: categoriaPrincipal ? {
+            id: categoriaPrincipal.id,
+            nombre: categoriaPrincipal.nombre,
+            codigo: categoriaPrincipal.codigo,
+            descripcion: categoriaPrincipal.descripcion
+          } : null
+        };
+      });
+
+      response.json({
+        success: true,
+        etiquetas: etiquetasFormateadas
+      });
+    } catch (error) {
+      console.error("Error obteniendo etiquetas con categoría:", error);
+      next(error);
+    }
+  };
+
+  getCategoriaByEtiquetaId = async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      const etiquetaId = parseInt(request.params.etiquetaId);
+      
+      if (isNaN(etiquetaId)) {
+        return next(AppError.badRequest("El ID de etiqueta no es válido"));
+      }
+
+      const etiquetaConCategoria = await this.prisma.etiqueta.findFirst({
+        where: { 
+          id: etiquetaId,
+          activa: true
+        },
+        include: {
+          categoriaEtiquetas: {
+            include: {
+              categoria: {
+                select: {
+                  id: true,
+                  nombre: true,
+                  codigo: true,
+                  descripcion: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!etiquetaConCategoria) {
+        return next(AppError.notFound("No existe la etiqueta o no está activa"));
+      }
+
+      const categoria = etiquetaConCategoria.categoriaEtiquetas[0]?.categoria;
+
+      if (!categoria) {
+        return next(AppError.notFound("La etiqueta no tiene categoría asociada"));
+      }
+
+      response.json({
+        success: true,
+        etiqueta: {
+          id: etiquetaConCategoria.id,
+          nombre: etiquetaConCategoria.nombre
+        },
+        categoria: categoria
+      });
+    } catch (error) {
+      console.error("Error obteniendo categoría por etiqueta:", error);
+      next(error);
+    }
+  };
+  
 }

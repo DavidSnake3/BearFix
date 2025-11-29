@@ -1,15 +1,19 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AsignacionService } from '../../../share/services/api/asignacion.service';
-
+import { AsignacionManualService, TecnicoDisponible, TicketPendiente } from '../../../share/services/api/asignacion-manual.service';
+import { AutotriageService, ResultadoAutotriage } from '../../../share/services/api/autotriage.service';
+import { NotificationService } from '../../../share/services/app/notification.service';
+import { AuthService } from '../../../share/services/api/auth.service';
+import { lastValueFrom } from 'rxjs';
 
 interface DiaCalendario {
-  fecha: Date;                    // Fecha del día
-  numero: number;                 // Número del día (1-31)
-  esMesActual: boolean;           // Si pertenece al mes actual
-  asignaciones: any[];           // Lista de asignaciones del día
-  tieneAsignaciones: boolean;    // Si tiene asignaciones
-  cantidadAsignaciones: number;  // Cantidad total de asignaciones
+  fecha: Date;
+  numero: number;
+  esMesActual: boolean;
+  asignaciones: any[];
+  tieneAsignaciones: boolean;
+  cantidadAsignaciones: number;
 }
 
 @Component({
@@ -21,24 +25,36 @@ interface DiaCalendario {
 export class AsignacionesComponent {
   private asignacionService = inject(AsignacionService);
   private router = inject(Router);
+  private asignacionManualService = inject(AsignacionManualService);
+  private autotriageService = inject(AutotriageService);
+  private notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
+
+  showModal = signal(false);
+  modoAsignacion = signal<'automatica' | 'manual' | null>(null);
+
+  ticketsPendientes = signal<TicketPendiente[]>([]);
+  tecnicosDisponibles = signal<TecnicoDisponible[]>([]);
+  selectedTicketId = signal<number | null>(null);
+  selectedTecnicoId = signal<number | null>(null);
+  justificacion = signal('');
+
+  resultadosAutotriage = signal<ResultadoAutotriage[]>([]);
+  estadisticasAutotriage = signal<any>(null);
+
+  isLoading = signal(false);
+  isLoadingTickets = signal(false);
+  isLoadingTecnicos = signal(false);
+  isLoadingAutotriage = signal(false);
 
   fechaActual = signal<Date>(new Date());
-  // Signal que almacena la fecha actual, se inicializa con la fecha del sistema
   mesActual = signal<number>(this.fechaActual().getMonth());
-  // Signal que almacena el mes actual, se obtiene de fechaActual
   anioActual = signal<number>(this.fechaActual().getFullYear());
-  // Signal que almacena el año actual, se obtiene de fechaActual
   semanas = signal<DiaCalendario[][]>([]);
-  // Signal que almacena un array bidimensional de semanas, cada semana es un array de días
   asignaciones = signal<any[]>([]);
-  // Signal que almacena todas las asignaciones cargadas
   mostrarModal = signal<boolean>(false);
-  // Signal que controla si el modal está visible o no
   asignacionesDiaSeleccionado = signal<any[]>([]);
-  // Signal que almacena las asignaciones del día seleccionado
   fechaSeleccionada = signal<string>('');
-  // Signal que almacena la fecha formateada del día seleccionado
-
 
   diasSemana = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO', 'DOMINGO'];
   meses = [
@@ -46,85 +62,260 @@ export class AsignacionesComponent {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
   ];
 
+  esAdministrador = signal<boolean>(false);
+
   ngOnInit(): void {
+    this.verificarPermisos();
     this.cargarAsignaciones();
+    this.cargarEstadisticasAutotriage();
+  }
+
+  private verificarPermisos(): void {
+    const userRole = this.authService.getRoleFromToken();
+    this.esAdministrador.set(userRole === 'ADM');
+    
+    if (userRole !== 'ADM' && this.showModal()) {
+      this.closeModal();
+    }
+  }
+
+  async cargarEstadisticasAutotriage(): Promise<void> {
+    if (!this.esAdministrador()) return;
+
+    try {
+      const response = await this.autotriageService.obtenerEstadisticas().toPromise();
+      if (response?.success) {
+        this.estadisticasAutotriage.set(response.data);
+      }
+    } catch (error) {}
+  }
+
+  closeModal(): void {
+    this.showModal.set(false);
+    this.modoAsignacion.set(null);
+    this.selectedTicketId.set(null);
+    this.selectedTecnicoId.set(null);
+    this.justificacion.set('');
+    this.resultadosAutotriage.set([]);
+  }
+
+  async cargarDatosAsignacionManual(): Promise<void> {
+    if (!this.esAdministrador()) {
+      return;
+    }
+
+    this.isLoadingTickets.set(true);
+    this.isLoadingTecnicos.set(true);
+
+    try {
+      const [ticketsResponse, tecnicosResponse] = await Promise.all([
+        this.asignacionManualService.obtenerTicketsPendientes().toPromise(),
+        this.asignacionManualService.obtenerTecnicosDisponibles().toPromise()
+      ]);
+
+      if (ticketsResponse?.success) {
+        this.ticketsPendientes.set(ticketsResponse.data);
+      } else {
+        this.notificationService.error('Error', 'No se pudieron cargar los tickets pendientes', 4000);
+      }
+
+      if (tecnicosResponse?.success) {
+        this.tecnicosDisponibles.set(tecnicosResponse.data);
+      } else {
+        this.notificationService.error('Error', 'No se pudieron cargar los técnicos disponibles', 4000);
+      }
+    } catch (error) {
+      this.notificationService.error('Error', 'Error al cargar datos para asignación manual', 4000);
+    } finally {
+      this.isLoadingTickets.set(false);
+      this.isLoadingTecnicos.set(false);
+    }
+  }
+
+  async ejecutarAutotriage(): Promise<void> {
+    if (!this.esAdministrador()) {
+      this.notificationService.warning('Permisos insuficientes', 'Solo los administradores pueden ejecutar autotriage', 4000);
+      return;
+    }
+
+    this.isLoadingAutotriage.set(true);
+
+    type AutotriageResponse = {
+      success: boolean;
+      data?: {
+        resultados?: ResultadoAutotriage[];
+        exitosos?: number;
+        fallidos?: number;
+      };
+    } | undefined;
+
+    try {
+      const response = await lastValueFrom(this.autotriageService.ejecutarAutotriage()) as AutotriageResponse;
+
+      if (response?.success) {
+        this.resultadosAutotriage.set(response.data?.resultados ?? []);
+        this.estadisticasAutotriage.set({
+          ticketsPendientes: 0,
+          tecnicosDisponibles: this.estadisticasAutotriage()?.tecnicosDisponibles ?? 0
+        });
+
+        this.notificationService.success(
+          'Éxito',
+          `Autotriage completado: ${response.data?.exitosos ?? 0} exitosos, ${response.data?.fallidos ?? 0} fallidos`,
+          5000
+        );
+      } else {
+        if (response && !response.success) {
+          this.notificationService.warning('Autotriage', 'El autotriage no devolvió resultados exitosos', 4000);
+        } else {
+          this.notificationService.error('Error', 'No se recibió respuesta del servicio de autotriage', 4000);
+        }
+      }
+    } catch (error: any) {
+      this.notificationService.error('Error', error?.error?.message || 'Error al ejecutar autotriage', 4000);
+    } finally {
+      this.isLoadingAutotriage.set(false);
+    }
+  }
+
+  async asignarManual(): Promise<void> {
+    if (!this.esAdministrador()) {
+      this.notificationService.warning('Permisos insuficientes', 'Solo los administradores pueden realizar asignaciones manuales', 4000);
+      return;
+    }
+
+    if (!this.selectedTicketId() || !this.selectedTecnicoId() || !this.justificacion().trim()) {
+      this.notificationService.warning('Validación', 'Debe seleccionar ticket, técnico y escribir una justificación', 4000);
+      return;
+    }
+
+    this.isLoading.set(true);
+
+    try {
+      const response = await this.asignacionManualService.asignarManual(
+        this.selectedTicketId()!,
+        this.selectedTecnicoId()!,
+        this.justificacion()
+      ).toPromise();
+
+      if (response?.success) {
+        this.notificationService.success('Éxito', 'Ticket asignado manualmente correctamente', 4000);
+        this.closeModal();
+        this.cargarEstadisticasAutotriage();
+      }
+    } catch (error: any) {
+      this.notificationService.error('Error', error.error?.message || 'Error al asignar ticket manualmente', 4000);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  onTicketSelected(value: string): void {
+    this.selectedTicketId.set(value ? +value : null);
+  }
+
+  onTecnicoSelected(value: string): void {
+    this.selectedTecnicoId.set(value ? +value : null);
+  }
+
+  getTicketSeleccionado(): any {
+    if (!this.selectedTicketId()) return undefined;
+    return this.ticketsPendientes().find(t => t.id === this.selectedTicketId());
+  }
+
+  getTecnicoSeleccionado(): any {
+    if (!this.selectedTecnicoId()) return undefined;
+    return this.tecnicosDisponibles().find(t => t.id === this.selectedTecnicoId());
+  }
+
+  getEspecialidadesTecnico(): string {
+    const tecnico = this.getTecnicoSeleccionado();
+    if (!tecnico || !tecnico.especialidades) return 'Sin especialidades';
+    return tecnico.especialidades.map((e: any) => e.nombre).join(', ');
+  }
+
+  getColorPrioridad(prioridad: string): string {
+    switch (prioridad) {
+      case 'CRITICO': return 'danger';
+      case 'ALTO': return 'warning';
+      case 'MEDIO': return 'info';
+      case 'BAJO': return 'success';
+      default: return 'secondary';
+    }
+  }
+
+ abrirModalAsignacion(modo: 'automatica' | 'manual'): void {
+    if (!this.esAdministrador()) {
+      this.notificationService.warning('Permisos insuficientes', 'Solo los administradores pueden realizar asignaciones', 4000);
+      return;
+    }
+
+    this.modoAsignacion.set(modo);
+    this.showModal.set(true);
+
+    if (modo === 'manual') {
+      this.cargarDatosAsignacionManual();
+    } else if (modo === 'automatica') {
+      this.cargarEstadisticasAutotriage();
+    }
   }
 
   cargarAsignaciones(): void {
     this.asignacionService.getMisAsignaciones().subscribe({
       next: (data) => {
-        this.asignaciones.set(data);        // Guarda las asignaciones en el signal
-        this.generarCalendario();          // Genera el calendario con los datos
+        this.asignaciones.set(data);
+        this.generarCalendario();
       },
       error: (error) => {
-        console.error('Error al cargar asignaciones:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar las asignaciones', 4000);
       }
     });
   }
 
   generarCalendario(): void {
-    const semanas: DiaCalendario[][] = [];  // Array para almacenar todas las semanas
-    const primerDiaMes = new Date(this.anioActual(), this.mesActual(), 1);  // Crea la fecha del primer día del mes actual
-    const ultimoDiaMes = new Date(this.anioActual(), this.mesActual() + 1, 0); // Crea la fecha del último día del mes actual (día 0 del siguiente mes)
-    const primerDiaSemana = primerDiaMes.getDay();  // Obtiene el día de la semana del primer día (0=domingo, 1=lunes, etc.)
-
+    const semanas: DiaCalendario[][] = [];
+    const primerDiaMes = new Date(this.anioActual(), this.mesActual(), 1);
+    const ultimoDiaMes = new Date(this.anioActual(), this.mesActual() + 1, 0);
+    const primerDiaSemana = primerDiaMes.getDay();
     const diasMesAnterior = primerDiaSemana === 0 ? 6 : primerDiaSemana - 1;
-    //  Calcula cuántos días del mes anterior mostrar
-    // - Si el primer día es domingo (0), muestra 6 días del mes anterior
-    // - En otro caso, muestra (día-1) días del mes anterior
 
     const ultimoDiaMesAnterior = new Date(this.anioActual(), this.mesActual(), 0).getDate();
-    // Obtiene el último día del mes anterior
 
-    let semanaActual: DiaCalendario[] = []; // Array temporal para la semana en construcción
+    let semanaActual: DiaCalendario[] = [];
 
-    // Agrega días del mes anterior
     for (let i = diasMesAnterior; i > 0; i--) {
       const diaMesAnterior = ultimoDiaMesAnterior - i + 1;
-      // Calcula el día específico del mes anterior
       const fecha = new Date(this.anioActual(), this.mesActual() - 1, diaMesAnterior);
-      // Crea la fecha del día del mes anterior
       semanaActual.push(this.crearDiaCalendario(fecha, false));
-      // Agrega el día al array de la semana actual (esMesActual = false)
     }
 
-    // FOR: Agrega todos los días del mes actual
     for (let dia = 1; dia <= ultimoDiaMes.getDate(); dia++) {
       const fecha = new Date(this.anioActual(), this.mesActual(), dia);
-      // Crea la fecha del día actual del mes
-
       semanaActual.push(this.crearDiaCalendario(fecha, true));
-      // Agrega el día al array de la semana actual (esMesActual = true)
 
-      // Cuando se completa una semana (7 días)
       if (semanaActual.length === 7) {
-        semanas.push(semanaActual);  // Agrega la semana completa al array de semanas
-        semanaActual = [];           // Reinicia el array para la siguiente semana
+        semanas.push(semanaActual);
+        semanaActual = [];
       }
     }
 
-    // Si quedan días sin completar la última semana
     if (semanaActual.length > 0) {
       let diaSiguienteMes = 1;
-
-      // Completa la última semana con días del siguiente mes
       while (semanaActual.length < 7) {
         const fecha = new Date(this.anioActual(), this.mesActual() + 1, diaSiguienteMes);
         semanaActual.push(this.crearDiaCalendario(fecha, false));
-        diaSiguienteMes++;  // Incrementa el contador de días del siguiente mes
+        diaSiguienteMes++;
       }
-      semanas.push(semanaActual);  // Agrega la última semana completada
+      semanas.push(semanaActual);
     }
 
-    this.semanas.set(semanas);  // Actualiza el signal con el calendario generado
+    this.semanas.set(semanas);
   }
 
   crearDiaCalendario(fecha: Date, esMesActual: boolean): DiaCalendario {
-    //Filtra las asignaciones que coinciden con la fecha
     const asignacionesDia = this.asignaciones().filter(asignacion => {
       const fechaAsignacion = new Date(asignacion.fechaAsignacion);
       return fechaAsignacion.toDateString() === fecha.toDateString();
-      // Compara si las fechas son el mismo día (ignorando hora)
     });
 
     return {
@@ -132,81 +323,89 @@ export class AsignacionesComponent {
       numero: fecha.getDate(),
       esMesActual,
       asignaciones: asignacionesDia,
-      tieneAsignaciones: asignacionesDia.length > 0,  // true si hay asignaciones
+      tieneAsignaciones: asignacionesDia.length > 0,
       cantidadAsignaciones: asignacionesDia.length
     };
   }
 
   mesAnterior(): void {
     this.mesActual.update(mes => {
-      let nuevoMes = mes - 1;  // Decrementa el mes
+      let nuevoMes = mes - 1;
       let nuevoAnio = this.anioActual();
 
-      // Si el nuevo mes es menor que 0 (diciembre del año anterior)
       if (nuevoMes < 0) {
-        nuevoMes = 11;         // Establece diciembre
-        nuevoAnio--;           // Decrementa el año
+        nuevoMes = 11;
+        nuevoAnio--;
       }
 
-      this.anioActual.set(nuevoAnio);  // Actualiza el año
-      return nuevoMes;         // Retorna el nuevo mes
+      this.anioActual.set(nuevoAnio);
+      return nuevoMes;
     });
-    this.generarCalendario();  // Regenera el calendario con el nuevo mes
+    this.generarCalendario();
   }
 
   mesSiguiente(): void {
     this.mesActual.update(mes => {
-      let nuevoMes = mes + 1;  // Incrementa el mes
+      let nuevoMes = mes + 1;
       let nuevoAnio = this.anioActual();
 
-      // Si el nuevo mes es mayor que 11 (enero del siguiente año)
       if (nuevoMes > 11) {
-        nuevoMes = 0;          // Establece enero
-        nuevoAnio++;           // Incrementa el año
+        nuevoMes = 0;
+        nuevoAnio++;
       }
 
-      this.anioActual.set(nuevoAnio);  // Actualiza el año
-      return nuevoMes;         // Retorna el nuevo mes
+      this.anioActual.set(nuevoAnio);
+      return nuevoMes;
     });
-    this.generarCalendario();  // Regenera el calendario con el nuevo mes
+    this.generarCalendario();
   }
 
   abrirModalDia(dia: DiaCalendario): void {
-    // Solo abre el modal si el día tiene asignaciones
     if (dia.tieneAsignaciones) {
       this.asignacionesDiaSeleccionado.set(dia.asignaciones);
-      // Guarda las asignaciones del día seleccionado
-
       this.fechaSeleccionada.set(dia.fecha.toLocaleDateString('es-ES', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric'
       }));
-      // Formatea la fecha en español (ej: "lunes, 1 de enero de 2024")
+      this.mostrarModal.set(true);
+    }
+  }
 
-      this.mostrarModal.set(true);  // Muestra el modal
+  getPrioridadBadgeClass(prioridad: string): string {
+    switch (prioridad?.toUpperCase()) {
+      case 'CRITICO': return 'bg-danger';
+      case 'ALTO': return 'bg-warning';
+      case 'MEDIO': return 'bg-info';
+      case 'BAJO': return 'bg-success';
+      default: return 'bg-secondary';
     }
   }
 
   cerrarModal(): void {
-    this.mostrarModal.set(false);           // Oculta el modal
-    this.asignacionesDiaSeleccionado.set([]); // Limpia las asignaciones del modal
+    this.mostrarModal.set(false);
+    this.asignacionesDiaSeleccionado.set([]);
   }
 
   verDetalleAsignacion(id: number): void {
-
-    //  Validación del ID
     if (!id || id === 0) {
       alert('Error: No se puede cargar el detalle. ID no válido.');
-      return;  // Sale de la función si el ID no es válido
+      return;
     }
 
-    this.cerrarModal();  // Cierra el modal
+    this.cerrarModal();
+    this.router.navigate(['asignaciones/detalle', id]);
+  }
 
-    this.router.navigate(['/asignaciones/detalle', id]).then(success => {
-    }).catch(error => {
-    });
+    verDetalleGestion(id: number): void {
+    if (!id || id === 0) {
+      alert('Error: No se puede cargar el detalle. ID no válido.');
+      return;
+    }
+
+    this.cerrarModal();
+     this.router.navigate(['/tickets/gestion', id]);
   }
 
   getNombreMes(): string {
@@ -235,13 +434,11 @@ export class AsignacionesComponent {
   }
 
   getDiasConAsignaciones(): number {
-    //  Cuenta días del mes actual con asignaciones
     return this.semanas().reduce((total, semana) => {
       return total + semana.filter(dia => dia.tieneAsignaciones && dia.esMesActual).length;
-      // Filtra días que tienen asignaciones y son del mes actual
     }, 0);
   }
-  
+
   getAbreviaturaDia(diaCompleto: string): string {
     return diaCompleto.charAt(0);
   }

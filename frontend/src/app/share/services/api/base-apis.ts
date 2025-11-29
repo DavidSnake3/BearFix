@@ -1,26 +1,49 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, Inject, InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AuthService } from './auth.service';
 import { environment } from '../../../../environments/environment.development';
 
 export interface BaseEntity {
   id?: number;
 }
 
+export const API_ENDPOINT = new InjectionToken<string>('ApiEndpoint');
+
 @Injectable({
   providedIn: 'root',
 })
 export class BaseAPI<T extends BaseEntity> {
-
   protected urlAPI: string = environment.apiURL;
 
   constructor(
     protected http: HttpClient,
-    @Inject(String) protected endpoint: string
+    @Inject(API_ENDPOINT) protected endpoint: string,
+    protected authService: AuthService
   ) { }
 
-  protected getHeaders(): HttpHeaders | { [header: string]: string | string[] } {
-    return {};
+  protected getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    const userId = this.authService.getUserIdFromToken();
+    const userRole = this.authService.getRoleFromToken();
+    
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    if (userId) {
+      headers = headers.set('user-id', userId.toString());
+    }
+
+    if (userRole) {
+      headers = headers.set('user-role', userRole);
+    }
+
+    return headers;
   }
 
   get(): Observable<T[]> {

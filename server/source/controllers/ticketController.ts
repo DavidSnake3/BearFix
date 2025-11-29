@@ -3,6 +3,7 @@ import { AppError } from "../errors/custom.error";
 import { PrismaClient, Role, TicketEstado, Prioridad, ModoAsignacion } from "../../generated/prisma";
 import path from "path";
 import fs from "fs";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 export class TicketController {
   prisma = new PrismaClient();
@@ -120,22 +121,24 @@ export class TicketController {
 
   get = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userRole = request.headers['user-role'] as string;
+      const user = (request as any).user;
 
       let whereCondition: any = { eliminadoLogico: false };
 
-      switch (userRole) {
+      switch (user.role) {
         case 'ADM':
           break;
         case 'USR':
-          const userId = parseInt(request.headers['user-id'] as string);
-          if (isNaN(userId)) {
-            return next(AppError.badRequest("Se requiere user-id válido para rol USR"));
-          }
-          whereCondition.solicitanteId = userId;
+          whereCondition.solicitanteId = user.userId;
           break;
         case 'TEC':
-          return next(AppError.badRequest("Se requiere user-id para rol TEC"));
+                  whereCondition.asignaciones = {
+          some: {
+            tecnicoId: user.userId,
+            activo: true
+          }
+        };
+        break;
         default:
           return next(AppError.badRequest("Rol no válido"));
       }
@@ -398,11 +401,7 @@ export class TicketController {
   create = async (request: Request, response: Response, next: NextFunction) => {
       try {
         const body = request.body;
-        const userId = parseInt(request.headers['user-id'] as string);
-
-        if (isNaN(userId)) {
-          return next(AppError.badRequest("User ID no válido"));
-        }
+        const user = (request as any).user;
 
         const categoriaId = parseInt(body.categoriaId);
         const etiquetaId = parseInt(body.etiquetaId);
@@ -421,7 +420,7 @@ export class TicketController {
 
         const usuario = await this.prisma.usuario.findFirst({
           where: {
-            id: userId,
+            id: user.userId,
             activo: true
           }
         });
@@ -465,7 +464,7 @@ export class TicketController {
             consecutivo,
             titulo: body.titulo,
             descripcion: body.descripcion,
-            solicitanteId: userId,
+            solicitanteId: user.userId,
             categoriaId: categoriaId, 
             prioridad: body.prioridad || Prioridad.MEDIO,
             fechaLimiteRespuesta,
@@ -524,7 +523,7 @@ export class TicketController {
                 tipo: imagenData.tipo,
                 tamaño: imagenData.tamaño,
                 descripcion: imagenData.descripcion,
-                subidoPorId: userId
+                subidoPorId: user.userId
               }
             });
           }
@@ -534,7 +533,7 @@ export class TicketController {
           data: {
             ticketId: newTicket.id,
             estadoDestino: TicketEstado.PENDIENTE,
-            usuarioId: userId,
+            usuarioId: user.userId,
             observaciones: 'Ticket creado'
           }
         });
@@ -599,7 +598,6 @@ export class TicketController {
 
         response.status(201).json(ticketCompleto);
       } catch (error) {
-        console.error("Error creando ticket:", error);
         next(error);
       }
   };
@@ -608,14 +606,10 @@ export class TicketController {
     try {
       const body = request.body;
       const ticketId = parseInt(request.params.id);
-      const userId = parseInt(request.headers['user-id'] as string);
+      const user = (request as any).user;
 
       if (isNaN(ticketId)) {
         return next(AppError.badRequest("El ID del ticket no es válido"));
-      }
-
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
       }
 
       const categoriaId = parseInt(body.categoriaId);
@@ -779,7 +773,7 @@ export class TicketController {
               tipo: imagenData.tipo,
               tamaño: imagenData.tamaño,
               descripcion: imagenData.descripcion,
-              subidoPorId: userId
+              subidoPorId: user.userId
             }
           });
         }
@@ -791,7 +785,7 @@ export class TicketController {
             ticketId: ticketId,
             estadoOrigen: ticketExistente.estado,
             estadoDestino: body.estado,
-            usuarioId: userId,
+            usuarioId: user.userId,
             observaciones: body.observacionesCambioEstado || 'Estado actualizado'
           }
         });
@@ -879,7 +873,6 @@ export class TicketController {
 
       response.json(ticketCompleto);
     } catch (error) {
-      console.error("Error actualizando ticket:", error);
       next(error);
     }
   };
@@ -887,7 +880,7 @@ export class TicketController {
   eliminarImagen = async (request: Request, response: Response, next: NextFunction) => {
     try {
       const imagenId = parseInt(request.params.imagenId);
-      const userId = parseInt(request.headers['user-id'] as string);
+      const user = (request as any).user;
 
       if (isNaN(imagenId)) {
         return next(AppError.badRequest("El ID de la imagen no es válido"));
@@ -904,7 +897,7 @@ export class TicketController {
         return next(AppError.notFound("No existe la imagen"));
       }
 
-      if (imagen.ticket.solicitanteId !== userId && request.headers['user-role'] !== 'ADM') {
+      if (imagen.ticket.solicitanteId !== user.userId && user.role !== 'ADM') {
         return next(AppError.forbidden("No tienes permisos para eliminar esta imagen"));
       }
 
@@ -922,7 +915,6 @@ export class TicketController {
         id: imagenId
       });
     } catch (error) {
-      console.error("Error eliminando imagen:", error);
       next(error);
     }
   };
@@ -930,14 +922,10 @@ export class TicketController {
   delete = async (request: Request, response: Response, next: NextFunction) => {
     try {
       const ticketId = parseInt(request.params.id);
-      const userId = parseInt(request.headers['user-id'] as string);
+      const user = (request as any).user;
 
       if (isNaN(ticketId)) {
         return next(AppError.badRequest("El ID no es válido"));
-      }
-
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
       }
 
       const ticketExistente = await this.prisma.ticket.findFirst({
@@ -951,8 +939,7 @@ export class TicketController {
         return next(AppError.notFound("No existe el ticket"));
       }
 
-      const userRole = request.headers['user-role'] as string;
-      if (userRole !== 'ADM' && ticketExistente.solicitanteId !== userId) {
+      if (user.role !== 'ADM' && ticketExistente.solicitanteId !== user.userId) {
         return next(AppError.forbidden("No tienes permisos para eliminar este ticket"));
       }
 
@@ -970,7 +957,6 @@ export class TicketController {
         consecutivo: ticketEliminado.consecutivo
       });
     } catch (error) {
-      console.error("Error eliminando ticket:", error);
       next(error);
     }
   };
@@ -1047,11 +1033,7 @@ export class TicketController {
 
   getMisTicketsCreados = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userId = parseInt(request.headers['user-id'] as string);
-
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
-      }
+      const user = (request as any).user;
 
       const {
         search = '',
@@ -1065,7 +1047,7 @@ export class TicketController {
 
       let whereCondition: any = {
         eliminadoLogico: false,
-        solicitanteId: userId
+        solicitanteId: user.userId
       };
 
       if (search && search !== '') {
@@ -1156,69 +1138,68 @@ export class TicketController {
 
       response.json(resultado);
     } catch (error) {
-      console.error('Error en getMisTicketsCreados:', error);
       next(error);
     }
   };
 
-  getTicketsDashboard = async (request: Request, response: Response, next: NextFunction) => {
-    try {
-      const userId = parseInt(request.headers['user-id'] as string);
+  getTicketsDashboard = async (request: AuthRequest, response: Response, next: NextFunction) => {
+      try {
+        const user = request.user;
 
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
-      }
+        if (!user) {
+          return next(AppError.unauthorized('Usuario no autenticado'));
+        }
 
-      const tickets = await this.prisma.ticket.findMany({
-        where: {
-          eliminadoLogico: false,
-          solicitanteId: userId
-        },
-        orderBy: {
-          fechaCreacion: 'desc'
-        },
-        take: 5,
-        select: {
-          id: true,
-          consecutivo: true,
-          titulo: true,
-          estado: true,
-          prioridad: true,
-          fechaCreacion: true,
-          categoria: {
-            select: {
-              nombre: true,
-              id: true
-            }
+        const tickets = await this.prisma.ticket.findMany({
+          where: {
+            eliminadoLogico: false,
+            solicitanteId: user.userId
           },
-          solicitante: {
-            select: {
-              nombre: true,
-              correo: true
+          orderBy: {
+            fechaCreacion: 'desc'
+          },
+          take: 5,
+          select: {
+            id: true,
+            consecutivo: true,
+            titulo: true,
+            estado: true,
+            prioridad: true,
+            fechaCreacion: true,
+            categoria: {
+              select: {
+                nombre: true,
+                id: true
+              }
+            },
+            solicitante: {
+              select: {
+                nombre: true,
+                correo: true
+              }
             }
           }
-        }
-      });
+        });
 
-      const resultado = {
-        success: true,
-        tickets: tickets,
-        total: tickets.length,
-        message: `Se encontraron ${tickets.length} tickets recientes`
-      };
+        const resultado = {
+          success: true,
+          tickets: tickets,
+          total: tickets.length,
+          message: `Se encontraron ${tickets.length} tickets recientes`
+        };
 
-      response.json(resultado);
+        response.json(resultado);
 
-    } catch (error) {
-      next(error);
-    }
+      } catch (error) {
+        next(error);
+      }
   };
 
   getTodasAsignaciones = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userRole = request.headers['user-role'] as string;
+      const user = (request as any).user;
 
-      if (userRole !== 'ADM') {
+      if (user.role !== 'ADM') {
         return next(AppError.forbidden("Solo los administradores pueden ver todas las asignaciones"));
       }
 
@@ -1317,9 +1298,9 @@ export class TicketController {
 
   getTodasAsignacionesConFiltros = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userRole = request.headers['user-role'] as string;
+      const user = (request as any).user;
 
-      if (userRole !== 'ADM') {
+      if (user.role !== 'ADM') {
         return next(AppError.forbidden("Solo los administradores pueden ver todas las asignaciones"));
       }
 
@@ -1455,21 +1436,16 @@ export class TicketController {
 
   getMisAsignaciones = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userId = parseInt(request.headers['user-id'] as string);
-      const userRole = request.headers['user-role'] as string;
+      const user = (request as any).user;
 
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
-      }
-
-      if (userRole !== 'TEC' && userRole !== 'ADM') {
+      if (user.role !== 'TEC' && user.role !== 'ADM') {
         return next(AppError.forbidden("No tienes permisos para ver asignaciones"));
       }
 
       const misAsignaciones = await this.prisma.asignacion.findMany({
         where: {
           activo: true,
-          tecnicoId: userId
+          tecnicoId: user.userId
         },
         include: {
           ticket: {
@@ -1555,19 +1531,14 @@ export class TicketController {
       response.json(asignacionesFormateadas);
 
     } catch (error) {
-      console.error('Error en getMisAsignaciones:', error);
       next(error);
     }
   };
 
   getAsignacionesByID = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userId = parseInt(request.headers['user-id'] as string);
+      const user = (request as any).user;
       const ticketId = parseInt(request.params.id);
-
-      if (isNaN(userId)) {
-        return next(AppError.badRequest("User ID no válido"));
-      }
 
       if (isNaN(ticketId)) {
         return next(AppError.badRequest("Ticket ID no válido"));
@@ -1575,7 +1546,7 @@ export class TicketController {
 
       const asignacion = await this.prisma.asignacion.findFirst({
         where: {
-          tecnicoId: userId,
+          tecnicoId: user.userId,
           ticketId: ticketId,
           activo: true
         },
@@ -1663,17 +1634,16 @@ export class TicketController {
       response.json(resultado);
 
     } catch (error) {
-      console.error('Error en getAsignacionesByID:', error);
       next(error);
     }
   };
 
   getAsignacionByTicketIdForAdmin = async (request: Request, response: Response, next: NextFunction) => {
     try {
-      const userRole = request.headers['user-role'] as string;
+      const user = (request as any).user;
       const ticketId = parseInt(request.params.id);
 
-      if (userRole !== 'ADM') {
+      if (user.role !== 'ADM' && user.role !== 'TEC' ) {
         return next(AppError.forbidden("Solo los administradores pueden ver asignaciones de cualquier ticket"));
       }
 

@@ -1,0 +1,258 @@
+<div class="gestion-ticket-container">
+  <div class="gestion-header">
+    <div class="header-content">
+      <div class="header-info">
+        <h1 class="page-title">
+          <i class="bi bi-tools"></i>
+          Gestión de Ticket
+        </h1>
+        <p class="page-subtitle">Gestiona el estado y seguimiento del ticket asignado</p>
+      </div>
+      
+      <div class="ticket-info-banner">
+        <div class="ticket-basic-info">
+          <span class="ticket-code">{{ ticket()?.consecutivo }}</span>
+          <span class="ticket-title">{{ ticket()?.titulo }}</span>
+        </div>
+        <div class="ticket-status-info">
+          <span class="badge" [ngClass]="getEstadoBadgeClass(ticket()?.estado)">
+            {{ ticket()?.estado }}
+          </span>
+          <span class="badge" [ngClass]="getPrioridadBadgeClass(ticket()?.prioridad)">
+            {{ ticket()?.prioridad }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gestion-content">
+    <div class="row">
+      <!-- Panel de Cambio de Estado -->
+      <div class="col-md-4">
+        <div class="card estado-card">
+          <div class="card-header">
+            <h5><i class="bi bi-arrow-repeat"></i> Cambiar Estado</h5>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="estadoForm" (ngSubmit)="cambiarEstado()">
+              <div class="form-group">
+                <label class="form-label">Estado Actual</label>
+                <div class="current-state">
+                  <span class="badge" [ngClass]="getEstadoBadgeClass(ticket()?.estado)">
+                    {{ ticket()?.estado }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Nuevo Estado</label>
+                <select class="form-select" formControlName="nuevoEstado">
+                  <option value="">Seleccionar estado</option>
+                  <option value="EN_PROCESO">En Proceso</option>
+                  <option value="ESPERA_CLIENTE">Espera Cliente</option>
+                  <option value="RESUELTO">Resuelto</option>
+                  <option value="CERRADO">Cerrado</option>
+                </select>
+                <div class="form-text">
+                  Flujo: Pendiente → Asignado → En Proceso → Resuelto → Cerrado
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Observaciones <span class="text-danger">*</span></label>
+                <textarea 
+                  class="form-control" 
+                  rows="4" 
+                  formControlName="observaciones"
+                  placeholder="Describe las acciones realizadas o el motivo del cambio de estado..."
+                ></textarea>
+                <div class="invalid-feedback" *ngIf="estadoForm.get('observaciones')?.invalid && estadoForm.get('observaciones')?.touched">
+                  Las observaciones son obligatorias
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Evidencia Fotográfica <span class="text-danger">*</span></label>
+                <div class="file-upload-container">
+                  <input 
+                    type="file" 
+                    #fileInput 
+                    (change)="onFileSelected($event)" 
+                    multiple 
+                    accept="image/*" 
+                    class="file-input"
+                    [disabled]="estaSubiendoImagen()">
+                  <div class="upload-area" (click)="fileInput.click()">
+                    <i class="bi bi-cloud-upload"></i>
+                    <p>Haz clic o arrastra imágenes aquí</p>
+                    <small>Formatos: JPEG, PNG, GIF, WebP (Máx. 2MB por imagen)</small>
+                  </div>
+                </div>
+                
+                @if (estaSubiendoImagen()) {
+                <div class="upload-loading">
+                  <div class="spinner small"></div>
+                  <span>Subiendo imagen...</span>
+                </div>
+                }
+
+                @if (imagenesEvidencia().length > 0) {
+                <div class="images-preview mt-3">
+                  <h6>Imágenes a subir:</h6>
+                  <div class="preview-grid">
+                    @for (imagen of imagenesEvidencia(); track $index; let i = $index) {
+                    <div class="preview-item">
+                      <img [src]="imagen.url" [alt]="imagen.descripcion" class="preview-image">
+                      <div class="preview-actions">
+                        <button class="btn-icon danger small" 
+                                (click)="eliminarImagenEvidencia(i)"
+                                title="Eliminar imagen">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                    }
+                  </div>
+                </div>
+                }
+              </div>
+
+              <div class="form-actions">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  [disabled]="!estadoForm.valid || imagenesEvidencia().length === 0 || isLoading()">
+                  <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-check-circle'"></i>
+                  {{ isLoading() ? 'Procesando...' : 'Actualizar Estado' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del Ticket -->
+      <div class="col-md-8">
+        <div class="card info-card">
+          <div class="card-header">
+            <h5><i class="bi bi-info-circle"></i> Información del Ticket</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>Solicitante:</label>
+                  <span>{{ ticket()?.solicitante?.nombre }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Email:</label>
+                  <span>{{ ticket()?.solicitante?.correo }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Categoría:</label>
+                  <span>{{ ticket()?.categoria?.nombre }}</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-item">
+                  <label>Fecha Creación:</label>
+                  <span>{{ ticket()?.fechaCreacion | date:'medium' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Última Actualización:</label>
+                  <span>{{ ticket()?.fechaActualizacion | date:'medium' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>SLA Resolución:</label>
+                  <span [ngClass]="{'text-danger': getTiempoRestanteSLA() < 24}">
+                    {{ getTiempoRestanteSLA() }} horas restantes
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-item full-width">
+              <label>Descripción:</label>
+              <div class="description-box">
+                {{ ticket()?.descripcion }}
+              </div>
+            </div>
+
+            @if (ticket()?.tecnicoAsignado) {
+              <div class="info-item full-width">
+                <label>Técnico Asignado:</label>
+                <div class="tecnico-info">
+                  <strong>{{ ticket()?.tecnicoAsignado?.nombre }}</strong> - {{ ticket()?.tecnicoAsignado?.correo }}
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Historial de Cambios -->
+        <div class="card historial-card">
+          <div class="card-header">
+            <h5><i class="bi bi-clock-history"></i> Historial de Cambios</h5>
+          </div>
+          <div class="card-body">
+            <div class="timeline">
+              @for (historial of historial(); track historial.id) {
+              <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                  <div class="timeline-header">
+                    <h6>
+                      <i class="bi bi-arrow-right"></i>
+                      {{ historial.estadoOrigen || 'NUEVO' }} → {{ historial.estadoDestino }}
+                    </h6>
+                    <small>{{ historial.creadoEn | date:'medium' }}</small>
+                  </div>
+                  <p class="timeline-description">{{ historial.observaciones }}</p>
+                  <small class="timeline-user">Por: {{ historial.usuario?.nombre || 'Sistema' }}</small>
+                  
+                  @if (historial.imagenes && historial.imagenes.length > 0) {
+                  <div class="timeline-images">
+                    <div class="image-thumbnails">
+                      @for (imagen of historial.imagenes; track imagen.id) {
+                      <img 
+                        [src]="getImageUrl(imagen.nombreArchivo)" 
+                        [alt]="imagen.descripcion"
+                        class="thumbnail"
+                        (click)="verImagen(imagen)">
+                      }
+                    </div>
+                  </div>
+                  }
+                </div>
+              </div>
+              } @empty {
+                <div class="empty-state">
+                  <i class="bi bi-clock-history"></i>
+                  <p>No hay historial registrado</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para ver imagen -->
+@if (showImageModal()) {
+<div class="modal-overlay" (click)="closeImageModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5>Evidencia: {{ selectedImage()?.descripcion || 'Sin descripción' }}</h5>
+      <button class="btn-close" (click)="closeImageModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-body text-center">
+      <img [src]="selectedImage()?.url" class="img-fluid" [alt]="selectedImage()?.descripcion">
+    </div>
+  </div>
+</div>
+}

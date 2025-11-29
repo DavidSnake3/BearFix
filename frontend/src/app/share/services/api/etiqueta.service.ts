@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Etiqueta } from '../../models/EtiquetaModel';
 import { BaseAPI } from './base-apis';
+import { AuthService } from './auth.service';
 
 export interface CreateEtiquetaRequest {
   nombre: string;
@@ -20,9 +21,8 @@ export interface UpdateEtiquetaRequest {
   providedIn: 'root'
 })
 export class EtiquetaService extends BaseAPI<Etiqueta> {
-
-  constructor(httpClient: HttpClient) { 
-    super(httpClient, environment.endPointEtiqueta);
+  constructor(httpClient: HttpClient, authService: AuthService) { 
+    super(httpClient, environment.endPointEtiqueta, authService);
   }
 
   createEtiqueta(etiquetaData: CreateEtiquetaRequest): Observable<Etiqueta> {

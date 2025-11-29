@@ -42,23 +42,30 @@
 
                     <div class="info-row">
                       <div class="info-item">
-                        <label class="form-label required">Categoría</label>
-                        <select class="form-select" [(ngModel)]="newTicket().categoriaId" (change)="onCategoriaChange($any($event.target).value)">
-                          <option value="">Seleccione categoría</option>
-                          @for (categoria of categoriasConEtiquetas(); track categoria.id) {
-                          <option [value]="categoria.id">{{ categoria.nombre }}</option>
+                        <label class="form-label required">Etiqueta</label>
+                        <select class="form-select" [(ngModel)]="newTicket().etiquetaId" 
+                                (change)="onEtiquetaChange($any($event.target).value)">
+                          <option value="">Seleccione etiqueta</option>
+                          @for (etiqueta of etiquetasConCategoria(); track etiqueta.id) {
+                          <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
                           }
                         </select>
                       </div>
 
                       <div class="info-item">
-                        <label class="form-label required">Etiqueta</label>
-                        <select class="form-select" [(ngModel)]="newTicket().etiquetaId" [disabled]="!newTicket().categoriaId">
-                          <option value="">Seleccione etiqueta</option>
-                          @for (etiqueta of etiquetasFiltradasCreacion(); track etiqueta.id) {
-                          <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
+                        <label class="form-label required">Categoría (Automática)</label>
+                        <div class="categoria-display">
+                          @if (categoriaSeleccionada()) {
+                            <div class="categoria-info">
+                              <strong>{{ categoriaSeleccionada().nombre }}</strong>
+                              <small class="text-muted">{{ categoriaSeleccionada().descripcion }}</small>
+                            </div>
+                          } @else {
+                            <div class="categoria-placeholder">
+                              <span class="text-muted">Seleccione una etiqueta para ver la categoría</span>
+                            </div>
                           }
-                        </select>
+                        </div>
                       </div>
                     </div>
 
@@ -193,4 +200,3 @@
       </div>
     </div>
   </div>
-</div>

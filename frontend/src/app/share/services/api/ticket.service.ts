@@ -1,33 +1,22 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Injectable, Inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { CategoriaConEtiquetas, CreateTicketRequest, Etiqueta, Ticket, UpdateTicketRequest, Usuario } from '../../models/TicketModel';
-import { BaseAPI } from './base-apis';
+import { BaseAPI, API_ENDPOINT } from './base-apis';
 import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TicketService extends BaseAPI<Ticket> {
-
   constructor(
     httpClient: HttpClient,
-    private authService: AuthService 
+    authService: AuthService
   ) { 
-    super(httpClient, environment.endPointTicket);
+    super(httpClient, environment.endPointTicket, authService);
   }
 
-  protected override getHeaders(): HttpHeaders {
-    const userId = this.authService.getUserIdFromToken();
-    const userRole = this.authService.getRoleFromToken();
-    
-    return new HttpHeaders({
-      'user-id': userId?.toString() || '0',
-      'user-role': userRole || 'USR'
-    });
-  }
- 
   override get(filtros?: any): Observable<any> {
     const headers = this.getHeaders();
     let params = new HttpParams();

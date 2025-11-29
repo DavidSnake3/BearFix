@@ -267,10 +267,25 @@ model TicketHistorial {
   creadoEn      DateTime @default(now())
   ticket        Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   usuario       Usuario? @relation(fields: [usuarioId], references: [id])
+  imagenes      ImagenHistorial[]
 
   @@index([ticketId])
   @@index([usuarioId])
   @@index([creadoEn])
+}
+
+model ImagenHistorial {
+  id            Int            @id @default(autoincrement())
+  historialId   Int
+  nombreArchivo String
+  url           String
+  tipo          String?
+  tamaño        Int?
+  descripcion   String?
+  creadoEn      DateTime       @default(now())
+  historial     TicketHistorial @relation(fields: [historialId], references: [id], onDelete: Cascade)
+
+  @@index([historialId])
 }
 
 model ReglaAutotriage {

@@ -1,19 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Usuario } from '../../models/UsuarioModel';
 import { BaseAPI } from './base-apis';
 import { CreateTecnicoRequest, UpdateTecnicoRequest } from '../../models/tecnico.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TecnicoService extends BaseAPI<Usuario> {
-
-  constructor(httpClient: HttpClient) { 
-    super(httpClient, environment.endPointTecnico);
+  constructor(httpClient: HttpClient, authService: AuthService) { 
+    super(httpClient, environment.endPointTecnico, authService);
   }
 
   override get(filtros?: any): Observable<any> {

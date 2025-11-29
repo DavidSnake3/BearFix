@@ -4,6 +4,8 @@ import { createJwt, createRefreshToken, getPrincipleFromExpiredToken, getRefresh
 import { sendEmail } from '../services/emailService';
 import { emailBody } from '../utils/emailBody';
 import { hashPassword, verifyPassword } from '../utils/passwordHsher';
+import { AuthRequest } from '../middleware/authMiddleware';
+
 
 export class UserController {
   prisma = new PrismaClient();
@@ -185,21 +187,189 @@ export class UserController {
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { correo, emailToken, newPassword } = req.body;
-      if (!correo || !emailToken || !newPassword) return res.status(400).json({ message: 'Payload inválido' });
+      
+
+      if (!correo || !emailToken || !newPassword) {
+        return res.status(400).json({ message: 'Payload inválido' });
+      }
 
       const usuario = await this.prisma.usuario.findUnique({ where: { correo } });
-      if (!usuario) return res.status(404).json({ message: "Usuario no existe" });
+      if (!usuario) {
+        return res.status(404).json({ message: "Usuario no existe" });
+      }
 
-      if (usuario.resetPasswordToken !== emailToken || !usuario.resetPasswordExpiry || usuario.resetPasswordExpiry < new Date())
+
+      if (usuario.resetPasswordToken !== emailToken) {
         return res.status(400).json({ message: 'Enlace de reseteo inválido' });
+      }
+
+      if (!usuario.resetPasswordExpiry || usuario.resetPasswordExpiry < new Date()) {
+        return res.status(400).json({ message: 'Enlace de reseteo inválido' });
+      }
 
       const contrasenaHash = hashPassword(newPassword);
+      
       await this.prisma.usuario.update({
         where: { id: usuario.id },
-        data: { contrasenaHash, resetPasswordToken: null, resetPasswordExpiry: null }
+        data: { 
+          contrasenaHash, 
+          resetPasswordToken: null, 
+          resetPasswordExpiry: null 
+        }
       });
 
       return res.json({ statusCode: 200, message: 'Contraseña actualizada' });
+      
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  validateResetToken = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { correo, emailToken } = req.body;
+    
+    if (!correo || !emailToken) {
+      return res.status(400).json({ message: 'Correo y token requeridos' });
+    }
+
+    const usuario = await this.prisma.usuario.findUnique({ 
+      where: { correo } 
+    });
+    
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    const isValid = usuario.resetPasswordToken === emailToken && 
+                   usuario.resetPasswordExpiry && 
+                   usuario.resetPasswordExpiry > new Date();
+
+    if (!isValid) {
+      return res.status(400).json({ message: 'Token inválido o expirado' });
+    }
+
+    return res.json({ valid: true });
+  } catch (error) {
+    next(error);
+  }
+  };
+
+  obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ message: 'Usuario no autenticado' });
+      }
+
+      
+      const usuario = await this.prisma.usuario.findUnique({
+        where: { 
+          id: req.user.userId
+        },
+        select: {
+          id: true,
+          correo: true,
+          nombre: true,
+          telefono: true,
+          rol: true,
+          activo: true,
+          disponible: true,
+          cargosActuales: true,
+          limiteCargaTickets: true,
+          ultimoInicio: true,
+          ultimaActualizacion: true,
+          creadoEn: true,
+          actualizadoEn: true
+        }
+      });
+      
+      if (!usuario) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      
+      
+      return res.json(usuario);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  actualizarPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ message: 'Usuario no autenticado' });
+      }
+
+      const { nombre, telefono, correo } = req.body;
+
+      const datosActualizacion: any = {
+        ultimaActualizacion: new Date()
+      };
+      
+      if (nombre !== undefined) {
+        datosActualizacion.nombre = nombre?.trim() || null;
+      }
+      
+      if (telefono !== undefined) {
+        datosActualizacion.telefono = telefono?.trim() || null;
+      }
+      
+      if (correo !== undefined && correo?.trim() !== req.user.email) {
+        const correoTrimmed = correo?.trim();
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correoTrimmed)) {
+          return res.status(400).json({ message: 'Formato de correo electrónico inválido' });
+        }
+        
+        const correoExistente = await this.prisma.usuario.findFirst({
+          where: {
+            correo: correoTrimmed,
+            id: { not: req.user.userId }
+          }
+        });
+        
+        if (correoExistente) {
+          return res.status(400).json({ message: 'El correo electrónico ya está en uso' });
+        }
+        
+        datosActualizacion.correo = correoTrimmed;
+      }
+      
+      const usuarioActualizado = await this.prisma.usuario.update({
+        where: { id: req.user.userId },
+        data: datosActualizacion,
+        select: {
+          id: true,
+          correo: true,
+          nombre: true,
+          telefono: true,
+        }
+      });
+      
+      return res.json(usuarioActualizado);
+    } catch (error) {
+      next(error);
+    }
+  };
+  
+  verificarCorreoUnico = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ message: 'Usuario no autenticado' });
+      }
+
+      const { correo } = req.params;
+      
+      const usuarioExistente = await this.prisma.usuario.findFirst({
+        where: {
+          correo,
+          id: { not: req.user.userId }
+        }
+      });
+      
+      return res.json({ disponible: !usuarioExistente });
     } catch (error) {
       next(error);
     }

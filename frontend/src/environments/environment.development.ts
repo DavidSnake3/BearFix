@@ -6,6 +6,5 @@ export const environment = {
     endPointCategoria: 'categorias',
     endPointEtiqueta: 'etiquetas', 
     endPointespecialidad: 'especialidades',
-    
     endPointTicketUser: 'ticketsUser',
 };

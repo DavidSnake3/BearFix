@@ -5,12 +5,33 @@
     </a>
     <div class="ms-auto d-flex align-items-center">
       <span class="text-white me-3">Hola, <strong>{{ fullName }}</strong></span>
+
+      <!-- Dropdown de Notificaciones -->
+      <div class="dropdown me-3">
+        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-bell"></i>
+          @if (noLeidasCount() > 0) {
+          <span class="badge bg-danger notification-badge">{{ noLeidasCount() }}</span>
+          }
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+          <li>
+            <h6 class="dropdown-header">Notificaciones</h6>
+          </li>
+          <li><a class="dropdown-item" [routerLink]="['/notificaciones']">Ver todas las notificaciones</a></li>
+          @if (noLeidasCount() > 0) {
+          <li><a class="dropdown-item" (click)="marcarTodasComoLeidas()">Marcar todas como leídas</a></li>
+          }
+        </ul>
+      </div>
+
+      <!-- Dropdown del Perfil -->
       <div class="dropdown">
         <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
           <i class="bi bi-person-circle"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="#" routerLink="/perfil"><i class="bi bi-person"></i> Mi Perfil</a></li>
+        <li><a class="dropdown-item" href="#" routerLink="/perfil"><i class="bi bi-person"></i> Mi Perfil</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item text-danger" href="#" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
         </ul>

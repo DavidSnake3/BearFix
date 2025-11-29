@@ -189,6 +189,15 @@
                         <button class="btn-icon info" (click)="viewTicketDetail(ticket)" title="Ver detalle">
                           <i class="fas fa-eye"></i>
                         </button>
+                        
+                        <!-- BOTÓN DE CERRAR TICKET AGREGADO AQUÍ -->
+                        <button 
+                          class="btn-icon danger" 
+                          (click)="cerrarTicket(ticket)" 
+                          title="Cerrar ticket"
+                          *ngIf="puedeCerrarTicket(ticket)">
+                          <i class="fas fa-times"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -510,4 +519,48 @@
       </div>
     </div>
   </div>
+}
+
+<!-- Modal para cerrar ticket -->
+@if (showCloseTicketModal()) {
+<div class="modal-overlay" (click)="closeCloseTicketModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="bi bi-x-circle"></i>
+        <div>
+          <h3>Cerrar Ticket</h3>
+          <p class="modal-subtitle">{{ selectedTicket()?.consecutivo }} - {{ selectedTicket()?.titulo }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeCloseTicketModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Justificación para cerrar el ticket <span class="text-danger">*</span></label>
+        <textarea 
+          class="form-control" 
+          rows="4" 
+          [(ngModel)]="justificacionCierre"
+          placeholder="Describe por qué deseas cerrar este ticket..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCloseTicketModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+      <button class="btn btn-danger" 
+              (click)="confirmarCierreTicket()"
+              [disabled]="!justificacionCierre()">
+        <i class="bi bi-check-circle"></i>
+        Confirmar Cierre
+      </button>
+    </div>
+  </div>
+</div>
 }

@@ -1,5 +1,5 @@
-<div class="calendario-container">
-  <div class="calendario-header">
+<div class="asignaciones-container">
+  <div class="asignaciones-header">
     <div class="header-content">
       <div class="header-info">
         <h1 class="page-title">
@@ -9,15 +9,33 @@
         <p class="page-subtitle">Gestiona tus tickets asignados por fecha</p>
       </div>
 
-      <div class="header-stats">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="bi bi-list-task"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-number">{{ getTotalAsignaciones() }}</span>
-            <span class="stat-label">Total Asignaciones</span>
-          </div>
+      <div class="header-actions">
+        @if (esAdministrador()) {
+          <button class="btn-action primary" (click)="abrirModalAsignacion('automatica')">
+            <i class="bi bi-robot"></i>
+            Asignación Automática
+          </button>
+          <button class="btn-action secondary" (click)="abrirModalAsignacion('manual')">
+            <i class="bi bi-person"></i>
+            Asignación Manual
+          </button>
+        }
+        
+        <button class="btn-action refresh" (click)="cargarAsignaciones()" [disabled]="isLoading()">
+          <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
+          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="header-stats">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="bi bi-list-task"></i>
+        </div>
+        <div class="stat-info">
+          <span class="stat-number">{{ getTotalAsignaciones() }}</span>
+          <span class="stat-label">Total Asignaciones</span>
         </div>
       </div>
     </div>
@@ -78,8 +96,13 @@
     @for (semana of semanas(); track $index) {
     <div class="semana">
       @for (dia of semana; track dia.fecha) {
-      <div class="dia" [class.mes-actual]="dia.esMesActual" [class.mes-adjunto]="!dia.esMesActual"
-        [class.con-asignaciones]="dia.tieneAsignaciones" [class.hoy]="esHoy(dia.fecha)" (click)="abrirModalDia(dia)">
+      <div class="dia" 
+           [class.mes-actual]="dia.esMesActual" 
+           [class.mes-adjunto]="!dia.esMesActual"
+           [class.con-asignaciones]="dia.tieneAsignaciones" 
+           [class.hoy]="esHoy(dia.fecha)" 
+           (click)="abrirModalDia(dia)">
+        
         <div class="dia-header">
           <span class="numero-dia" [class.hoy]="esHoy(dia.fecha)">
             {{ dia.numero }}
@@ -138,7 +161,6 @@
   </div>
 </div>
 
-<!-- Modal de Asignaciones del Día -->
 @if (mostrarModal()) {
 <div class="modal-overlay" (click)="cerrarModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
@@ -201,38 +223,223 @@
                 <i class="bi bi-clock"></i>
                 <span>{{ asignacion.estado }}</span>
               </div>
-              @if (asignacion.tiempoRestanteSLAHoras < 0) { <div class="detail-item">
-                <i class="bi bi-exclamation-triangle"></i>
-                <span class="text-danger">SLA Vencido: {{ abs(asignacion.tiempoRestanteSLAHoras) }}h</span>
+              @if (asignacion.tiempoRestanteSLAHoras < 0) {
+                <div class="detail-item">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  <span class="text-danger">SLA Vencido: {{ abs(asignacion.tiempoRestanteSLAHoras) }}h</span>
+                </div>
+              }
             </div>
-            }
           </div>
-        </div>
 
-        <div class="card-footer">
-          <div class="footer-info">
-            <i class="bi bi-clock-history"></i>
-            <span>Asignado: {{ asignacion.fechaAsignacion | date:'medium' }}</span>
+          <div class="card-footer">
+            <div class="footer-info">
+              <i class="bi bi-clock-history"></i>
+              <span>Asignado: {{ asignacion.fechaAsignacion | date:'medium' }}</span>
+            </div>
+            <button class="btn btn-primary" (click)="verDetalleGestion(asignacion.asignacionId)">
+              <i class="bi bi-arrow-right"></i>
+              Gestionar
+            </button>
           </div>
-          <button class="btn btn-primary" (click)="verDetalleAsignacion(asignacion.asignacionId)">
-            <i class="bi bi-arrow-right"></i>
-            Gestionar
-          </button>
         </div>
+        }
       </div>
-      }
     </div>
-  </div>
 
-  <div class="modal-footer">
-    <button class="btn btn-secondary" (click)="cerrarModal()">
-      <i class="bi bi-x-circle"></i>
-      Cerrar
-    </button>
-    <div class="footer-actions">
-      <span class="text-muted">{{ asignacionesDiaSeleccionado().length }} elementos</span>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cerrarModal()">
+        <i class="bi bi-x-circle"></i>
+        Cerrar
+      </button>
+      <div class="footer-actions">
+        <span class="text-muted">{{ asignacionesDiaSeleccionado().length }} elementos</span>
+      </div>
     </div>
   </div>
 </div>
+}
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header" [class]="modoAsignacion() === 'automatica' ? 'automatica' : 'manual'">
+      <div class="modal-title">
+        <i class="bi" [ngClass]="modoAsignacion() === 'automatica' ? 'bi-robot' : 'bi-person'"></i>
+        <div>
+          <h3>{{ modoAsignacion() === 'automatica' ? 'Asignación Automática' : 'Asignación Manual' }}</h3>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      @if (modoAsignacion() === 'automatica') {
+        <div class="asignacion-automatica">
+          <div class="info-section">
+            <h4><i class="bi bi-info-circle"></i> Información de Autotriage</h4>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <label>Tickets Pendientes:</label>
+                <span>{{ estadisticasAutotriage()?.ticketsPendientes || 0 }}</span>
+              </div>
+              <div class="stat-item">
+                <label>Técnicos Disponibles:</label>
+                <span>{{ estadisticasAutotriage()?.tecnicosDisponibles || 0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-section">
+            <button class="btn btn-primary btn-lg" (click)="ejecutarAutotriage()" [disabled]="isLoadingAutotriage()">
+              <i class="bi" [ngClass]="isLoadingAutotriage() ? 'bi-arrow-clockwise spin' : 'bi-play-circle'"></i>
+              {{ isLoadingAutotriage() ? 'Ejecutando Autotriage...' : 'Ejecutar Autotriage' }}
+            </button>
+          </div>
+
+          @if (resultadosAutotriage().length > 0) {
+            <div class="resultados-section">
+              <h4><i class="bi bi-list-check"></i> Resultados del Autotriage</h4>
+              <div class="resultados-grid">
+                @for (resultado of resultadosAutotriage(); track resultado.ticket) {
+                  <div class="resultado-item" [class]="resultado.exito ? 'success' : 'error'">
+                    <div class="resultado-header">
+                      <span class="ticket-info">{{ resultado.ticket }} - {{ resultado.titulo }}</span>
+                      <span class="badge" [ngClass]="resultado.exito ? 'bg-success' : 'bg-danger'">
+                        {{ resultado.exito ? 'ÉXITO' : 'ERROR' }}
+                      </span>
+                    </div>
+                    <div class="resultado-details">
+                      @if (resultado.exito) {
+                        <p><strong>Técnico:</strong> {{ resultado.tecnico }}</p>
+                        <p><strong>Puntaje:</strong> {{ resultado.puntaje }}</p>
+                        <p><strong>Capacidad:</strong> {{ ((resultado.capacidadTecnico ?? 0) * 100).toFixed(1) }}%</p>
+                      } @else {
+                        <p><strong>Error:</strong> {{ resultado.error }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (modoAsignacion() === 'manual') {
+        <div class="asignacion-manual">
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Ticket a Asignar</label>
+              <select class="form-select" 
+                      [ngModel]="selectedTicketId()" 
+                      (ngModelChange)="onTicketSelected($event)">
+                <option value="">Seleccionar ticket</option>
+                @for (ticket of ticketsPendientes(); track ticket.id) {
+                  <option [value]="ticket.id">
+                    {{ ticket.consecutivo }} - {{ ticket.titulo }} ({{ ticket.prioridad }})
+                  </option>
+                }
+              </select>
+              
+              @if (isLoadingTickets()) {
+                <div class="loading-small">
+                  <i class="bi bi-arrow-clockwise spin"></i>
+                  Cargando tickets pendientes...
+                </div>
+              }
+              
+              @if (ticketsPendientes().length === 0 && !isLoadingTickets()) {
+                <div class="no-data">
+                  <i class="bi bi-info-circle"></i>
+                  No hay tickets pendientes para asignar
+                </div>
+              }
+              
+              @if (getTicketSeleccionado()) {
+                <div class="ticket-info">
+                  <p><strong>Categoría:</strong> {{ getTicketSeleccionado()?.categoria?.nombre }}</p>
+                  <p><strong>Prioridad:</strong> 
+                    <span [class]="'badge ' + getPrioridadBadgeClass(getTicketSeleccionado()?.prioridad)">
+                      {{ getTicketSeleccionado()?.prioridad }}
+                    </span>
+                  </p>
+                  <p><strong>Solicitante:</strong> {{ getTicketSeleccionado()?.solicitante?.nombre }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Técnico</label>
+              <select class="form-select" 
+                      [ngModel]="selectedTecnicoId()" 
+                      (ngModelChange)="onTecnicoSelected($event)">
+                <option value="">Seleccionar técnico</option>
+                @for (tecnico of tecnicosDisponibles(); track tecnico.id) {
+                  <option [value]="tecnico.id" [disabled]="!tecnico.disponible">
+                    {{ tecnico.nombre }} 
+                    ({{ tecnico.cargaActual }}/{{ tecnico.limiteCarga }})
+                    {{ !tecnico.disponible ? '- MÁXIMA CARGA' : '' }}
+                  </option>
+                }
+              </select>
+              
+              @if (isLoadingTecnicos()) {
+                <div class="loading-small">
+                  <i class="bi bi-arrow-clockwise spin"></i>
+                  Cargando técnicos disponibles...
+                </div>
+              }
+              
+              @if (tecnicosDisponibles().length === 0 && !isLoadingTecnicos()) {
+                <div class="no-data">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  No hay técnicos disponibles en este momento
+                </div>
+              }
+              
+              @if (getTecnicoSeleccionado()) {
+                <div class="tecnico-info">
+                  <p><strong>Especialidades:</strong> 
+                    {{ getEspecialidadesTecnico() }}
+                  </p>
+                  <p><strong>Disponibilidad:</strong> 
+                    <span [class]="getTecnicoSeleccionado()?.disponible ? 'text-success' : 'text-danger'">
+                      {{ getTecnicoSeleccionado()?.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE' }}
+                    </span>
+                  </p>
+                </div>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Justificación</label>
+              <textarea class="form-control" rows="3" 
+                        [ngModel]="justificacion()" 
+                        (ngModelChange)="justificacion.set($event)"
+                        placeholder="Justifique por qué asigna este ticket al técnico seleccionado..."></textarea>
+            </div>
+          </div>
+
+          <div class="action-section">
+            <button class="btn btn-success btn-lg" (click)="asignarManual()" 
+                    [disabled]="!selectedTicketId() || !selectedTecnicoId() || !justificacion().trim() || isLoading()">
+              <i class="bi bi-check-circle"></i>
+              {{ isLoading() ? 'Asignando...' : 'Confirmar Asignación' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+    </div>
+  </div>
 </div>
 }

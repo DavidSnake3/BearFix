@@ -10,24 +10,13 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class TicketUserService extends BaseAPI<Ticket> {
-
   constructor(
     httpClient: HttpClient,
-    private authService: AuthService 
+    authService: AuthService
   ) { 
-    super(httpClient, environment.endPointTicket);
+    super(httpClient, environment.endPointTicket, authService);
   }
 
-  protected override getHeaders(): HttpHeaders {
-    const userId = this.authService.getUserIdFromToken();
-    const userRole = this.authService.getRoleFromToken();
-    
-    return new HttpHeaders({
-      'user-id': userId?.toString() || '0',
-      'user-role': userRole || 'USR'
-    });
-  }
- 
   override get(filtros?: any): Observable<any> {
     const headers = this.getHeaders();
     let params = new HttpParams();
@@ -139,10 +128,26 @@ export class TicketUserService extends BaseAPI<Ticket> {
     );
   }
 
-    eliminarImagen(ticketId: number, imagenId: number): Observable<any> {
+  eliminarImagen(ticketId: number, imagenId: number): Observable<any> {
     const headers = this.getHeaders();
     return this.http.delete<any>(
       `${this.urlAPI}/${this.endpoint}/${ticketId}/imagenes/${imagenId}`,
+      { headers }
+    );
+  }
+
+  getAllEtiquetasConCategoria(): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.get<any>(
+      `${environment.apiURL}/etiquetas/con-categoria/lista`,
+      { headers }
+    );
+  }
+
+  getCategoriaByEtiquetaId(etiquetaId: number): Observable<any> {
+    const headers = this.getHeaders();
+    return this.http.get<any>(
+      `${environment.apiURL}/etiquetas/${etiquetaId}/categoria`,
       { headers }
     );
   }

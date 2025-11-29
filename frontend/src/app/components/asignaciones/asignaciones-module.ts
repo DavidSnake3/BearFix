@@ -5,6 +5,7 @@ import { AsignacionesRoutingModule } from './asignaciones-routing-module';
 import { AsignacionesComponent } from './asignaciones/asignaciones';
 import { DetalleAsignacionComponent } from './detalle-asignacion/detalle-asignacion';
 import {  TodasAsignacionesComponent } from './todas-asignaciones/todas-asignaciones';
+import { FormsModule } from '@angular/forms';
 
 
 
@@ -17,7 +18,8 @@ import {  TodasAsignacionesComponent } from './todas-asignaciones/todas-asignaci
   imports: [
     CommonModule,
     AsignacionesRoutingModule,
-    RouterModule
+    RouterModule,
+    FormsModule
   ]
 })
 export class AsignacionesModule { }

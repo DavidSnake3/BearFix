@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment.development';
 import { Usuario, CreateUsuarioDto } from '../../models/UsuarioModel';
 import { BaseAPI } from './base-apis';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuarioService extends BaseAPI<Usuario> {
-
-  constructor(httpClient: HttpClient) { 
-    super(httpClient, environment.endPointUsuario);
+  constructor(httpClient: HttpClient, authService: AuthService) {
+    super(httpClient, environment.endPointUsuario, authService);
   }
 
   authenticate(correo: string, contrasena: string): Observable<{ accessToken: string, refreshToken: string }> {

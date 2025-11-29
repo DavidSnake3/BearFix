@@ -15,6 +15,5 @@ export class Sidebar implements OnInit {
 
   ngOnInit() {
     this.role = this.authService.getRoleFromToken();
-    console.log('Rol del usuario:', this.role);
   }
 }

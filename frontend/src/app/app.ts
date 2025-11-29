@@ -23,7 +23,6 @@ export class App implements OnInit {
       )
       .subscribe((event: NavigationEnd) => {
         this.showLayout = !event.url.includes('/auth') && this.authService.isLoggedIn();
-        console.log('URL:', event.url, 'showLayout:', this.showLayout, 'isLoggedIn:', this.authService.isLoggedIn());
       });
   }
 

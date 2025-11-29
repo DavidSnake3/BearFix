@@ -5,6 +5,7 @@ import cors from 'cors';
 import path from 'path'
 import { ErrorMiddleware } from './middleware/error.middleware';
 import { AppRoutes } from './routes/routes';
+import { UserRoutes } from './routes/userRoutes';
 
 const rootDir = __dirname;
 const app: Express = express()
@@ -26,7 +27,6 @@ app.use(
   })
 );
 
-// Middleware de log para todas las peticiones
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
@@ -36,19 +36,15 @@ app.use((req, res, next) => {
 console.log(' Registrando rutas de la aplicación...');
 app.use(AppRoutes.routes);
 
-// CORREGIDO: Configurar rutas estáticas consistentes
 const uploadsDir = path.join(path.resolve(), "assets/uploads");
-
-// Servir archivos estáticos en /images (para el frontend)
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use("/images", express.static(uploadsDir));
-
-// También servir en /files para compatibilidad (opcional)
+app.use('/api/user', UserRoutes.routes);
 app.use("/files", express.static(uploadsDir));
 
 console.log(' Middlewares estáticos configurados en /images y /files');
 console.log('Directorio de uploads:', uploadsDir);
 
-//Gestión de errores middleware
 app.use(ErrorMiddleware.handleError);
 
 app.listen(port, () => {

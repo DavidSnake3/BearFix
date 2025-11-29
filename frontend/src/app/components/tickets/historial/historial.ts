@@ -3,6 +3,8 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { AuthService } from '../../../share/services/api/auth.service';
 import { TicketService } from '../../../share/services/api/ticket.service';
 import { environment } from '../../../../environments/environment.development';
+import { TicketStateService } from '../../../share/services/api/ticket-state.service';
+import { NotificationService } from '../../../share/services/app/notification.service';
 
 @Component({
   selector: 'app-historial',
@@ -13,6 +15,8 @@ import { environment } from '../../../../environments/environment.development';
 export class HistorialComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
+   private ticketStateService = inject(TicketStateService); // INYECTADO
+  private notificationService = inject(NotificationService); // INYECTADO
   private destroy$ = new Subject<void>();
 
   tickets = signal<any[]>([]);
@@ -47,6 +51,12 @@ export class HistorialComponent implements OnInit, OnDestroy {
   selectedImage = signal<any>(null);
   showImageModal = signal(false);
   currentImageIndex = signal(0);
+
+  // Agregar estas señales y métodos
+  showCloseTicketModal = signal(false);
+  justificacionCierre = signal('');
+  ticketParaCerrar = signal<any>(null);
+
   
   private userId: number;
   private role: string;
@@ -71,6 +81,45 @@ export class HistorialComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+cerrarTicket(ticket: any): void {
+  this.ticketParaCerrar.set(ticket);
+  this.justificacionCierre.set('');
+  this.showCloseTicketModal.set(true);
+}
+
+ closeCloseTicketModal(): void {
+  this.showCloseTicketModal.set(false);
+  this.ticketParaCerrar.set(null);
+  this.justificacionCierre.set('');
+} 
+
+confirmarCierreTicket(): void {
+  const ticket = this.ticketParaCerrar();
+  const justificacion = this.justificacionCierre().trim();
+  
+  if (!ticket || !justificacion) {
+    this.notificationService.warning('Validación', 'Debe escribir una justificación', 4000);
+    return;
+  }
+
+  this.ticketStateService.cancelarTicket(ticket.id, justificacion).subscribe({
+    next: (response) => {
+      this.notificationService.success('Éxito', 'Ticket cerrado correctamente', 4000);
+      this.closeCloseTicketModal();
+      this.loadTickets();
+    },
+    error: (error) => {
+      console.error('Error cerrando ticket:', error);
+      this.notificationService.error('Error', error.error?.message || 'No se pudo cerrar el ticket', 4000);
+    }
+  })}
+
+  puedeCerrarTicket(ticket: any): boolean {
+    const estadosNoCerrables = ['CERRADO', 'CANCELADO', 'RESUELTO'];
+    return !estadosNoCerrables.includes(ticket.estado);
+  }
+  
 
   getImageUrl(imageName: string): string {
     if (!imageName) {

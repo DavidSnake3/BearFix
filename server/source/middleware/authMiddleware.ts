@@ -1,19 +1,44 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-dotenv.config();
+import { AppError } from '../errors/custom.error';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+export interface AuthRequest extends Request {
+  user?: {
+    userId: number;
+    role: string;
+    email: string;
+  };
+}
 
-export function authorize(req: Request & { user?: any }, res: Response, next: NextFunction) {
+export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'Unauthorized' });
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload;
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: 'Invalid Token' });
+
+  if (!token) {
+    return next(AppError.unauthorized('Token de acceso requerido'));
   }
-}
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    
+
+    
+    const userId = parseInt(decoded.userId || decoded.id || decoded.nameid);
+    
+    
+    if (isNaN(userId)) {
+      return next(AppError.unauthorized('Token inválido: ID de usuario no válido'));
+    }
+
+    req.user = {
+      userId: userId,
+      role: decoded.role || 'USR',
+      email: decoded.email || ''
+    };
+
+    
+    next();
+  } catch (error) {
+    return next(AppError.unauthorized('Token inválido o expirado'));
+  }
+};

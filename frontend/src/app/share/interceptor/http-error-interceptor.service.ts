@@ -21,18 +21,18 @@ export class HttpErrorInterceptorService implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    console.log('Request URL: ' + request.url);
+
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         let message: string | null = null;
         if (error.error instanceof ErrorEvent) {
-          console.log('Error del Lado del Cliente');
+ 
           message = `Error: ${error.error.message}`;
         } else {
-          console.log('Error del Lado del Servidor');
+    
           message = `Código: ${error.status},  Mensaje: ${error.message}`;
-          console.log(message);
+      
           switch (error.status) {
             case 0:
               message="Error desconocido"

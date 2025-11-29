@@ -16,7 +16,7 @@ import ValidateForm from '../../../helpers/validationform';
   standalone: false,
 })
 export class LoginComponent implements OnInit {
-  
+
   type = signal<string>('password');
   isText = signal<boolean>(false);
   eyeIcon = signal<string>('bi-eye-slash');
@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   isLoading = signal<boolean>(false);
 
   loginForm!: FormGroup;
-  
+
   features = [
     { icon: 'bi bi-ticket-perforated', text: 'Gestión eficiente de tickets' },
     { icon: 'bi bi-graph-up', text: 'Seguimiento en tiempo real' },
@@ -61,43 +61,36 @@ export class LoginComponent implements OnInit {
   onSubmit() {
     if (this.loginForm.valid) {
       this.isLoading.set(true);
-      
+
       const loginData = {
         correo: this.loginForm.value.username,
         contrasena: this.loginForm.value.password
       };
 
-
       this.auth.signIn(loginData).subscribe({
         next: (res: any) => {
           this.isLoading.set(false);
           this.loginForm.reset();
+
           this.auth.storeToken(res.accessToken);
           this.auth.storeRefreshToken(res.refreshToken);
 
           const tokenPayload = this.auth.decodedToken();
           console.log('Token decodificado:', tokenPayload);
 
-          const userName = tokenPayload?.name || tokenPayload?.email || 'Usuario';
-          const userRole = tokenPayload?.role || '';
-          const userId = tokenPayload?.userId || '';
-
-          localStorage.setItem('user-name', userName);
-          localStorage.setItem('user-role', userRole);
-          localStorage.setItem('user-id', userId.toString());
+          const userName = this.auth.getfullNameFromToken();
+          const userRole = this.auth.getRoleFromToken();
 
           this.userStore.setFullNameForStore(userName);
           this.userStore.setRoleForStore(userRole);
 
-          // CORRECCIÓN: Pasar solo la duración como número
           this.notificationService.success('¡Bienvenido!', `Hola ${userName}`, 3000);
-
           this.redirectByRole(userRole);
         },
         error: (err: any) => {
           this.isLoading.set(false);
           console.error('Error completo:', err);
-          
+
           let errorMessage = 'Error al iniciar sesión';
           let errorTitle = 'Error de autenticación';
 
@@ -114,15 +107,13 @@ export class LoginComponent implements OnInit {
             errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
           }
 
-          // CORRECCIÓN: Pasar solo la duración como número
           this.notificationService.error(errorTitle, errorMessage, 5000);
         },
       });
     } else {
       ValidateForm.validateAllFormFields(this.loginForm);
-   
       this.notificationService.warning(
-        'Formulario incompleto', 
+        'Formulario incompleto',
         'Por favor completa todos los campos requeridos correctamente',
         4000
       );
@@ -150,7 +141,7 @@ export class LoginComponent implements OnInit {
 
     if (!email) {
       this.notificationService.warning(
-        'Email requerido', 
+        'Email requerido',
         'Por favor ingresa tu dirección de correo electrónico',
         4000
       );
@@ -159,37 +150,49 @@ export class LoginComponent implements OnInit {
 
     if (!this.isValidEmail()) {
       this.notificationService.warning(
-        'Email inválido', 
+        'Email inválido',
         'Por favor ingresa una dirección de correo electrónico válida',
         4000
       );
       return;
     }
 
+    console.log('📧 Enviando solicitud de reset para:', email);
+    this.isLoading.set(true);
 
     this.resetService.sendResetPasswordLink(email).subscribe({
       next: (res: any) => {
-        console.log('Respuesta del servidor:', res);
-        
+        console.log('✅ Respuesta completa del servidor:', res);
+        this.isLoading.set(false);
+
         this.notificationService.success(
-          'Enlace enviado', 
+          'Enlace enviado',
           'Se ha enviado un enlace de recuperación a tu correo electrónico',
           5000
         );
-        
+
         this.resetPasswordEmail.set('');
         this.cerrarModal();
       },
       error: (err: any) => {
-        console.error('Error en reset password:', err);
-        
+        this.isLoading.set(false);
+        console.error('❌ Error completo en reset password:', err);
+        console.error('❌ Status:', err.status);
+        console.error('❌ Error message:', err.message);
+        console.error('❌ Error response:', err.error);
+
         let errorMessage = 'Error al enviar el enlace de recuperación';
-        if (err.error?.message) {
-          errorMessage = err.error.message;
-        } else if (err.status === 404) {
-          errorMessage = 'No existe una cuenta con este correo electrónico';
+        
+        if (err.status === 404) {
+          if (err.error?.message === 'Correo no existe') {
+            errorMessage = 'No existe una cuenta con este correo electrónico';
+          } else {
+            errorMessage = 'Endpoint no encontrado. Verifica la configuración del servidor.';
+          }
         } else if (err.status === 500) {
           errorMessage = 'Error del servidor, por favor intenta más tarde';
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
         }
 
         this.notificationService.error('Error', errorMessage, 5000);

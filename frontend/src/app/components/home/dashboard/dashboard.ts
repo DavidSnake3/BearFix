@@ -1,10 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { NgToastService } from 'ng-angular-popup';
 import { AuthService } from '../../../share/services/api/auth.service';
 import { UserStoreService } from '../../../share/services/api/user-store.service';
 import { TicketService } from '../../../share/services/api/ticket.service';
-import { NotificationService } from '../../../share/services/app/notification.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,12 +11,10 @@ import { NotificationService } from '../../../share/services/app/notification.se
   standalone: false
 })
 export class DashboardComponent {
-  private notificationService = inject(NotificationService);
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
   private userStore = inject(UserStoreService);
   private router = inject(Router);
-  private toast = inject(NgToastService);
 
   public role = signal<string>('');
   public fullName = signal<string>('Usuario');
@@ -62,7 +58,6 @@ export class DashboardComponent {
       });
 
     this.userId.set(this.authService.getUserIdFromToken());
-
     this.loadDashboardData();
   }
 
@@ -71,7 +66,6 @@ export class DashboardComponent {
 
     this.ticketService.getTicketsDashboard().subscribe({
       next: (res: any) => {
-        
         if (res && res.success && Array.isArray(res.tickets)) {
           this.recentTickets.set(res.tickets);
           this.stats.set({ misTickets: res.total || res.tickets.length });
@@ -79,12 +73,10 @@ export class DashboardComponent {
           this.recentTickets.set([]);
           this.stats.set({ misTickets: 0 });
         }
-
         this.isLoading.set(false);
         this.updateRecentActivity();
       },
       error: (err) => {
-        this.toast.danger('Error al cargar el dashboard', 'ERROR', 3000);
         this.isLoading.set(false);
         this.recentTickets.set([]);
         this.stats.set({ misTickets: 0 });
@@ -104,7 +96,6 @@ export class DashboardComponent {
   refreshData() {
     this.isLoading.set(true);
     this.loadDashboardData();
-    this.toast.info('Actualizando datos del dashboard...', 'ACTUALIZANDO', 2000);
   }
 
   getEstadoBadgeClass(estado: string): string {

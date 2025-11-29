@@ -4,16 +4,21 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // AÑADE EST
 
 import { HomeRoutingModule } from './home-routing-module';
 import { DashboardComponent } from './dashboard/dashboard';
+import { Perfil } from './perfil/perfil';
 
 @NgModule({
   declarations: [
-    DashboardComponent
+    DashboardComponent,
+    Perfil
   ],
   imports: [
     CommonModule,
     HomeRoutingModule,
     FormsModule,        
     ReactiveFormsModule 
+  ],
+  exports: [
+    Perfil
   ]
 })
 export class HomeModule { }

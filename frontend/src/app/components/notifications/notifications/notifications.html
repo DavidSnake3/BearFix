@@ -1,0 +1,92 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h2>
+      <i class="bi bi-bell"></i>
+      Notificaciones
+    </h2>
+    <div class="header-actions">
+      <button class="btn btn-outline-primary btn-sm" (click)="toggleFiltro()">
+        <i class="bi" [class.bi-eye]="!mostrarSoloNoLeidas()" [class.bi-eye-slash]="mostrarSoloNoLeidas()"></i>
+        {{ mostrarSoloNoLeidas() ? 'Mostrar Todas' : 'Solo No Leídas' }}
+      </button>
+      <button class="btn btn-success btn-sm" (click)="marcarTodasComoLeidas()" [disabled]="noLeidasCount() === 0">
+        <i class="bi bi-check-all"></i>
+        Marcar Todas Leídas
+      </button>
+    </div>
+  </div>
+
+  <div class="notifications-stats">
+    <span class="badge bg-warning">
+      <i class="bi bi-bell"></i>
+      {{ noLeidasCount() }} no leídas
+    </span>
+  </div>
+
+  @if (isLoading()) {
+  <div class="loading-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p>Cargando notificaciones...</p>
+  </div>
+  } @else {
+  <div class="notifications-list">
+    @for (notificacion of notificaciones(); track notificacion.id) {
+    <div class="notification-item" [class.unread]="!notificacion.leida">
+      <div class="notification-icon">
+        <i class="bi bi-bell"></i>
+      </div>
+      <div class="notification-content">
+        <div class="notification-header">
+          <span class="badge" [ngClass]="getBadgeClass(notificacion.tipo)">
+            {{ getTipoTexto(notificacion.tipo) }}
+          </span>
+          <small class="text-muted">{{ notificacion.creadoEn | date:'medium' }}</small>
+        </div>
+        <h6 class="notification-title">{{ notificacion.asunto }}</h6>
+        <p class="notification-message">{{ notificacion.mensaje }}</p>
+        @if (notificacion.remitente) {
+        <small class="text-muted">De: {{ notificacion.remitente.nombre }}</small>
+        }
+      </div>
+      <div class="notification-actions">
+        @if (!notificacion.leida) {
+        <button class="btn btn-success btn-sm" (click)="marcarComoLeida(notificacion)" title="Marcar como leída">
+          <i class="bi bi-check"></i>
+        </button>
+        }
+      </div>
+    </div>
+    } @empty {
+    <div class="empty-state">
+      <i class="bi bi-bell-slash"></i>
+      <h4>No hay notificaciones</h4>
+      <p>{{ mostrarSoloNoLeidas() ? 'No hay notificaciones no leídas' : 'No hay notificaciones para mostrar' }}</p>
+    </div>
+    }
+  </div>
+
+  @if (paginacion().totalPages > 1) {
+  <div class="pagination-container">
+    <nav>
+      <ul class="pagination">
+        <li class="page-item" [class.disabled]="paginacion().currentPage === 1">
+          <a class="page-link" (click)="cambiarPagina(paginacion().currentPage - 1)">Anterior</a>
+        </li>
+        
+        @for (page of [].constructor(paginacion().totalPages); track $index; let i = $index) {
+        <li class="page-item" [class.active]="paginacion().currentPage === i + 1">
+          <a class="page-link" (click)="cambiarPagina(i + 1)">{{ i + 1 }}</a>
+        </li>
+        }
+
+        <li class="page-item" [class.disabled]="paginacion().currentPage === paginacion().totalPages">
+          <a class="page-link" (click)="cambiarPagina(paginacion().currentPage + 1)">Siguiente</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  }
+  }
+</div>

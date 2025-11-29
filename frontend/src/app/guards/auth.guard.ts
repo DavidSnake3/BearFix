@@ -17,8 +17,8 @@ export class AuthGuard implements CanActivate {
       return true
     } else {
         this.notificationService.warning(
-        'Token Expirado', 
-        'Por favor auntenticarse denuevo',
+        'Denegado', 
+        'No tienes acceso, por favor auntenticarse',
         6000
       );
       this.router.navigate(['/'])

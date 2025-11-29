@@ -13,6 +13,10 @@ import { HistorialComponent } from './components/tickets/historial/historial';
 import { TodasAsignacionesComponent } from './components/asignaciones/todas-asignaciones/todas-asignaciones';
 import { PageNotFound } from './share/page-not-found/page-not-found';
 import { TicketsUserComponent } from './components/tickets/tickets-user/tickets-user';
+import { NotificationsComponent } from './components/notifications/notifications/notifications';
+import { GestionTicketComponent } from './components/tickets/gestion-ticket/gestion-ticket';
+import { ResetPasswordComponent } from './components/notifications/reset-password/reset-password';
+import { Perfil } from './components/home/perfil/perfil';
 
 const routes: Routes = [
 
@@ -20,7 +24,18 @@ const routes: Routes = [
     path: 'auth',
     loadChildren: () => import('./components/auth/auth-module').then(m => m.AuthModule)
   },
+  {
+    path: 'perfil',
+    component: Perfil,
+    canActivate: [AuthGuard]
+  },
+  { 
+    path: 'notificaciones', 
+    component: NotificationsComponent,
+    canActivate: [AuthGuard] 
+  },
 
+  { path: 'reset', component: ResetPasswordComponent },
   {
     path: 'dashboard',
     component: DashboardComponent,
@@ -44,9 +59,16 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: 'ADM' }
   },
+  
   {
     path: 'asignaciones',
     component: AsignacionesComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { expectedRole: ['TEC', 'ADM'] }
+  },
+    { 
+    path: 'tickets/gestion/:id', 
+    component: GestionTicketComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: ['TEC', 'ADM'] }
   },

@@ -1,0 +1,290 @@
+2025-11-28 17:19:55.670 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.usuario.findUnique()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\userController.ts:259:49
+
+  256 
+  257 obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  258   try {
+→ 259     const usuario = await this.prisma.usuario.findUnique({
+            where: {
+              id: undefined,
+          ?   correo?: String,
+          ?   AND?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   OR?: UsuarioWhereInput[],
+          ?   NOT?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   contrasenaHash?: StringFilter | String,
+          ?   nombre?: StringNullableFilter | String | Null,
+          ?   telefono?: StringNullableFilter | String | Null,
+          ?   rol?: EnumRoleFilter | Role,
+          ?   activo?: BoolFilter | Boolean,
+          ?   ultimoInicio?: DateTimeNullableFilter | DateTime | Null,
+          ?   disponible?: BoolNullableFilter | Boolean | Null,
+          ?   cargosActuales?: IntNullableFilter | Int | Null,
+          ?   limiteCargaTickets?: IntNullableFilter | Int | Null,
+          ?   ultimaActualizacion?: DateTimeNullableFilter | DateTime | Null,
+          ?   creadoEn?: DateTimeFilter | DateTime,
+          ?   actualizadoEn?: DateTimeFilter | DateTime,
+          ?   refreshToken?: StringNullableFilter | String | Null,
+          ?   refreshTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   resetPasswordToken?: StringNullableFilter | String | Null,
+          ?   resetPasswordExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   solicitudes?: TicketListRelationFilter,
+          ?   asignacionesRecibidas?: AsignacionListRelationFilter,
+          ?   asignacionesHechas?: AsignacionListRelationFilter,
+          ?   usuarioEspecialidades?: UsuarioEspecialidadListRelationFilter,
+          ?   ticketHistorial?: TicketHistorialListRelationFilter,
+          ?   notificacionesRemitente?: NotificacionListRelationFilter,
+          ?   notificacionesDestino?: NotificacionListRelationFilter,
+          ?   valoraciones?: ValoracionListRelationFilter,
+          ?   imagenesSubidas?: ImagenTicketListRelationFilter
+            },
+            select: {
+              id: true,
+              correo: true,
+              nombre: true,
+              telefono: true,
+              rol: true,
+              activo: true,
+              disponible: true,
+              cargosActuales: true,
+              limiteCargaTickets: true,
+              ultimoInicio: true,
+              ultimaActualizacion: true,
+              creadoEn: true,
+              actualizadoEn: true
+            }
+          })
+
+Argument `where` of type UsuarioWhereUniqueInput needs at least one of `id` or `correo` arguments. Available options are marked with ?.
+2025-11-28 17:20:37.074 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.usuario.findUnique()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\userController.ts:259:49
+
+  256 
+  257 obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  258   try {
+→ 259     const usuario = await this.prisma.usuario.findUnique({
+            where: {
+              id: undefined,
+          ?   correo?: String,
+          ?   AND?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   OR?: UsuarioWhereInput[],
+          ?   NOT?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   contrasenaHash?: StringFilter | String,
+          ?   nombre?: StringNullableFilter | String | Null,
+          ?   telefono?: StringNullableFilter | String | Null,
+          ?   rol?: EnumRoleFilter | Role,
+          ?   activo?: BoolFilter | Boolean,
+          ?   ultimoInicio?: DateTimeNullableFilter | DateTime | Null,
+          ?   disponible?: BoolNullableFilter | Boolean | Null,
+          ?   cargosActuales?: IntNullableFilter | Int | Null,
+          ?   limiteCargaTickets?: IntNullableFilter | Int | Null,
+          ?   ultimaActualizacion?: DateTimeNullableFilter | DateTime | Null,
+          ?   creadoEn?: DateTimeFilter | DateTime,
+          ?   actualizadoEn?: DateTimeFilter | DateTime,
+          ?   refreshToken?: StringNullableFilter | String | Null,
+          ?   refreshTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   resetPasswordToken?: StringNullableFilter | String | Null,
+          ?   resetPasswordExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   solicitudes?: TicketListRelationFilter,
+          ?   asignacionesRecibidas?: AsignacionListRelationFilter,
+          ?   asignacionesHechas?: AsignacionListRelationFilter,
+          ?   usuarioEspecialidades?: UsuarioEspecialidadListRelationFilter,
+          ?   ticketHistorial?: TicketHistorialListRelationFilter,
+          ?   notificacionesRemitente?: NotificacionListRelationFilter,
+          ?   notificacionesDestino?: NotificacionListRelationFilter,
+          ?   valoraciones?: ValoracionListRelationFilter,
+          ?   imagenesSubidas?: ImagenTicketListRelationFilter
+            },
+            select: {
+              id: true,
+              correo: true,
+              nombre: true,
+              telefono: true,
+              rol: true,
+              activo: true,
+              disponible: true,
+              cargosActuales: true,
+              limiteCargaTickets: true,
+              ultimoInicio: true,
+              ultimaActualizacion: true,
+              creadoEn: true,
+              actualizadoEn: true
+            }
+          })
+
+Argument `where` of type UsuarioWhereUniqueInput needs at least one of `id` or `correo` arguments. Available options are marked with ?.
+2025-11-28 17:20:58.527 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.usuario.findUnique()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\userController.ts:259:49
+
+  256 
+  257 obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  258   try {
+→ 259     const usuario = await this.prisma.usuario.findUnique({
+            where: {
+              id: undefined,
+          ?   correo?: String,
+          ?   AND?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   OR?: UsuarioWhereInput[],
+          ?   NOT?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   contrasenaHash?: StringFilter | String,
+          ?   nombre?: StringNullableFilter | String | Null,
+          ?   telefono?: StringNullableFilter | String | Null,
+          ?   rol?: EnumRoleFilter | Role,
+          ?   activo?: BoolFilter | Boolean,
+          ?   ultimoInicio?: DateTimeNullableFilter | DateTime | Null,
+          ?   disponible?: BoolNullableFilter | Boolean | Null,
+          ?   cargosActuales?: IntNullableFilter | Int | Null,
+          ?   limiteCargaTickets?: IntNullableFilter | Int | Null,
+          ?   ultimaActualizacion?: DateTimeNullableFilter | DateTime | Null,
+          ?   creadoEn?: DateTimeFilter | DateTime,
+          ?   actualizadoEn?: DateTimeFilter | DateTime,
+          ?   refreshToken?: StringNullableFilter | String | Null,
+          ?   refreshTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   resetPasswordToken?: StringNullableFilter | String | Null,
+          ?   resetPasswordExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   solicitudes?: TicketListRelationFilter,
+          ?   asignacionesRecibidas?: AsignacionListRelationFilter,
+          ?   asignacionesHechas?: AsignacionListRelationFilter,
+          ?   usuarioEspecialidades?: UsuarioEspecialidadListRelationFilter,
+          ?   ticketHistorial?: TicketHistorialListRelationFilter,
+          ?   notificacionesRemitente?: NotificacionListRelationFilter,
+          ?   notificacionesDestino?: NotificacionListRelationFilter,
+          ?   valoraciones?: ValoracionListRelationFilter,
+          ?   imagenesSubidas?: ImagenTicketListRelationFilter
+            },
+            select: {
+              id: true,
+              correo: true,
+              nombre: true,
+              telefono: true,
+              rol: true,
+              activo: true,
+              disponible: true,
+              cargosActuales: true,
+              limiteCargaTickets: true,
+              ultimoInicio: true,
+              ultimaActualizacion: true,
+              creadoEn: true,
+              actualizadoEn: true
+            }
+          })
+
+Argument `where` of type UsuarioWhereUniqueInput needs at least one of `id` or `correo` arguments. Available options are marked with ?.
+2025-11-28 17:21:27.178 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.usuario.findUnique()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\userController.ts:259:49
+
+  256 
+  257 obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  258   try {
+→ 259     const usuario = await this.prisma.usuario.findUnique({
+            where: {
+              id: undefined,
+          ?   correo?: String,
+          ?   AND?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   OR?: UsuarioWhereInput[],
+          ?   NOT?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   contrasenaHash?: StringFilter | String,
+          ?   nombre?: StringNullableFilter | String | Null,
+          ?   telefono?: StringNullableFilter | String | Null,
+          ?   rol?: EnumRoleFilter | Role,
+          ?   activo?: BoolFilter | Boolean,
+          ?   ultimoInicio?: DateTimeNullableFilter | DateTime | Null,
+          ?   disponible?: BoolNullableFilter | Boolean | Null,
+          ?   cargosActuales?: IntNullableFilter | Int | Null,
+          ?   limiteCargaTickets?: IntNullableFilter | Int | Null,
+          ?   ultimaActualizacion?: DateTimeNullableFilter | DateTime | Null,
+          ?   creadoEn?: DateTimeFilter | DateTime,
+          ?   actualizadoEn?: DateTimeFilter | DateTime,
+          ?   refreshToken?: StringNullableFilter | String | Null,
+          ?   refreshTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   resetPasswordToken?: StringNullableFilter | String | Null,
+          ?   resetPasswordExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   solicitudes?: TicketListRelationFilter,
+          ?   asignacionesRecibidas?: AsignacionListRelationFilter,
+          ?   asignacionesHechas?: AsignacionListRelationFilter,
+          ?   usuarioEspecialidades?: UsuarioEspecialidadListRelationFilter,
+          ?   ticketHistorial?: TicketHistorialListRelationFilter,
+          ?   notificacionesRemitente?: NotificacionListRelationFilter,
+          ?   notificacionesDestino?: NotificacionListRelationFilter,
+          ?   valoraciones?: ValoracionListRelationFilter,
+          ?   imagenesSubidas?: ImagenTicketListRelationFilter
+            },
+            select: {
+              id: true,
+              correo: true,
+              nombre: true,
+              telefono: true,
+              rol: true,
+              activo: true,
+              disponible: true,
+              cargosActuales: true,
+              limiteCargaTickets: true,
+              ultimoInicio: true,
+              ultimaActualizacion: true,
+              creadoEn: true,
+              actualizadoEn: true
+            }
+          })
+
+Argument `where` of type UsuarioWhereUniqueInput needs at least one of `id` or `correo` arguments. Available options are marked with ?.
+2025-11-28 17:23:26.881 error: 	david--Se produjo un error interno del servidor 
+Invalid `this.prisma.usuario.findUnique()` invocation in
+E:\Progra 7\Proyecto\server\source\controllers\userController.ts:259:49
+
+  256 
+  257 obtenerPerfil = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  258   try {
+→ 259     const usuario = await this.prisma.usuario.findUnique({
+            where: {
+              id: undefined,
+          ?   correo?: String,
+          ?   AND?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   OR?: UsuarioWhereInput[],
+          ?   NOT?: UsuarioWhereInput | UsuarioWhereInput[],
+          ?   contrasenaHash?: StringFilter | String,
+          ?   nombre?: StringNullableFilter | String | Null,
+          ?   telefono?: StringNullableFilter | String | Null,
+          ?   rol?: EnumRoleFilter | Role,
+          ?   activo?: BoolFilter | Boolean,
+          ?   ultimoInicio?: DateTimeNullableFilter | DateTime | Null,
+          ?   disponible?: BoolNullableFilter | Boolean | Null,
+          ?   cargosActuales?: IntNullableFilter | Int | Null,
+          ?   limiteCargaTickets?: IntNullableFilter | Int | Null,
+          ?   ultimaActualizacion?: DateTimeNullableFilter | DateTime | Null,
+          ?   creadoEn?: DateTimeFilter | DateTime,
+          ?   actualizadoEn?: DateTimeFilter | DateTime,
+          ?   refreshToken?: StringNullableFilter | String | Null,
+          ?   refreshTokenExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   resetPasswordToken?: StringNullableFilter | String | Null,
+          ?   resetPasswordExpiry?: DateTimeNullableFilter | DateTime | Null,
+          ?   solicitudes?: TicketListRelationFilter,
+          ?   asignacionesRecibidas?: AsignacionListRelationFilter,
+          ?   asignacionesHechas?: AsignacionListRelationFilter,
+          ?   usuarioEspecialidades?: UsuarioEspecialidadListRelationFilter,
+          ?   ticketHistorial?: TicketHistorialListRelationFilter,
+          ?   notificacionesRemitente?: NotificacionListRelationFilter,
+          ?   notificacionesDestino?: NotificacionListRelationFilter,
+          ?   valoraciones?: ValoracionListRelationFilter,
+          ?   imagenesSubidas?: ImagenTicketListRelationFilter
+            },
+            select: {
+              id: true,
+              correo: true,
+              nombre: true,
+              telefono: true,
+              rol: true,
+              activo: true,
+              disponible: true,
+              cargosActuales: true,
+              limiteCargaTickets: true,
+              ultimoInicio: true,
+              ultimaActualizacion: true,
+              creadoEn: true,
+              actualizadoEn: true
+            }
+          })
+
+Argument `where` of type UsuarioWhereUniqueInput needs at least one of `id` or `correo` arguments. Available options are marked with ?.

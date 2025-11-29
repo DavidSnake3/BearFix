@@ -1,22 +1,51 @@
+// reset-password.service.ts
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { ResetPassword } from '../../models/reset-password.model';
+import { Observable, tap } from 'rxjs';
+import { environment } from '../../../../environments/environment.development';
+
+export interface ResetPasswordRequest {
+  correo: string;
+  emailToken: string;
+  newPassword: string;
+  confirmPassword?: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ResetPasswordService {
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiURL;
 
-  private baseUrl: string = 'http://localhost:3000/api/user';
-
-  constructor(private http: HttpClient) { }
-
-  sendResetPasswordLink(email: string) {
-
-    return this.http.post<any>(`${this.baseUrl}/send-reset-email/${email}`, {});
+  sendResetPasswordLink(correo: string): Observable<any> {
+    const url = `${this.baseUrl}/api/user/send-reset-email/${correo}`;
+    console.log('🔍 Enviando solicitud a:', url);
+    
+    return this.http.post(url, {}).pipe(
+      tap({
+        next: (response) => console.log('✅ Respuesta del servidor:', response),
+        error: (error) => console.error('❌ Error en la solicitud:', error)
+      })
+    );
   }
 
-  resetPassword(resetPasswordObj: ResetPassword) {
-    return this.http.post<any>(`${this.baseUrl}/reset-password`, resetPasswordObj);
+  resetPassword(resetData: ResetPasswordRequest): Observable<any> {
+    const url = `${this.baseUrl}/api/user/reset-password`;
+    console.log('🔍 Enviando reset a:', url);
+    
+    return this.http.post(url, resetData).pipe(
+      tap({
+        next: (response) => console.log('✅ Contraseña restablecida:', response),
+        error: (error) => console.error('❌ Error al restablecer:', error)
+      })
+    );
+  }
+
+  validateResetToken(correo: string, token: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/api/user/validate-reset-token`, {
+      correo,
+      emailToken: token
+    });
   }
 }

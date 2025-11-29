@@ -5,6 +5,7 @@ import { DetalleAsignacionComponent } from './detalle-asignacion/detalle-asignac
 import { AuthGuard } from '../../guards/auth.guard';
 import { RoleGuard } from '../../share/services/api/auth.guard';
 import { TodasAsignacionesComponent } from './todas-asignaciones/todas-asignaciones';
+import { GestionTicketComponent } from '../tickets/gestion-ticket/gestion-ticket';
 
 
 const routes: Routes = [
@@ -18,6 +19,12 @@ const routes: Routes = [
   {
       path: 'asignaciones/todas',
     component: TodasAsignacionesComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { expectedRole: ['TEC', 'ADM'] }
+  },
+  {
+    path: 'tickets/gestion/:id',
+    component: GestionTicketComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: ['TEC', 'ADM'] }
   }

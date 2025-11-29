@@ -1,0 +1,233 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <div class="header-content">
+      <div class="user-avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div class="user-info">
+        <h1>{{ usuario?.nombre || 'Usuario' }}</h1>
+        <p class="user-email">{{ usuario?.correo }}</p>
+        <div class="user-badges">
+          <span class="badge role-badge" [class]="'role-' + usuario?.rol?.toLowerCase()">
+            {{ obtenerTextoRol(usuario?.rol) }}
+          </span>
+          <span class="badge status-badge" [class.active]="usuario?.activo" [class.inactive]="!usuario?.activo">
+            {{ usuario?.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (estaCargando) {
+    <div class="loading-state">
+      <div class="spinner-container">
+        <div class="spinner-large"></div>
+        <p>Cargando información del perfil...</p>
+      </div>
+    </div>
+  } @else if (usuario) {
+    <div class="profile-content">
+      <div class="info-card system-info">
+        <div class="card-header">
+          <i class="bi bi-info-circle"></i>
+          <h3>Información del Sistema</h3>
+        </div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item">
+              <label><i class="bi bi-calendar-check"></i> Miembro desde</label>
+              <span class="info-value">{{ formatearFecha(usuario.creadoEn) }}</span>
+            </div>
+            <div class="info-item">
+              <label><i class="bi bi-clock-history"></i> Último inicio</label>
+              <span class="info-value">{{ formatearFecha(usuario.ultimoInicio) }}</span>
+            </div>
+            <div class="info-item">
+              <label><i class="bi bi-arrow-clockwise"></i> Última actualización</label>
+              <span class="info-value">{{ formatearFecha(usuario.actualizadoEn) }}</span>
+            </div>
+            
+            @if (mostrarCamposTecnicos) {
+              <div class="info-item">
+                <label><i class="bi bi-person-check"></i> Disponibilidad</label>
+                <span class="info-value">
+                  <span class="status-indicator" [class.available]="usuario.disponible" [class.unavailable]="!usuario.disponible"></span>
+                  {{ usuario.disponible ? 'Disponible' : 'No disponible' }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label><i class="bi bi-briefcase"></i> Cargos actuales</label>
+                <span class="info-value">{{ usuario.cargosActuales || 0 }}</span>
+              </div>
+              <div class="info-item">
+                <label><i class="bi bi-card-checklist"></i> Límite de tickets</label>
+                <span class="info-value">{{ usuario.limiteCargaTickets || 0 }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card personal-info">
+        <div class="card-header">
+          <i class="bi bi-person-lines-fill"></i>
+          <h3>Información Personal</h3>
+          @if (!esEditando) {
+            <button class="btn-edit" (click)="habilitarEdicion()">
+              <i class="bi bi-pencil-square"></i>
+              Editar Información
+            </button>
+          }
+        </div>
+        <div class="card-body">
+          @if (!esEditando) {
+            <div class="display-mode">
+              <div class="info-grid">
+                <div class="info-item">
+                  <label><i class="bi bi-person"></i> Nombre completo</label>
+                  <span class="info-value">{{ usuario.nombre || 'No especificado' }}</span>
+                </div>
+                <div class="info-item">
+                  <label><i class="bi bi-telephone"></i> Teléfono</label>
+                  <span class="info-value">{{ usuario.telefono || 'No especificado' }}</span>
+                </div>
+                <div class="info-item">
+                  <label><i class="bi bi-envelope"></i> Correo electrónico</label>
+                  <span class="info-value email-display">{{ usuario.correo }}</span>
+                </div>
+                <div class="info-item">
+                  <label><i class="bi bi-shield-lock"></i> Contraseña</label>
+                  <div class="password-section">
+                    <span class="password-masked">{{ mostrarPassword ? 'contraseña' : '••••••••' }}</span>
+                    <button class="btn-toggle-password" type="button" (click)="togglePasswordVisibility()">
+                      <i class="bi" [class.bi-eye]="!mostrarPassword" [class.bi-eye-slash]="mostrarPassword"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <form [formGroup]="perfilForm" (ngSubmit)="guardarCambios($event)" class="edit-mode">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="nombre">
+                    <i class="bi bi-person"></i>
+                    Nombre completo *
+                  </label>
+                  <input
+                    id="nombre"
+                    type="text"
+                    formControlName="nombre"
+                    placeholder="Ingresa tu nombre completo"
+                    [class.invalid]="nombre?.invalid && nombre?.touched">
+                  @if (nombre?.invalid && nombre?.touched) {
+                    <div class="validation-errors">
+                      @if (nombre?.errors?.['required']) {
+                        <small><i class="bi bi-exclamation-circle"></i> El nombre es requerido</small>
+                      }
+                      @if (nombre?.errors?.['minlength']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Mínimo 2 caracteres</small>
+                      }
+                      @if (nombre?.errors?.['maxlength']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Máximo 50 caracteres</small>
+                      }
+                      @if (nombre?.errors?.['pattern']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Solo se permiten letras y espacios</small>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="telefono">
+                    <i class="bi bi-telephone"></i>
+                    Teléfono
+                  </label>
+                  <input
+                    id="telefono"
+                    type="tel"
+                    formControlName="telefono"
+                    placeholder="Ej: +506 8888-1003"
+                    [class.invalid]="telefono?.invalid && telefono?.touched">
+                  @if (telefono?.invalid && telefono?.touched) {
+                    <div class="validation-errors">
+                      @if (telefono?.errors?.['pattern']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Formato de teléfono inválido</small>
+                      }
+                      @if (telefono?.errors?.['minlength']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Mínimo 8 caracteres</small>
+                      }
+                      @if (telefono?.errors?.['maxlength']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Máximo 15 caracteres</small>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <div class="form-group">
+                  <label for="correo">
+                    <i class="bi bi-envelope"></i>
+                    Correo electrónico *
+                  </label>
+                  <input
+                    id="correo"
+                    type="email"
+                    formControlName="correo"
+                    placeholder="tu.correo@ejemplo.com"
+                    [class.invalid]="correo?.invalid && correo?.touched">
+                  @if (correo?.invalid && correo?.touched) {
+                    <div class="validation-errors">
+                      @if (correo?.errors?.['required']) {
+                        <small><i class="bi bi-exclamation-circle"></i> El correo es requerido</small>
+                      }
+                      @if (correo?.errors?.['email']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Formato de correo inválido</small>
+                      }
+                      @if (correo?.errors?.['maxlength']) {
+                        <small><i class="bi bi-exclamation-circle"></i> Máximo 100 caracteres</small>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="form-actions">
+              <button
+                type="submit"
+                class="btn-save"
+                [disabled]="perfilForm.invalid || estaCargando">
+                @if (estaCargando) {
+                  <span class="spinner"></span>
+                }
+                <i class="bi bi-check-circle"></i>
+                {{ estaCargando ? 'Guardando...' : 'Guardar Cambios' }}
+              </button>
+                <button
+                  type="button"
+                  class="btn-cancel"
+                  (click)="cancelarEdicion()"
+                  [disabled]="estaCargando">
+                  <i class="bi bi-x-circle"></i>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="error-state">
+      <div class="error-content">
+        <i class="bi bi-exclamation-triangle"></i>
+        <h3>No se pudo cargar la información del perfil</h3>
+        <p>Ha ocurrido un error al cargar los datos de tu perfil.</p>
+        <button class="btn-retry" (click)="cargarPerfil()">
+          <i class="bi bi-arrow-clockwise"></i>
+          Reintentar
+        </button>
+      </div>
+    </div>
+  }
+</div>

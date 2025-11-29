@@ -97,6 +97,10 @@ private ticketUserService = inject(TicketUserService);
   user_id = 0;
   isCreate = true;
 
+  // Agregar estas señales
+etiquetasConCategoria = signal<any[]>([]);
+categoriaSeleccionada = signal<any>(null);
+
   imagenesSeleccionadas = signal<any[]>([]);
   imagenesParaEliminar = signal<number[]>([]);
   estaSubiendoImagen = signal(false);
@@ -109,7 +113,7 @@ private ticketUserService = inject(TicketUserService);
     this.loadUserInfo();
     this.setupSearchDebounce();
     this.loadTickets();
-    this.loadCategoriasConEtiquetas();
+    this.loadEtiquetasConCategoria();
     this.loadPrioridades();
     this.loadUsuarios();
     this.getUserId();
@@ -148,17 +152,56 @@ private ticketUserService = inject(TicketUserService);
       }
     });
   }
-
-  private loadCategoriasConEtiquetas(): void {
-    this.ticketUserService.getCategoriasConEtiquetas().subscribe({
-      next: (categorias) => {
-        this.categoriasConEtiquetas.set(categorias);
+  //arreglo para la profe etiquetas
+  private loadEtiquetasConCategoria(): void {
+    this.ticketUserService.getAllEtiquetasConCategoria().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.etiquetasConCategoria.set(response.etiquetas);
+        }
       },
       error: (error) => {
-        console.error('Error cargando categorías:', error);
-        this.notificationService.error('Error', 'No se pudieron cargar las categorías', 4000);
+        console.error('Error cargando etiquetas con categoría:', error);
+        this.notificationService.error('Error', 'No se pudieron cargar las etiquetas', 4000);
       }
     });
+  }
+  //nuevo metodo es alberto este es el metodo para cambiar etiquetas
+  onEtiquetaChange(etiquetaId: number): void {
+  this.newTicket.update(ticket => ({ 
+    ...ticket, 
+    etiquetaId: etiquetaId,
+    categoriaId: null
+  }));
+  this.categoriaSeleccionada.set(null);
+
+  if (etiquetaId) {
+    const etiquetaSeleccionada = this.etiquetasConCategoria().find(e => e.id === etiquetaId);
+    
+    if (etiquetaSeleccionada && etiquetaSeleccionada.categoria) {
+      this.categoriaSeleccionada.set(etiquetaSeleccionada.categoria);
+      this.newTicket.update(ticket => ({ 
+        ...ticket, 
+        categoriaId: etiquetaSeleccionada.categoria.id
+      }));
+    } else {
+      this.ticketUserService.getCategoriaByEtiquetaId(etiquetaId).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.categoriaSeleccionada.set(response.categoria);
+            this.newTicket.update(ticket => ({ 
+              ...ticket, 
+              categoriaId: response.categoria.id
+            }));
+          }
+        },
+        error: (error) => {
+          console.error('Error obteniendo categoría:', error);
+          this.notificationService.error('Error', 'No se pudo obtener la categoría de la etiqueta', 4000);
+        }
+      });
+    }
+  }
   }
 
   private loadUsuarios(): void {
