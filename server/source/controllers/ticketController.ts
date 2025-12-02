@@ -1745,4 +1745,106 @@ export class TicketController {
       next(error);
     }
   };
+
+  getAsignacionByAsignacionId = async (request: Request, response: Response, next: NextFunction) => {
+  try {
+    const user = (request as any).user;
+    const asignacionId = parseInt(request.params.asignacionId);
+
+    if (isNaN(asignacionId)) {
+      return next(AppError.badRequest("Asignación ID no válido"));
+    }
+
+    const asignacion = await this.prisma.asignacion.findFirst({
+      where: {
+        id: asignacionId,
+        activo: true
+      },
+      include: {
+        ticket: {
+          include: {
+            categoria: {
+              select: {
+                nombre: true,
+                slaTiempoMaxRespuestaMin: true,
+                slaTiempoMaxResolucionMin: true
+              }
+            },
+            solicitante: {
+              select: {
+                nombre: true,
+                correo: true
+              }
+            },
+            historial: {
+              include: {
+                usuario: {
+                  select: {
+                    nombre: true
+                  }
+                },
+                imagenes: true
+              },
+              orderBy: {
+                creadoEn: 'desc'
+              }
+            },
+            valoracion: {
+              include: {
+                usuario: {
+                  select: {
+                    nombre: true,
+                    correo: true
+                  }
+                }
+              }
+            },
+            imagenes: true
+          }
+        },
+        tecnico: {
+          select: {
+            nombre: true,
+            correo: true
+          }
+        }
+      }
+    });
+
+    if (!asignacion) {
+      return next(AppError.notFound("No se encontró la asignación"));
+    }
+
+    const ahora = new Date();
+    let tiempoRestanteSLAHoras = null;
+    let cumplimientoRespuesta = null;
+    let cumplimientoResolucion = null;
+
+    if (asignacion.ticket.fechaLimiteResolucion) {
+      tiempoRestanteSLAHoras = this.calcularTiempoRestante(asignacion.ticket.fechaLimiteResolucion);
+    }
+
+    if (asignacion.ticket.fechaRespuesta && asignacion.ticket.fechaLimiteRespuesta) {
+      cumplimientoRespuesta = asignacion.ticket.fechaRespuesta <= asignacion.ticket.fechaLimiteRespuesta;
+    }
+
+    if (asignacion.ticket.fechaCierre && asignacion.ticket.fechaLimiteResolucion) {
+      cumplimientoResolucion = asignacion.ticket.fechaCierre <= asignacion.ticket.fechaLimiteResolucion;
+    }
+
+    const resultado = {
+      ...asignacion,
+      tiempoRestanteSLAHoras,
+      cumplimientoRespuesta,
+      cumplimientoResolucion,
+      slaRespuesta: asignacion.ticket.categoria?.slaTiempoMaxRespuestaMin,
+      slaResolucion: asignacion.ticket.categoria?.slaTiempoMaxResolucionMin
+    };
+
+    response.json(resultado);
+
+  } catch (error) {
+    next(error);
+  }
+  };
 }

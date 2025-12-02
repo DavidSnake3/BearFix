@@ -361,13 +361,16 @@ model Notificacion {
 model Valoracion {
   id         Int     @id @default(autoincrement())
   ticketId   Int     @unique
-  usuarioId  Int?
+  usuarioId  Int
   puntuacion Int
   comentario String? @db.Text
   creadoEn   DateTime @default(now())
+  actualizadoEn DateTime @updatedAt
+
   ticket     Ticket  @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   usuario    Usuario? @relation(fields: [usuarioId], references: [id])
 
   @@index([usuarioId])
   @@index([creadoEn])
+  @@index([puntuacion])
 }

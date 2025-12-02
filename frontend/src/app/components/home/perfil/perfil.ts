@@ -97,55 +97,53 @@ export class Perfil implements OnInit {
     this.perfilForm.markAsUntouched();
   }
 
-guardarCambios(event?: Event): void { 
-  if (event) {
-    event.preventDefault(); 
-  }
+  guardarCambios(): void { 
 
-  console.log('🟢 [Perfil] guardarCambios() EJECUTADO - INICIO');
-  console.log('📋 Formulario válido:', this.perfilForm.valid);
-  
-  this.marcarControlesComoTocados();
-  
-  if (this.perfilForm.invalid) {
-    console.log('🔴 Formulario INVÁLIDO - No se enviará');
-    this.mostrarErroresValidacion();
-    return;
-  }
 
-  console.log('🟢 Formulario VÁLIDO - Continuando...');
-  this.estaCargando = true;
-
-  const datos: ActualizarPerfilRequest = {
-    nombre: this.perfilForm.get('nombre')?.value?.trim() || null,
-    telefono: this.perfilForm.get('telefono')?.value?.trim() || null,
-    correo: this.perfilForm.get('correo')?.value?.trim()
-  };
-
-  console.log('📤 Datos preparados:', datos);
-
-  this.perfilService.actualizarPerfil(datos).subscribe({
-    next: (usuarioActualizado: UsuarioPerfil) => {
-      console.log('✅ ÉXITO - Respuesta del servidor recibida');
-      this.usuario = usuarioActualizado;
-      this.esEditando = false;
-      this.perfilForm.disable();
-      this.perfilForm.markAsPristine();
-      this.perfilForm.markAsUntouched();
-      this.estaCargando = false;
-      this.notificationService.success('Éxito', 'Perfil actualizado correctamente');
-    },
-    error: (error) => {
-      console.error('❌ ERROR - En la petición:', error);
-      this.estaCargando = false;
-      if (error.status === 400 && error.error?.message) {
-        this.notificationService.error('Error', error.error.message);
-      } else {
-        this.notificationService.error('Error', 'No se pudo actualizar el perfil');
-      }
+    console.log('🟢 [Perfil] guardarCambios() EJECUTADO - INICIO');
+    console.log('📋 Formulario válido:', this.perfilForm.valid);
+    
+    this.marcarControlesComoTocados();
+    
+    if (this.perfilForm.invalid) {
+      console.log('🔴 Formulario INVÁLIDO - No se enviará');
+      this.mostrarErroresValidacion();
+      return;
     }
-  });
-}
+
+    console.log('🟢 Formulario VÁLIDO - Continuando...');
+    this.estaCargando = true;
+
+    const datos: ActualizarPerfilRequest = {
+      nombre: this.perfilForm.get('nombre')?.value?.trim() || null,
+      telefono: this.perfilForm.get('telefono')?.value?.trim() || null,
+      correo: this.perfilForm.get('correo')?.value?.trim()
+    };
+
+    console.log('📤 Datos preparados:', datos);
+
+    this.perfilService.actualizarPerfil(datos).subscribe({
+      next: (usuarioActualizado: UsuarioPerfil) => {
+        console.log('✅ ÉXITO - Respuesta del servidor recibida');
+        this.usuario = usuarioActualizado;
+        this.esEditando = false;
+        this.perfilForm.disable();
+        this.perfilForm.markAsPristine();
+        this.perfilForm.markAsUntouched();
+        this.estaCargando = false;
+        this.notificationService.success('Éxito', 'Perfil actualizado correctamente');
+      },
+      error: (error) => {
+        console.error('❌ ERROR - En la petición:', error);
+        this.estaCargando = false;
+        if (error.status === 400 && error.error?.message) {
+          this.notificationService.error('Error', error.error.message);
+        } else {
+          this.notificationService.error('Error', 'No se pudo actualizar el perfil');
+        }
+      }
+    });
+  }
 
   private mostrarErroresValidacion(): void {
     if (this.nombre?.errors?.['required']) {

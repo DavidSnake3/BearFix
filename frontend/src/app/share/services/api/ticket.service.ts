@@ -5,6 +5,7 @@ import { environment } from '../../../../environments/environment.development';
 import { CategoriaConEtiquetas, CreateTicketRequest, Etiqueta, Ticket, UpdateTicketRequest, Usuario } from '../../models/TicketModel';
 import { BaseAPI, API_ENDPOINT } from './base-apis';
 import { AuthService } from './auth.service';
+import { CambioEstadoRequest } from './ticket-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -135,4 +136,15 @@ export class TicketService extends BaseAPI<Ticket> {
       { headers: this.getHeaders() }
     );
   }
+
+  obtenerHistorial(ticketId: number): Observable<any> {
+  const url = `${this.urlAPI}/${this.endpoint}/tickets/${ticketId}/historial`;
+  return this.http.get<any>(url, { headers: this.getHeaders() });
+}
+
+  cambiarEstado(ticketId: number, request: CambioEstadoRequest): Observable<any> {
+    const url = `${this.urlAPI}/${this.endpoint}/tickets/${ticketId}/cambiar-estado`;
+    return this.http.post<any>(url, request, { headers: this.getHeaders() });
+  }
+  
 }

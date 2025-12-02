@@ -397,15 +397,14 @@ export class AsignacionesComponent {
     this.cerrarModal();
     this.router.navigate(['asignaciones/detalle', id]);
   }
-
-    verDetalleGestion(id: number): void {
+  verDetalleGestion(id: number): void {
     if (!id || id === 0) {
       alert('Error: No se puede cargar el detalle. ID no válido.');
       return;
     }
 
     this.cerrarModal();
-     this.router.navigate(['/tickets/gestion', id]);
+    this.router.navigate(['/tickets/gestion', id]);
   }
 
   getNombreMes(): string {

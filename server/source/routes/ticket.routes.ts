@@ -9,7 +9,7 @@ export class TicketRoutes {
         const controller = new TicketController()
 
         router.use(authenticateToken);
-
+        router.get('/asignaciones/detalle/:asignacionId', controller.getAsignacionByAsignacionId);
         router.get('/dashboard', controller.getTicketsDashboard);
         router.get('/mis-tickets', controller.getMisTicketsCreados);  
         router.get('/asignaciones/todas', controller.getTodasAsignaciones);  

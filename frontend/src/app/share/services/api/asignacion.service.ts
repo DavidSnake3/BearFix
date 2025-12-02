@@ -95,5 +95,16 @@ export class AsignacionService {
     );
   }
 
+getAsignacionByAsignacionId(asignacionId: number): Observable<any> {
+  const url = `${this.baseURL}/tickets/asignaciones/detalle/${asignacionId}`;
+  
+  return this.http.get<any>(url, { headers: this.getHeaders() }).pipe(
+    tap(data => console.log('Detalle de asignación por ID recibido:', data)),
+    catchError(error => {
+      console.error('Error cargando asignación por ID:', error);
+      throw error;
+    })
+  );
+}
 
 }

@@ -11,13 +11,14 @@ import { TicketStateRoutes } from './ticketState.routes';
 import { AutotriageRoutes } from './autotriage.routes';
 import { NotificationRoutes } from './notification.routes';
 import { AsignacionManualRoutes } from './asignacionManual.routes';
+import { ValoracionRoutes } from './valoracion.routes';
 
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();
     
     router.use(UserRoutes.routes);
-    
+    router.use('/valoraciones', ValoracionRoutes.routes);
     router.use('/tecnicos', TecnicoRoutes.routes);
     router.use('/categorias', CategoriaRoutes.routes);
     router.use('/tickets', TicketStateRoutes.routes);

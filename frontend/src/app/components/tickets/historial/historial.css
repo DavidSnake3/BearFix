@@ -1703,3 +1703,31 @@
   margin-bottom: 4px;
 }
 
+.star-rating.selectable {
+  cursor: pointer;
+  font-size: 2rem;
+}
+
+.star-select {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 4px;
+}
+
+.star-select:hover {
+  transform: scale(1.2);
+}
+
+.star-select.active i {
+  color: #ffc107 !important;
+}
+
+.btn-icon.success {
+  background: #28a745;
+}
+
+.btn-icon.success:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}

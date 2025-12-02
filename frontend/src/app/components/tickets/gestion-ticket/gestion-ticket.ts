@@ -4,8 +4,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
 import { AsignacionService } from '../../../share/services/api/asignacion.service';
+import { TicketService } from '../../../share/services/api/ticket.service'; // AÑADIR ESTE SERVICIO
 import { FileUploadService } from '../../../share/services/api/file-upload.service';
 import { NotificationService } from '../../../share/services/app/notification.service';
 import { AuthService } from '../../../share/services/api/auth.service';
@@ -24,6 +24,7 @@ export class GestionTicketComponent implements OnInit {
   private fb = inject(FormBuilder);
   private ticketStateService = inject(TicketStateService);
   private asignacionService = inject(AsignacionService);
+  private ticketService = inject(TicketService); 
   private fileUploadService = inject(FileUploadService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
@@ -36,6 +37,9 @@ export class GestionTicketComponent implements OnInit {
   showImageModal = signal(false);
   selectedImage = signal<any>(null);
 
+  // AÑADIR SEÑAL PARA ID TICKET
+  ticketId = signal<number | null>(null);
+
   estadoForm: FormGroup;
 
   constructor() {
@@ -46,40 +50,67 @@ export class GestionTicketComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const ticketId = this.route.snapshot.params['id'];
-    this.cargarTicket(ticketId);
-    this.cargarHistorial(ticketId);
+    const asignacionId = this.route.snapshot.params['id'];
+    console.log('Cargando gestión para asignación ID:', asignacionId);
+    this.cargarTicketPorAsignacion(asignacionId);
   }
 
-  cargarTicket(ticketId: number): void {
+  // CAMBIAR: Cargar ticket por ID de asignación para obtener el ID del ticket
+  cargarTicketPorAsignacion(asignacionId: number): void {
     this.isLoading.set(true);
-    this.asignacionService.getAsignacionById(ticketId).subscribe({
+    this.asignacionService.getAsignacionByAsignacionId(asignacionId).subscribe({
       next: (data) => {
-        this.ticket.set(data.ticket || data);
+        console.log('Datos de asignación recibidos:', data);
+        
+        if (data && data.ticket) {
+          this.ticket.set(data.ticket);
+          this.ticketId.set(data.ticket.id); // GUARDAR EL ID DEL TICKET
+          
+          // Ahora cargar el historial usando el ID del ticket
+          if (data.ticket.id) {
+            this.cargarHistorial(data.ticket.id);
+          }
+        } else {
+          this.ticket.set(data);
+          if (data.id) {
+            this.ticketId.set(data.id);
+            this.cargarHistorial(data.id);
+          }
+        }
+        
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('Error cargando ticket:', error);
-        this.notificationService.error('Error', 'No se pudo cargar el ticket', 4000);
+        console.error('Error cargando asignación:', error);
+        this.notificationService.error('Error', 'No se pudo cargar la asignación', 4000);
         this.isLoading.set(false);
         this.router.navigate(['/asignaciones']);
       }
     });
   }
 
+  // MODIFICAR: Cargar historial por ID de ticket
   cargarHistorial(ticketId: number): void {
+    console.log('Cargando historial para ticket ID:', ticketId);
     this.ticketStateService.obtenerHistorial(ticketId).subscribe({
       next: (response) => {
         if (response.success) {
+          console.log('Historial recibido:', response.data);
           this.historial.set(response.data);
+        } else {
+          console.warn('Respuesta del historial no exitosa:', response);
+          this.historial.set([]);
         }
       },
       error: (error) => {
         console.error('Error cargando historial:', error);
+        this.notificationService.error('Error', 'No se pudo cargar el historial', 4000);
+        this.historial.set([]);
       }
     });
   }
 
+  // MODIFICAR: Cambiar estado usando ID del ticket
   cambiarEstado(): void {
     if (this.estadoForm.invalid) {
       this.marcarControlesComoTouched();
@@ -91,6 +122,12 @@ export class GestionTicketComponent implements OnInit {
       return;
     }
 
+    const ticketId = this.ticketId();
+    if (!ticketId) {
+      this.notificationService.error('Error', 'No se pudo identificar el ticket', 4000);
+      return;
+    }
+
     this.isLoading.set(true);
 
     const request: CambioEstadoRequest = {
@@ -99,13 +136,18 @@ export class GestionTicketComponent implements OnInit {
       imagenes: this.imagenesEvidencia()
     };
 
-    this.ticketStateService.cambiarEstado(this.ticket()!.id, request).subscribe({
+    console.log('Cambiando estado del ticket ID:', ticketId, 'Request:', request);
+
+    this.ticketStateService.cambiarEstado(ticketId, request).subscribe({
       next: (response) => {
         this.notificationService.success('Éxito', 'Estado del ticket actualizado correctamente', 4000);
         this.estadoForm.reset();
         this.imagenesEvidencia.set([]);
-        this.cargarTicket(this.ticket()!.id);
-        this.cargarHistorial(this.ticket()!.id);
+        
+        // Recargar los datos
+        const asignacionId = this.route.snapshot.params['id'];
+        this.cargarTicketPorAsignacion(asignacionId);
+        
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -116,6 +158,7 @@ export class GestionTicketComponent implements OnInit {
     });
   }
 
+  // El resto de los métodos se mantienen igual...
   onFileSelected(event: any): void {
     const files: FileList = event.target.files;
     if (files.length > 0) {

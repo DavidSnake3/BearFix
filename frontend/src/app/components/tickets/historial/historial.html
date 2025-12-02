@@ -184,22 +184,29 @@
                       {{ ticket.fechaCreacion | date:'dd/MM/yyyy' }}
                     </td>
 
-                    <td class="text-center pe-4">
-                      <div class="action-buttons">
-                        <button class="btn-icon info" (click)="viewTicketDetail(ticket)" title="Ver detalle">
-                          <i class="fas fa-eye"></i>
-                        </button>
-                        
-                        <!-- BOTÓN DE CERRAR TICKET AGREGADO AQUÍ -->
-                        <button 
-                          class="btn-icon danger" 
-                          (click)="cerrarTicket(ticket)" 
-                          title="Cerrar ticket"
-                          *ngIf="puedeCerrarTicket(ticket)">
-                          <i class="fas fa-times"></i>
-                        </button>
-                      </div>
-                    </td>
+                  <td class="text-center pe-4">
+                    <div class="action-buttons">
+                      <button class="btn-icon info" (click)="viewTicketDetail(ticket)" title="Ver detalle">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    
+                      <button 
+                        class="btn-icon success" 
+                        (click)="openValoracionModal(ticket)" 
+                        title="Valorar ticket"
+                        *ngIf="puedeValorar(ticket)">
+                        <i class="fas fa-star"></i>
+                      </button>
+
+                      <button 
+                        class="btn-icon danger" 
+                        (click)="cerrarTicket(ticket)" 
+                        title="Cerrar ticket"
+                        *ngIf="puedeCerrarTicket(ticket)">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </td>
                   </tr>
                 }
               </tbody>
@@ -345,7 +352,6 @@
             <div class="info-value">
               <i class="bi bi-alarm"></i>
               <span>{{ selectedTicket()!.slaRespuesta }} minutos</span>
-
             </div>
           </div>
         </div>
@@ -454,7 +460,6 @@
                     </div>
                     <div class="rating-comment">
                       <p>{{ selectedTicket()!.valoracion.comentario || 'Sin comentarios' }}</p>
-                     
                     </div>
                   </div>
                 } @else {
@@ -521,7 +526,6 @@
   </div>
 }
 
-<!-- Modal para cerrar ticket -->
 @if (showCloseTicketModal()) {
 <div class="modal-overlay" (click)="closeCloseTicketModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
@@ -559,6 +563,62 @@
               [disabled]="!justificacionCierre()">
         <i class="bi bi-check-circle"></i>
         Confirmar Cierre
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+@if (showValoracionModal()) {
+<div class="modal-overlay" (click)="closeValoracionModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="bi bi-star-fill"></i>
+        <div>
+          <h3>Valorar Ticket</h3>
+          <p class="modal-subtitle">{{ ticketParaValorar()?.consecutivo }} - {{ ticketParaValorar()?.titulo }}</p>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeValoracionModal()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Puntuación <span class="text-danger">*</span></label>
+        <div class="star-rating selectable">
+          @for (star of [1,2,3,4,5]; track star) {
+            <span class="star-select" 
+                  (click)="seleccionarPuntuacion(star)"
+                  [class.active]="star <= puntuacion()">
+              <i class="bi" [ngClass]="star <= puntuacion() ? 'bi-star-fill text-warning' : 'bi-star'"></i>
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Comentario (opcional)</label>
+        <textarea 
+          class="form-control" 
+          rows="4" 
+          [(ngModel)]="comentarioValoracion"
+          placeholder="Comentarios sobre la atención recibida..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeValoracionModal()">
+        <i class="bi bi-x-circle"></i>
+        Cancelar
+      </button>
+      <button class="btn btn-success" 
+              (click)="enviarValoracion()"
+              [disabled]="puntuacion() === 0">
+        <i class="bi bi-check-circle"></i>
+        Enviar Valoración
       </button>
     </div>
   </div>

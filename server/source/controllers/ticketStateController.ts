@@ -45,7 +45,7 @@ export class TicketStateController {
     try {
       const { ticketId } = request.params;
       const historial = await this.ticketStateService.obtenerHistorialTicket(parseInt(ticketId));
-      
+
       response.json({
         success: true,
         data: historial
@@ -54,5 +54,5 @@ export class TicketStateController {
       next(error);
     }
   };
-  
+
 }

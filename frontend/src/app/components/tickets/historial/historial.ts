@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { AuthService } from '../../../share/services/api/auth.service';
 import { TicketService } from '../../../share/services/api/ticket.service';
+import { ValoracionService } from '../../../share/services/api/valoracion.service';
 import { environment } from '../../../../environments/environment.development';
 import { TicketStateService } from '../../../share/services/api/ticket-state.service';
 import { NotificationService } from '../../../share/services/app/notification.service';
@@ -15,8 +16,9 @@ import { NotificationService } from '../../../share/services/app/notification.se
 export class HistorialComponent implements OnInit, OnDestroy {
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
-   private ticketStateService = inject(TicketStateService); // INYECTADO
-  private notificationService = inject(NotificationService); // INYECTADO
+  private valoracionService = inject(ValoracionService);
+  private ticketStateService = inject(TicketStateService);
+  private notificationService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   tickets = signal<any[]>([]);
@@ -24,7 +26,6 @@ export class HistorialComponent implements OnInit, OnDestroy {
   selectedTicket = signal<any>(null);
   showModal = signal(false);
   isEditing = signal(false);
-  
 
   filtros = signal({
     search: '',
@@ -52,16 +53,19 @@ export class HistorialComponent implements OnInit, OnDestroy {
   showImageModal = signal(false);
   currentImageIndex = signal(0);
 
-  // Agregar estas señales y métodos
   showCloseTicketModal = signal(false);
   justificacionCierre = signal('');
   ticketParaCerrar = signal<any>(null);
 
+  showValoracionModal = signal(false);
+  puntuacion = signal(0);
+  comentarioValoracion = signal('');
+  ticketParaValorar = signal<any>(null);
   
   private userId: number;
   private role: string;
 
-    private imageBaseUrl = environment.apiURL ? 
+  private imageBaseUrl = environment.apiURL ? 
     `${environment.apiURL}/images/` : 
     'http://localhost:3000/images/';
   
@@ -82,44 +86,93 @@ export class HistorialComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-cerrarTicket(ticket: any): void {
-  this.ticketParaCerrar.set(ticket);
-  this.justificacionCierre.set('');
-  this.showCloseTicketModal.set(true);
+puedeValorar(ticket: any): boolean {
+  return ticket.estado === 'CERRADO' && !ticket.valoracion;
 }
-
- closeCloseTicketModal(): void {
-  this.showCloseTicketModal.set(false);
-  this.ticketParaCerrar.set(null);
-  this.justificacionCierre.set('');
-} 
-
-confirmarCierreTicket(): void {
-  const ticket = this.ticketParaCerrar();
-  const justificacion = this.justificacionCierre().trim();
-  
-  if (!ticket || !justificacion) {
-    this.notificationService.warning('Validación', 'Debe escribir una justificación', 4000);
-    return;
+  openValoracionModal(ticket: any): void {
+    this.ticketParaValorar.set(ticket);
+    this.puntuacion.set(0);
+    this.comentarioValoracion.set('');
+    this.showValoracionModal.set(true);
   }
 
-  this.ticketStateService.cancelarTicket(ticket.id, justificacion).subscribe({
-    next: (response) => {
-      this.notificationService.success('Éxito', 'Ticket cerrado correctamente', 4000);
-      this.closeCloseTicketModal();
-      this.loadTickets();
-    },
-    error: (error) => {
-      console.error('Error cerrando ticket:', error);
-      this.notificationService.error('Error', error.error?.message || 'No se pudo cerrar el ticket', 4000);
+  closeValoracionModal(): void {
+    this.showValoracionModal.set(false);
+    this.ticketParaValorar.set(null);
+    this.puntuacion.set(0);
+    this.comentarioValoracion.set('');
+  }
+
+  seleccionarPuntuacion(puntos: number): void {
+    this.puntuacion.set(puntos);
+  }
+
+  enviarValoracion(): void {
+    const ticket = this.ticketParaValorar();
+    const puntuacion = this.puntuacion();
+    const comentario = this.comentarioValoracion().trim();
+
+    if (!ticket || !puntuacion) {
+      this.notificationService.warning('Validación', 'Debe seleccionar una puntuación', 4000);
+      return;
     }
-  })}
+
+    this.valoracionService.crearValoracion({
+      ticketId: ticket.id,
+      puntuacion: puntuacion,
+      comentario: comentario
+    }).subscribe({
+      next: (response) => {
+        this.notificationService.success('Éxito', 'Valoración enviada correctamente', 4000);
+        this.closeValoracionModal();
+        if (this.showModal()) {
+          this.viewTicketDetail(ticket);
+        }
+        this.loadTickets();
+      },
+      error: (error) => {
+        this.notificationService.warning('Error','Ya existe una valoracion', 4000);
+      }
+    });
+  }
+
+  cerrarTicket(ticket: any): void {
+    this.ticketParaCerrar.set(ticket);
+    this.justificacionCierre.set('');
+    this.showCloseTicketModal.set(true);
+  }
+
+  closeCloseTicketModal(): void {
+    this.showCloseTicketModal.set(false);
+    this.ticketParaCerrar.set(null);
+    this.justificacionCierre.set('');
+  }
+
+  confirmarCierreTicket(): void {
+    const ticket = this.ticketParaCerrar();
+    const justificacion = this.justificacionCierre().trim();
+    
+    if (!ticket || !justificacion) {
+      this.notificationService.warning('Validación', 'Debe escribir una justificación', 4000);
+      return;
+    }
+
+    this.ticketStateService.cancelarTicket(ticket.id, justificacion).subscribe({
+      next: (response) => {
+        this.notificationService.success('Éxito', 'Ticket cerrado correctamente', 4000);
+        this.closeCloseTicketModal();
+        this.loadTickets();
+      },
+      error: (error) => {
+        this.notificationService.error('Error', error.error?.message || 'No se pudo cerrar el ticket', 4000);
+      }
+    });
+  }
 
   puedeCerrarTicket(ticket: any): boolean {
     const estadosNoCerrables = ['CERRADO', 'CANCELADO', 'RESUELTO'];
     return !estadosNoCerrables.includes(ticket.estado);
   }
-  
 
   getImageUrl(imageName: string): string {
     if (!imageName) {
@@ -132,7 +185,6 @@ confirmarCierreTicket(): void {
   }
 
   handleImageError(event: any): void {
-    console.warn('Error cargando imagen, usando imagen por defecto');
     event.target.src = `${this.imageBaseUrl}${this.defaultImage}`;
   }
 
@@ -267,7 +319,6 @@ confirmarCierreTicket(): void {
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error al cargar tickets creados:', err);
         this.isLoading.set(false);
         this.tickets.set([]);
       }
@@ -283,7 +334,6 @@ confirmarCierreTicket(): void {
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('Error cargando detalle del ticket:', error);
         this.isLoading.set(false);
       }
     });
@@ -361,13 +411,13 @@ confirmarCierreTicket(): void {
     this.showImageModal.set(true);
   }
 
-    closeImageModal(): void {
+  closeImageModal(): void {
     this.showImageModal.set(false);
     this.selectedImage.set(null);
     this.currentImageIndex.set(0);
   }
 
-    navigateImage(direction: 'prev' | 'next'): void {
+  navigateImage(direction: 'prev' | 'next'): void {
     const imagenes = this.selectedTicket()?.imagenes || [];
     let newIndex = this.currentImageIndex();
 
@@ -380,5 +430,4 @@ confirmarCierreTicket(): void {
     this.currentImageIndex.set(newIndex);
     this.selectedImage.set(imagenes[newIndex]);
   }
-
 }

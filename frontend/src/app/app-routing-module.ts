@@ -59,28 +59,27 @@ const routes: Routes = [
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: 'ADM' }
   },
-  
+    {
+    path: 'asignaciones/detalle/:id',
+    component: DetalleAsignacionComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { expectedRole: ['TEC', 'ADM'] }
+  },
+  { 
+    path: 'tickets/gestion/:id', 
+    component: GestionTicketComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { expectedRole: ['TEC', 'ADM'] }
+  },
   {
     path: 'asignaciones',
     component: AsignacionesComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: ['TEC', 'ADM'] }
   },
-    { 
-    path: 'tickets/gestion/:id', 
-    component: GestionTicketComponent,
-    canActivate: [AuthGuard, RoleGuard],
-    data: { expectedRole: ['TEC', 'ADM'] }
-  },
     {
     path: 'Todas/asignaciones',
     component: TodasAsignacionesComponent,
-    canActivate: [AuthGuard, RoleGuard],
-    data: { expectedRole: ['TEC', 'ADM'] }
-  },
-  {
-    path: 'asignaciones/detalle/:id',
-    component: DetalleAsignacionComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRole: ['TEC', 'ADM'] }
   },
