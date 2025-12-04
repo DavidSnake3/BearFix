@@ -5,6 +5,11 @@ import { Header } from './header/header';
 import { Footer } from './footer/footer';
 import { Sidebar } from './sidebar/sidebar';
 
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { TranslocoModule } from '@jsverse/transloco';
+import { MatOptionModule } from '@angular/material/core';
+
 
 
 @NgModule({
@@ -14,6 +19,10 @@ import { Sidebar } from './sidebar/sidebar';
     Footer
   ],
   imports: [
+    TranslocoModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
     CommonModule,
     RouterModule
   ],
@@ -22,5 +31,28 @@ import { Sidebar } from './sidebar/sidebar';
     Sidebar,
     Footer
   ]
+  // ,
+  //   providers: [
+  //   provideHttpClient(withInterceptorsFromDi()),
+  //   {
+  //     provide: HTTP_INTERCEPTORS,
+  //     useClass: TokenInterceptor,
+  //     multi: true
+  //   },
+  //   {
+  //     provide: HTTP_INTERCEPTORS,
+  //     useClass: HttpErrorInterceptorService,
+  //     multi: true
+  //   },
+  //   provideTransloco({
+  //     config: {
+  //       availableLangs: AvailableLanguages,
+  //       defaultLang: AvailableLanguage.ES,
+  //       reRenderOnLangChange: true,
+  //       prodMode: !isDevMode(),
+  //     },
+  //     loader: TranslocoHttpLoader,
+  //   })
+  // ],
 })
 export class CoreModule { }

@@ -5,9 +5,9 @@
         <div class="header-info">
           <h1 class="page-title">
             <i class="bi bi-ticket-perforated"></i>
-            Creación de Tickets
+            {{'Creación de Tiquetes' | transloco}}
           </h1>
-          <p class="page-subtitle">Creación de tickets por parte de los usuarios</p>
+          <p class="page-subtitle">{{'Creación de tiquetes por parte de los usuarios' | transloco}}</p>
         </div>
       </div>
       
@@ -15,7 +15,7 @@
         <button type="button" class="btn-action primary" (click)="createTicket()" 
           [disabled]="!newTicket().titulo || !newTicket().categoriaId || !newTicket().etiquetaId">
           <i class="bi bi-check-circle"></i>
-          Crear Ticket
+          {{'Crear Tiquete' | transloco}}
         </button>
       </div>
 
@@ -26,26 +26,26 @@
               <div class="section-card equal-height">
                 <div class="section-header">
                   <i class="bi bi-info-circle"></i>
-                  <h4>Información del Ticket</h4>
+                  <h4>{{'Información del Ticket' | transloco}}</h4>
                 </div>
                 <div class="section-body">
                   <div class="info-grid">
                     <div class="info-item full-width">
-                      <label class="form-label required">Título</label>
-                      <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="Ingrese el título del ticket">
+                      <label class="form-label required">{{'Título' | transloco}}</label>
+                      <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="{{'Ingrese el título del ticket' | transloco}}">
                     </div>
 
                     <div class="info-item full-width">
-                      <label class="form-label">Descripción</label>
-                      <textarea class="form-textarea" rows="3" [(ngModel)]="newTicket().descripcion" placeholder="Describa el problema o solicitud"></textarea>
+                      <label class="form-label">{{'Descripción' | transloco}}</label>
+                      <textarea class="form-textarea" rows="3" [(ngModel)]="newTicket().descripcion" placeholder="{{'Describa el problema o solicitud' | transloco}}"></textarea>
                     </div>
 
                     <div class="info-row">
                       <div class="info-item">
-                        <label class="form-label required">Etiqueta</label>
+                        <label class="form-label required">{{'Etiqueta' | transloco}}</label>
                         <select class="form-select" [(ngModel)]="newTicket().etiquetaId" 
                                 (change)="onEtiquetaChange($any($event.target).value)">
-                          <option value="">Seleccione etiqueta</option>
+                          <option value="">{{'Seleccione etiqueta' | transloco}}</option>
                           @for (etiqueta of etiquetasConCategoria(); track etiqueta.id) {
                           <option [value]="etiqueta.id">{{ etiqueta.nombre }}</option>
                           }
@@ -53,7 +53,7 @@
                       </div>
 
                       <div class="info-item">
-                        <label class="form-label required">Categoría (Automática)</label>
+                        <label class="form-label required">{{'Categoría (Automática)' | transloco}}</label>
                         <div class="categoria-display">
                           @if (categoriaSeleccionada()) {
                             <div class="categoria-info">
@@ -62,7 +62,7 @@
                             </div>
                           } @else {
                             <div class="categoria-placeholder">
-                              <span class="text-muted">Seleccione una etiqueta para ver la categoría</span>
+                              <span class="text-muted">{{'Seleccione una etiqueta para ver la categoría' | transloco}}</span>
                             </div>
                           }
                         </div>
@@ -71,17 +71,17 @@
 
                     <div class="info-row">
                       <div class="info-item">
-                        <label class="form-label required">Prioridad</label>
+                        <label class="form-label required">{{'Prioridad' | transloco}}</label>
                         <select class="form-select" [(ngModel)]="newTicket().prioridad">
-                          <option value="">Seleccione prioridad</option>
+                          <option value="">{{'Seleccione prioridad' | transloco}}</option>
                           @for (prioridad of prioridadesList(); track prioridad) {
-                          <option [value]="prioridad">{{ prioridad }}</option>
+                          <option [value]="prioridad">{{ prioridad | transloco}}</option>
                           }
                         </select>
                       </div>
 
                       <div class="info-item">
-                        <label class="form-label">Usuario Solicitante</label>
+                        <label class="form-label">{{'Usuario Solicitante' | transloco}}</label>
                         <div class="user-select-container">
                           @for (usuario of usuariosList(); track usuario.id) {
                             <div class="user-info">
@@ -94,7 +94,7 @@
 
                     <!-- CORREGIDO: Sección de imágenes mejorada -->
                     <div class="info-item full-width">
-                      <label class="form-label">Imágenes Adjuntas</label>
+                      <label class="form-label">{{'Imágenes Adjuntas' | transloco}}</label>
                       <div class="file-upload-container">
                         <input type="file" 
                                #fileInput 
@@ -105,15 +105,15 @@
                                [disabled]="estaSubiendoImagen()">
                         <div class="upload-area" (click)="fileInput.click()">
                           <i class="bi bi-cloud-upload"></i>
-                          <p>Haz clic o arrastra imágenes aquí</p>
-                          <small>Formatos: JPEG, PNG, GIF, WebP (Máx. 2MB por imagen)</small>
+                          <p>{{'Haz clic o arrastra imágenes aquí' | transloco}}</p>
+                          <small>{{'Formatos: JPEG, PNG, GIF, WebP (Máx. 2MB por imagen)' | transloco}}</small>
                         </div>
                       </div>
                       
                       @if (estaSubiendoImagen()) {
                       <div class="upload-loading">
                         <div class="spinner small"></div>
-                        <span>Subiendo imagen...</span>
+                        <span>{{'Subiendo imagen...' | transloco}}</span>
                       </div>
                       }
                     </div>
@@ -121,7 +121,7 @@
                     @if (imagenesSeleccionadas().length > 0) {
                     <div class="info-item full-width">
                       <div class="images-preview">
-                        <h5>Imágenes a subir:</h5>
+                        <h5>{{'Imágenes a subir:' | transloco}}</h5>
                         <div class="preview-grid">
                           @for (imagen of imagenesSeleccionadas(); track $index; let i = $index) {
                           <div class="preview-item">
@@ -148,25 +148,25 @@
               <div class="section-card equal-height">
                 <div class="section-header">
                   <i class="bi bi-person"></i>
-                  <h4>Información del Sistema</h4>
+                  <h4>{{'Información del Sistema' | transloco}}</h4>
                 </div>
                 <div class="section-body">
                   @for (usuario of usuariosList(); track usuario.id) {
                   <div class="user-info-display">
-                    <h5>Usuario Seleccionado</h5>
+                    <h5>{{'Usuario Seleccionado' | transloco}}</h5>
                     <div class="info-row">
                       <div class="info-item">
-                        <label>Nombre</label>
+                        <label>{{'Nombre' | transloco}}</label>
                         <div class="info-value">{{ usuario.nombre }}</div>
                       </div>
                       <div class="info-item">
-                        <label>Correo</label>
+                        <label>{{'Correo' | transloco}}</label>
                         <div class="info-value">{{ usuario.correo }}</div>
                       </div>
                     </div>
                     <div class="info-row">
                       <div class="info-item">
-                        <label>Rol</label>
+                        <label>{{'Rol' | transloco}}</label>
                         <div class="info-value">{{ usuario.rol }}</div>
                       </div>
                     </div>
@@ -176,7 +176,7 @@
                   <div class="dates-info">
                     <div class="info-row">
                       <div class="date-item">
-                        <label>Fecha de Creación</label>
+                        <label>{{'Fecha de Creación' | transloco}}</label>
                         <div class="date-value">
                           <i class="bi bi-calendar"></i>
                           <span>{{ today | date:'dd/MM/yyyy HH:mm' }}</span>
@@ -184,10 +184,10 @@
                       </div>
 
                       <div class="date-item">
-                        <label>Estado Inicial</label>
+                        <label>{{'Estado Inicial' | transloco}}</label>
                         <div class="date-value">
                           <i class="bi bi-clock"></i>
-                          <span>PENDIENTE</span>
+                          <span>{{'PENDIENTE' | transloco}}</span>
                         </div>
                       </div>
                     </div>

@@ -1,10 +1,31 @@
 <header class="navbar navbar-dark bg-primary shadow px-3">
   <div class="container-fluid">
     <a class="navbar-brand fw-bold">
-      BEARFIX - Sistema de Tickets
+      {{'BEARFIX - Sistema de Tickets' | transloco}}
     </a>
     <div class="ms-auto d-flex align-items-center">
-      <span class="text-white me-3">Hola, <strong>{{ fullName }}</strong></span>
+
+<div>
+  @for (language of languages; track language.code) {
+    <button 
+      class="btn btn-sm btn-outline-light me-2"
+      [class.active]="getLanguage() === language.code"
+      (click)="changeLanguage(language.code)"
+    >
+      <img 
+        [src]="'assets/flags/' + language.code + '.svg'" 
+        [alt]="language.code" 
+        width="20" 
+        class="me-1"
+      >
+      {{ language.name | transloco }}
+    </button>
+  }
+</div>
+
+  
+
+      <span class="text-white me-3">{{'Hola' | transloco}}, <strong>{{ fullName }}</strong></span>
 
       <!-- Dropdown de Notificaciones -->
       <div class="dropdown me-3">
@@ -16,11 +37,11 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
           <li>
-            <h6 class="dropdown-header">Notificaciones</h6>
+            <h6 class="dropdown-header">{{'Notificaciones' | transloco}}</h6>
           </li>
-          <li><a class="dropdown-item" [routerLink]="['/notificaciones']">Ver todas las notificaciones</a></li>
+          <li><a class="dropdown-item" [routerLink]="['/notificaciones']">{{'Ver todas las notificaciones' | transloco}}</a></li>
           @if (noLeidasCount() > 0) {
-          <li><a class="dropdown-item" (click)="marcarTodasComoLeidas()">Marcar todas como leídas</a></li>
+          <li><a class="dropdown-item" (click)="marcarTodasComoLeidas()">{{'Marcar todas como leídas' | transloco}}</a></li>
           }
         </ul>
       </div>
@@ -31,9 +52,9 @@
           <i class="bi bi-person-circle"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="#" routerLink="/perfil"><i class="bi bi-person"></i> Mi Perfil</a></li>
+        <li><a class="dropdown-item" href="#" routerLink="/perfil"><i class="bi bi-person"></i>{{'Mi Perfil' | transloco}}</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="#" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a></li>
+          <li><a class="dropdown-item text-danger" href="#" (click)="logout()"><i class="bi bi-box-arrow-right"></i>{{'Cerrar Sesión' | transloco}}</a></li>
         </ul>
       </div>
     </div>

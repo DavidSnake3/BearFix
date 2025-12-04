@@ -6,6 +6,7 @@ import { AsignacionesComponent } from './asignaciones/asignaciones';
 import { DetalleAsignacionComponent } from './detalle-asignacion/detalle-asignacion';
 import {  TodasAsignacionesComponent } from './todas-asignaciones/todas-asignaciones';
 import { FormsModule } from '@angular/forms';
+import { TranslocoModule } from '@jsverse/transloco';
 
 
 
@@ -16,6 +17,7 @@ import { FormsModule } from '@angular/forms';
     TodasAsignacionesComponent
   ],
   imports: [
+    TranslocoModule,
     CommonModule,
     AsignacionesRoutingModule,
     RouterModule,

@@ -1,9 +1,9 @@
 @if (isLoading()) {
 <div class="loading-container">
   <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Cargando...</span>
+    <span class="visually-hidden">{{'Cargando...' | transloco}}</span>
   </div>
-  <p class="loading-text">Cargando tickets recientes...</p>
+  <p class="loading-text">{{'Cargando tickets recientes...' | transloco}}</p>
 </div>
 } @else {
 <div class="dashboard-container">
@@ -11,9 +11,9 @@
     <div class="header-content">
       <div class="welcome-info">
         <h1 class="welcome-title">
-          <i class="bi bi-house-door"></i> Bienvenido, {{ fullName() }}
+          <i class="bi bi-house-door"></i> {{'Bienvenido' | transloco}}, {{ fullName() }}
         </h1>
-        <p class="welcome-subtitle">Tus tickets más recientes</p>
+        <p class="welcome-subtitle">{{'Tus tickets más recientes' | transloco}}</p>
       </div>
     </div>
   </div>
@@ -25,12 +25,12 @@
           <div class="card-header-content">
             <h2 class="card-title">
               <i class="bi bi-clock-history"></i>
-              Tickets Recientes
+              {{'Tickets Recientes' | transloco}}
             </h2>
             <div class="header-actions">
               <button class="btn btn-refresh" (click)="refreshData()" [disabled]="isLoading()">
                 <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
-                {{ isLoading() ? 'Actualizando...' : 'Actualizar' }}
+                {{ isLoading() ? ('Actualizando...' | transloco) : ('Actualizar' | transloco) }}
               </button>
             </div>
           </div>
@@ -41,11 +41,11 @@
           <div class="empty-state">
             <div class="empty-content">
               <i class="bi bi-inbox empty-icon"></i>
-              <h3>No hay tickets recientes</h3>
-              <p>No se encontraron tickets en el sistema.</p>
+              <h3>{{'No hay tickets recientes.' | transloco}}</h3>
+              <p>{{'No se encontraron tickets en el sistema.' | transloco}}</p>
               <button class="btn btn-primary" (click)="nuevoTicket()">
                 <i class="bi bi-plus-circle"></i>
-                Crear Primer Ticket
+                {{'Crear Primer Ticket' | transloco}}
               </button>
             </div>
           </div>
@@ -105,11 +105,12 @@
 
           <div class="table-footer">
             <div class="table-stats">
-              Mostrando {{ recentTickets().length }} tickets más recientes
+              {{'Mostrando' | transloco}} {{ recentTickets().length }} {{'tickets más recientes' | transloco}}
+
             </div>
             <button class="btn btn-outline" routerLink="/historial">
               <i class="bi bi-clock-history"></i>
-              Ver Todos los Tickets
+              {{'Ver Todos los Tickets' | transloco}}
             </button>
           </div>
           }
@@ -122,7 +123,7 @@
         <div class="card activity-card">
           <div class="card-header">
             <h5 class="card-title">
-              <i class="bi bi-activity"></i> Actividad Reciente
+              <i class="bi bi-activity"></i> {{'Actividad Reciente' | transloco}}
             </h5>
           </div>
           <div class="card-body">
@@ -133,8 +134,8 @@
                   <i class="bi" [class]="activity.icon"></i>
                 </div>
                 <div class="activity-content">
-                  <div class="activity-text">{{ activity.text }}</div>
-                  <div class="activity-time">{{ activity.time }}</div>
+                  <div class="activity-text">{{ activity.text | transloco}}</div>
+                  <div class="activity-time">{{ activity.time | transloco}}</div>
                 </div>
               </div>
               }
@@ -142,7 +143,7 @@
               @if (recentActivity().length === 0) {
               <div class="empty-activity">
                 <i class="bi bi-activity text-muted"></i>
-                <p class="text-muted">No hay actividad reciente</p>
+                <p class="text-muted">{{'No hay actividad reciente' | transloco}}</p>
               </div>
               }
             </div>

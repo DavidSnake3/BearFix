@@ -13,3 +13,38 @@
   filter: brightness(0) invert(1);
 }
 
+
+
+
+/*Transloco*/
+.lang-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.lang-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.lang-btn img {
+  width: 20px;
+}
+
+.lang-btn:hover {
+  background: #f0f0f0;
+}
+
+.lang-btn.active {
+  background: #3f51b5;
+  color: white;
+  border-color: #3f51b5;
+}

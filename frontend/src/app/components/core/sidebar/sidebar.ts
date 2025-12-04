@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from '../../../share/services/api/auth.service';
+import { TranslocoService } from '@jsverse/transloco';
+import { AvailableLanguage } from '../../../transloco-config';
 
 @Component({
   selector: 'app-sidebar',

@@ -18,7 +18,7 @@ import { GestionTicketComponent } from './components/tickets/gestion-ticket/gest
 import { ResetPasswordComponent } from './components/notifications/reset-password/reset-password';
 import { Perfil } from './components/home/perfil/perfil';
 
-const routes: Routes = [
+export const routes: Routes = [
 
   {
     path: 'auth',

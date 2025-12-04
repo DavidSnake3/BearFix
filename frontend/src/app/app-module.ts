@@ -1,4 +1,4 @@
-import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, importProvidersFrom, isDevMode, NgModule, provideZoneChangeDetection } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 
@@ -19,6 +19,12 @@ import { TecnicosModule } from './components/tecnicos/tecnicos-module';
 import { TicketsModule } from './components/tickets/tickets-module';
 import { NotificationsModule } from './components/notifications/notifications-module';
 
+import { provideTransloco, TranslocoDirective, TranslocoModule } from '@jsverse/transloco';
+import { TranslocoHttpLoader } from './transloco-loader';
+import { AvailableLanguage, AvailableLanguages } from './transloco-config';
+import { provideRouter } from '@angular/router';
+import { routes } from './app-routing-module';
+
 
 @NgModule({
   declarations: [
@@ -35,9 +41,13 @@ import { NotificationsModule } from './components/notifications/notifications-mo
     CategoriasModule,
     TicketsModule,
     AsignacionesModule,
-    NotificationsModule
+    NotificationsModule,
+    TranslocoModule
   ],
   providers: [
+    provideZoneChangeDetection({eventCoalescing: true}),
+    // importProvidersFrom(BrowserModule),
+    provideRouter(routes),
     provideHttpClient(withInterceptorsFromDi()),
     {
       provide: HTTP_INTERCEPTORS,
@@ -48,9 +58,23 @@ import { NotificationsModule } from './components/notifications/notifications-mo
       provide: HTTP_INTERCEPTORS,
       useClass: HttpErrorInterceptorService,
       multi: true
-    }
+    },
+    provideTransloco({
+      config: {
+        availableLangs: AvailableLanguages,
+        defaultLang: AvailableLanguage.ES,
+        // availableLangs: [
+        //   { id: "en", label: "English" },
+        //   { id: "es", label: "Spanish" },
+        // ],
+        // defaultLang: "es",
+        reRenderOnLangChange: true,
+        prodMode: !isDevMode(),
+      },
+      loader: TranslocoHttpLoader,
+    })
   ],
   bootstrap: [App],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule { }

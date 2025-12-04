@@ -5,7 +5,7 @@
       <li class="nav-item">
         <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
           <i class="bi bi-house-door"></i>
-          <span>Inicio</span>
+          <span>{{'Inicio' | transloco}}</span>
         </a>
       </li>
 
@@ -13,26 +13,26 @@
         <!-- <a class="nav-link" routerLink="/nuevo/ticket" routerLinkActive="active"> -->
         <a class="nav-link" routerLink="/tickets-user" routerLinkActive="active">
           <i class="bi bi-plus-circle"></i>
-          <span>Nuevo Ticket</span>
+          <span>{{'Nuevo Tiquete' | transloco}}</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/historial" routerLinkActive="active">
           <i class="bi bi-clock-history"></i>
-          <span>Historial</span>
+          <span>{{'Historial' | transloco}}</span>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" routerLink="/perfil" routerLinkActive="active">
           <i class="bi bi-person-gear"></i>
-          <span>Mi Cuenta</span>
+          <span>{{'Mi Cuenta' | transloco}}</span>
         </a>
       </li>
 
       @if (role === 'TEC' || role === 'ADM') {
         <li class="nav-item mt-3">
           <div class="sidebar-divider">
-            <span class="text-muted small fw-bold">HERRAMIENTAS TÉCNICO</span>
+            <span class="text-muted small fw-bold">{{'HERRAMIENTAS TÉCNICO' | transloco}}</span>
           </div>
         </li>
       }
@@ -41,7 +41,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/asignaciones" routerLinkActive="active">
             <i class="bi bi-calendar-week"></i>
-            <span>Mis Asignaciones</span>
+            <span>{{'Mis Asignaciones' | transloco}}</span>
           </a>
         </li>
       }
@@ -50,7 +50,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/metricas" routerLinkActive="active">
             <i class="bi bi-graph-up"></i>
-            <span>Métricas</span>
+            <span>{{'Métricas' | transloco}}</span>
           </a>
         </li>
       }
@@ -58,7 +58,7 @@
       @if (role === 'ADM') {
         <li class="nav-item mt-3">
           <div class="sidebar-divider">
-            <span class="text-muted small fw-bold">ADMINISTRACIÓN</span>
+            <span class="text-muted small fw-bold">{{'ADMINISTRACIÓN' | transloco}}</span>
           </div>
         </li>
       }
@@ -67,7 +67,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/tecnicos" routerLinkActive="active">
             <i class="bi bi-people"></i>
-            <span>Gestión de Técnicos</span>
+            <span>{{'Gestión de Técnicos' | transloco}}</span>
           </a>
         </li>
       }
@@ -76,7 +76,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/categorias" routerLinkActive="active">
             <i class="bi bi-tags"></i>
-            <span>Gestión de Categorías</span>
+            <span>{{'Gestión de Categorías' | transloco}}</span>
           </a>
         </li>
       }
@@ -85,7 +85,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/tickets" routerLinkActive="active">
             <i class="bi bi-list-check"></i>
-            <span>Todos los Tickets</span>
+            <span>{{'Todos los Tickets' | transloco}}</span>
           </a>
         </li>
       }
@@ -103,7 +103,7 @@
         <li class="nav-item">
           <a class="nav-link" routerLink="/reportes" routerLinkActive="active">
             <i class="bi bi-bar-chart"></i>
-            <span>Reportes</span>
+            <span>{{'Reportes' | transloco}}</span>
           </a>
         </li>
       }

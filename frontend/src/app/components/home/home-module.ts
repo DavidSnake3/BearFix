@@ -5,6 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms'; // AÑADE EST
 import { HomeRoutingModule } from './home-routing-module';
 import { DashboardComponent } from './dashboard/dashboard';
 import { Perfil } from './perfil/perfil';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   declarations: [
@@ -12,6 +13,7 @@ import { Perfil } from './perfil/perfil';
     Perfil
   ],
   imports: [
+    TranslocoModule,
     CommonModule,
     HomeRoutingModule,
     FormsModule,        

@@ -32,6 +32,7 @@
     "@angular/router": "^20.3.0",
     "@auth0/angular-jwt": "^5.2.0",
     "@fortawesome/fontawesome-free": "^7.1.0",
+    "@jsverse/transloco": "^8.2.0",
     "jwt-decode": "^4.0.0",
     "ng-angular-popup": "^2.0.1",
     "ngx-sonner": "^3.1.0",

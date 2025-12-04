@@ -9,6 +9,7 @@ import { TicketsComponent } from './tickets/tickets';
 import { TicketsUserComponent } from './tickets-user/tickets-user';
 import {MatIconModule} from '@angular/material/icon';
 import { GestionTicketComponent } from './gestion-ticket/gestion-ticket';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { GestionTicketComponent } from './gestion-ticket/gestion-ticket';
     GestionTicketComponent
   ],
   imports: [
+    TranslocoModule,
     CommonModule,
     TicketsRoutingModule,
     MatIconModule,

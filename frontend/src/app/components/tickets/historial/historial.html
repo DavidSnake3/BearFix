@@ -4,15 +4,15 @@
       <div class="header-info">
         <h1 class="page-title">
           <i class="bi bi-clock-history"></i>
-          Mis Tickets
+          {{'Mis Tickets' | transloco}}
         </h1>
-        <p class="page-subtitle">Historial de todos los tickets que has creado en el sistema</p>
+        <p class="page-subtitle">{{'Historial de todos los tickets que has creado en el sistema' | transloco}}</p>
       </div>
 
       <div class="header-actions">
         <button class="btn-action refresh" (click)="loadTickets()" [disabled]="isLoading()">
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
-          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+          {{ isLoading() ? ('Cargando...' | transloco) : ('Actualizar' | transloco) }}
         </button>
       </div>
     </div>
@@ -22,44 +22,44 @@
     <div class="card-header">
       <h3 class="card-title">
         <i class="bi bi-funnel"></i>
-        Filtros
+        {{'Filtros' | transloco}}
       </h3>
     </div>
     <div class="card-body">
       <div class="filters-grid">
         <div class="filter-group">
-          <label class="filter-label">Buscar Ticket</label>
+          <label class="filter-label">{{'Buscar Ticket' | transloco}}</label>
           <div class="search-container full-width">
             <i class="bi bi-search search-icon"></i>
             <input 
               type="text" 
               class="form-input search-input large" 
-              placeholder="Buscar por consecutivo o título..." 
+              placeholder="{{'Buscar por consecutivo o título...' | transloco}}" 
               [value]="searchInput()"
               (input)="onSearchChange($event)">
           </div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label">Estado</label>
+          <label class="filter-label">{{'Estado' | transloco}}</label>
           <select class="form-select" 
                   [value]="filtros().estado"
                   (change)="aplicarFiltro('estado', $any($event.target).value)">
-            <option value="">Todos los estados</option>
+            <option value="">{{'Todos los estados' | transloco}}</option>
             @for (estado of estados(); track estado) {
-              <option [value]="estado">{{ estado }}</option>
+              <option [value]="estado">{{ estado | transloco }}</option>
             }
           </select>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label">Prioridad</label>
+          <label class="filter-label">{{'Prioridad' | transloco}}</label>
           <select class="form-select" 
                   [value]="filtros().prioridad"
                   (change)="aplicarFiltro('prioridad', $any($event.target).value)">
-            <option value="">Todas las prioridades</option>
+            <option value="">{{'Todas las prioridades' | transloco}}</option>
             @for (prioridad of prioridades(); track prioridad) {
-              <option [value]="prioridad">{{ prioridad }}</option>
+              <option [value]="prioridad">{{ prioridad | transloco}}</option>
             }
           </select>
         </div>
@@ -97,15 +97,15 @@
         <div>
           <h2 class="card-title">
             <i class="bi bi-list-ul"></i>
-            Historial
+            {{'Historial' | transloco}}
           </h2>
           <p class="card-subtitle">
-            Mostrando {{ tickets().length }} de {{ paginacion().totalItems }} tickets
+            {{'Mostrando' | transloco}} {{ tickets().length }} {{'de' | transloco}} {{ paginacion().totalItems }} {{'tiquetes' | transloco}}
           </p>
         </div>
         <div class="header-controls">
           <div class="items-per-page">
-            <label>Mostrar:</label>
+            <label>{{'Mostrar:' | transloco}}</label>
             <select class="form-select small" 
                     [value]="paginacion().itemsPerPage"
                     (change)="cambiarItemsPorPagina($event)">
@@ -124,7 +124,7 @@
         <div class="loading-state">
           <div class="spinner-container">
             <div class="spinner"></div>
-            <p>Cargando tus tickets...</p>
+            <p>{{'Cargando tus tickets...' | transloco}}</p>
           </div>
         </div>
       } @else {
@@ -134,23 +134,23 @@
               <thead class="table-header">
                 <tr>
                   <th scope="col" class="ps-4 sortable" (click)="cambiarOrden('consecutivo')">
-                    Ticket
+                    {{'Tiquete' | transloco}}
                     <i class="bi ms-1" [ngClass]="getOrdenIcon('consecutivo')"></i>
                   </th>
-                  <th scope="col">Categoría</th>
+                  <th scope="col">{{'Categoría' | transloco}}</th>
                   <th scope="col" class="sortable" (click)="cambiarOrden('estado')">
-                    Estado
+                    {{'Estado' | transloco}}
                     <i class="bi ms-1" [ngClass]="getOrdenIcon('estado')"></i>
                   </th>
                   <th scope="col" class="sortable" (click)="cambiarOrden('prioridad')">
-                    Prioridad
+                    {{'Prioridad' | transloco}}
                     <i class="bi ms-1" [ngClass]="getOrdenIcon('prioridad')"></i>
                   </th>
                   <th scope="col" class="sortable" (click)="cambiarOrden('fechaCreacion')">
-                    Fecha Creación
+                    {{'Fecha Creación' | transloco}}
                     <i class="bi ms-1" [ngClass]="getOrdenIcon('fechaCreacion')"></i>
                   </th>
-                  <th scope="col" class="text-center pe-4">Acciones</th>
+                  <th scope="col" class="text-center pe-4">{{'Acciones' | transloco}}</th>
                 </tr>
               </thead>
               <tbody>
@@ -242,7 +242,7 @@
               <button class="pagination-btn" 
                       [disabled]="!paginacion().hasNextPage"
                       (click)="cambiarPagina(paginacion().currentPage + 1)">
-                Siguiente <i class="bi bi-chevron-right"></i>
+                {{'Siguiente' | transloco}} <i class="bi bi-chevron-right"></i>
               </button>
             </nav>
           </div>
@@ -251,17 +251,17 @@
           <div class="empty-state">
             <div class="empty-content">
               <i class="bi bi-search empty-icon"></i>
-              <h3>No se encontraron tickets</h3>
+              <h3>{{'No se encontraron tickets' | transloco}}</h3>
               <p>
-                No hay tickets que coincidan con los filtros aplicados.
+                {{'No hay tickets que coincidan con los filtros aplicados.' | transloco}}
                 @if (filtros().search || filtros().estado || filtros().prioridad) {
                   <br>
-                  <small>Intenta ajustar los filtros de búsqueda.</small>
+                  <small>{{'Intenta ajustar los filtros de búsqueda.' | transloco}}</small>
                 }
               </p>
               <button class="btn-action primary" (click)="limpiarFiltros()">
                 <i class="bi bi-arrow-clockwise"></i>
-                Limpiar Filtros
+                {{'Limpiar Filtros' | transloco}}
               </button>
             </div>
           </div>
@@ -278,7 +278,7 @@
         <div class="modal-title">
           <i class="bi bi-ticket-perforated"></i>
           <div>
-            <h3>Detalle del Ticket</h3>
+            <h3>{{'Detalle del Ticket' | transloco}}</h3>
           </div>
         </div>
         <button class="btn-close" (click)="closeModal()">
@@ -312,14 +312,14 @@
   <div class="section-card">
     <div class="section-header">
       <i class="bi bi-info-circle"></i>
-      <h4>Información Básica</h4>
+      <h4>{{'Información Básica' | transloco}}</h4>
     </div>
     <div class="section-body centered-info">
       <div class="info-grid centered-layout">
     
         <div class="info-item centered description-single-line">
                    <i class="bi bi-text-paragraph"></i>
-          <label>Descripción</label>
+          <label>{{'Descripción' | transloco}}</label>
           <div class="info-value">
             <span class="description-text">{{ selectedTicket()!.descripcion }}</span>
           </div>
@@ -328,7 +328,7 @@
         <div class="info-row">
           @if (selectedTicket()!.tecnicoAsignado) {
             <div class="info-item centered">
-              <label>Técnico Asignado</label>
+              <label>{{'Técnico Asignado' | transloco}}</label>
               <div class="info-value">
                 <i class="bi bi-person-check"></i>
                 <div class="user-info">
@@ -340,7 +340,7 @@
           }
 
           <div class="info-item centered">
-            <label>Categoría</label>
+            <label>{{'Categoría' | transloco}}</label>
             <div class="info-value">
               <i class="bi bi-tag"></i>
               <span>{{ selectedTicket()!.categoria?.nombre }}</span>
@@ -348,17 +348,17 @@
           </div>
 
           <div class="info-item centered">
-            <label>Tiempo de Respuesta</label>
+            <label>{{'Tiempo de Respuesta' | transloco}}</label>
             <div class="info-value">
               <i class="bi bi-alarm"></i>
-              <span>{{ selectedTicket()!.slaRespuesta }} minutos</span>
+              <span>{{ selectedTicket()!.slaRespuesta }} {{'minutos' | transloco}}</span>
             </div>
           </div>
         </div>
 
         <div class="info-row dates-row">
           <div class="info-item centered">
-            <label>Fecha de Creación</label>
+            <label>{{'Fecha de Creación' | transloco}}</label>
             <div class="info-value">
               <i class="bi bi-calendar"></i>
               <span>{{ selectedTicket()!.fechaCreacion | date:'dd/MM/yyyy' }}</span>
@@ -366,7 +366,7 @@
           </div>
 
           <div class="info-item centered">
-            <label>Última Actualización</label>
+            <label>{{'Última Actualización' | transloco}}</label>
             <div class="info-value">
               <i class="bi bi-clock"></i>
               <span>{{ selectedTicket()!.fechaActualizacion | date:'dd/MM/yyyy' }}</span>
@@ -383,7 +383,7 @@
     <div class="section-card">
       <div class="section-header">
         <i class="bi bi-images"></i>
-        <h4>Imágenes Adjuntas</h4>
+        <h4>{{'Imágenes Adjuntas' | transloco}}</h4>
         <span class="section-badge">{{ selectedTicket()!.imagenes.length }}</span>
       </div>
       <div class="section-body">
@@ -414,7 +414,7 @@
               <div class="section-card">
                 <div class="section-header">
                   <i class="bi bi-clock-history"></i>
-                  <h4>Historial de Cambios</h4>
+                  <h4>{{'Historial de Cambios' | transloco}}</h4>
                   <span class="section-badge">{{ selectedTicket()!.historial.length }}</span>
                 </div>
                 <div class="section-body">
@@ -445,7 +445,7 @@
             <div class="section-card">
               <div class="section-header">
                 <i class="bi bi-star"></i>
-                <h4>Valoración de Servicio</h4>
+                <h4>{{'Valoración de Servicio' | transloco}}</h4>
               </div>
               <div class="section-body">
                 @if (selectedTicket()!.valoracion) {
@@ -466,7 +466,7 @@
                   <div class="empty-section">
                     <i class="bi bi-star"></i>
                     <p>No hay valoración</p>
-                    <small>Este ticket no ha sido valorado aún.</small>
+                    <small>{{'Este ticket no ha sido valorado aún.' | transloco}}</small>
                   </div>
                 }
               </div>
@@ -478,7 +478,7 @@
       <div class="modal-footer">
         <button type="button" class="btn-action secondary" (click)="closeModal()">
           <i class="bi bi-x-circle"></i>
-          Cerrar
+          {{'Cerrar' | transloco}}
         </button>
       </div>
     </div>
@@ -533,7 +533,7 @@
       <div class="modal-title">
         <i class="bi bi-x-circle"></i>
         <div>
-          <h3>Cerrar Ticket</h3>
+          <h3>{{'Cerrar Ticket' | transloco}}</h3>
           <p class="modal-subtitle">{{ selectedTicket()?.consecutivo }} - {{ selectedTicket()?.titulo }}</p>
         </div>
       </div>
@@ -544,7 +544,8 @@
 
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Justificación para cerrar el ticket <span class="text-danger">*</span></label>
+        <label class="form-label">{{'Justificación para cerrar el ticket' | transloco}}
+ <span class="text-danger">*</span></label>
         <textarea 
           class="form-control" 
           rows="4" 
@@ -556,13 +557,14 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeCloseTicketModal()">
         <i class="bi bi-x-circle"></i>
-        Cancelar
+        {{'Cancelar' | transloco}}
+
       </button>
       <button class="btn btn-danger" 
               (click)="confirmarCierreTicket()"
               [disabled]="!justificacionCierre()">
         <i class="bi bi-check-circle"></i>
-        Confirmar Cierre
+        {{'Confirmar Cierre' | transloco}}
       </button>
     </div>
   </div>
@@ -576,7 +578,7 @@
       <div class="modal-title">
         <i class="bi bi-star-fill"></i>
         <div>
-          <h3>Valorar Ticket</h3>
+          <h3>{{'Valorar Tiquete' | transloco}}</h3>
           <p class="modal-subtitle">{{ ticketParaValorar()?.consecutivo }} - {{ ticketParaValorar()?.titulo }}</p>
         </div>
       </div>
@@ -587,7 +589,7 @@
 
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Puntuación <span class="text-danger">*</span></label>
+        <label class="form-label">{{'Puntuación' | transloco}}<span class="text-danger">*</span></label>
         <div class="star-rating selectable">
           @for (star of [1,2,3,4,5]; track star) {
             <span class="star-select" 
@@ -600,7 +602,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Comentario (opcional)</label>
+        <label class="form-label">{{'Comentario (opcional)' | transloco}}</label>
         <textarea 
           class="form-control" 
           rows="4" 
@@ -612,13 +614,13 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeValoracionModal()">
         <i class="bi bi-x-circle"></i>
-        Cancelar
+        {{'Cancelar' | transloco}}
       </button>
       <button class="btn btn-success" 
               (click)="enviarValoracion()"
               [disabled]="puntuacion() === 0">
         <i class="bi bi-check-circle"></i>
-        Enviar Valoración
+        {{'Enviar Valoración' | transloco}}
       </button>
     </div>
   </div>

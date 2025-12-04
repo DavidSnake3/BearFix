@@ -392,7 +392,7 @@
                 <label>SLA Respuesta</label>
                 <div class="sla-value">
                   <i class="bi bi-alarm"></i>
-                  <span>{{ selectedAsignacion()?.slaRespuesta }} minutos</span>
+                  <span>{{ selectedAsignacion()?.slaRespuesta }} {{'minutos' | transloco}}</span>
                   @if (selectedAsignacion()?.cumplimientoRespuesta !== null) {
                   <span class="badge ms-2" [ngClass]="getSLAClass(selectedAsignacion()?.cumplimientoRespuesta)">
                     <i class="bi me-1" [ngClass]="getSLAIcon(selectedAsignacion()?.cumplimientoRespuesta)"></i>
@@ -406,7 +406,7 @@
                 <label>SLA Resolución</label>
                 <div class="sla-value">
                   <i class="bi bi-clock-history"></i>
-                  <span>{{ selectedAsignacion()?.slaResolucion }} minutos</span>
+                  <span>{{ selectedAsignacion()?.slaResolucion }} {{'minutos' | transloco}}</span>
                   @if (selectedAsignacion()?.cumplimientoResolucion !== null) {
                   <span class="badge ms-2" [ngClass]="getSLAClass(selectedAsignacion()?.cumplimientoResolucion)">
                     <i class="bi me-1" [ngClass]="getSLAIcon(selectedAsignacion()?.cumplimientoResolucion)"></i>
