@@ -4,19 +4,19 @@
       <div class="header-info">
         <h1 class="page-title">
           <i class="bi bi-people"></i>
-          Gestión de Técnicos
+          {{'Gestión de Técnicos' | transloco}}
         </h1>
-        <p class="page-subtitle">Administracion de Tecnicos</p>
+        <p class="page-subtitle">{{'Administracion de Tecnicos' | transloco}}</p>
       </div>
 
       <div class="header-actions">
         <button class="btn-action refresh" (click)="loadTecnicos()" [disabled]="isLoading()">
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
-          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+          {{ isLoading() ? ('Cargando...' | transloco) : ('Actualizar' | transloco) }}
         </button>
         <button class="btn-action primary" (click)="openCreateModal()">
           <i class="bi bi-plus-circle"></i>
-          Agregar Técnico
+          {{'Agregar Técnico' | transloco}}
         </button>
       </div>
     </div>
@@ -26,50 +26,50 @@
     <div class="card-header">
       <h3 class="card-title">
         <i class="bi bi-funnel"></i>
-        Filtros
+        {{'Filtros' | transloco}}
       </h3>
     </div>
     <div class="card-body">
       <div class="filters-grid">
 
         <div class="filter-group">
-          <label class="filter-label">Buscar Técnico</label>
+          <label class="filter-label">{{'Buscar Técnico' | transloco}}</label>
           <div class="search-container">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" class="form-input search-input large" placeholder="Buscar por nombre o correo..."
+            <input type="text" class="form-input search-input large" placeholder="{{'Buscar por nombre o correo...' | transloco}}"
               [value]="searchInput()" (input)="onSearchChange($event)">
           </div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label">Estado</label>
+          <label class="filter-label">{{'Estado' | transloco}}</label>
           <select class="form-select" [value]="filtroDisponible()"
             (change)="onDisponibleChange($any($event.target).value)">
-            <option value="">Todos los estados</option>
-            <option value="true">Disponible</option>
-            <option value="false">No disponible</option>
+            <option value="">{{'Todos los estados' | transloco}}</option>
+            <option value="true">{{'Disponible' | transloco}}</option>
+            <option value="false">{{'No disponible' | transloco}}</option>
           </select>
         </div>
       </div>
 
       @if (searchInput() || filtroDisponible()) {
       <div class="active-filters">
-        <span class="filters-label">Filtros activos:</span>
+        <span class="filters-label">{{'Filtros activos:' | transloco}}</span>
         @if (searchInput()) {
         <span class="filter-badge">
-          Búsqueda: "{{ searchInput() }}"
+          {{'Búsqueda:' | transloco}} "{{ searchInput() }}"
           <i class="bi bi-x" (click)="onSearchChange({ target: { value: '' } })"></i>
         </span>
         }
         @if (filtroDisponible() === 'true') {
         <span class="filter-badge">
-          Estado: Disponible
+          {{'Estado: Disponible' | transloco}}
           <i class="bi bi-x" (click)="onDisponibleChange('')"></i>
         </span>
         }
         @if (filtroDisponible() === 'false') {
         <span class="filter-badge">
-          Estado: No disponible
+          {{'Estado: No disponible' | transloco}}
           <i class="bi bi-x" (click)="onDisponibleChange('')"></i>
         </span>
         }
@@ -84,15 +84,15 @@
         <div>
           <h2 class="card-title">
             <i class="bi bi-list-ul"></i>
-            Lista de Técnicos
+            {{'Lista de Técnicos' | transloco}}
           </h2>
           <p class="card-subtitle">
-            Mostrando {{ tecnicos().length }} de {{ paginacion().totalItems }} técnicos
+            {{'Mostrando' | transloco}} {{ tecnicos().length }} {{'de' | transloco}} {{ paginacion().totalItems }} {{'técnicos' | transloco}}
           </p>
         </div>
         <div class="header-controls">
           <div class="items-per-page">
-            <label>Mostrar:</label>
+            <label>{{'Mostrar:' | transloco}}</label>
             <select class="form-select small" [value]="paginacion().itemsPerPage"
               (change)="cambiarItemsPorPagina($any($event.target).value)">
               <option value="5">5</option>
@@ -110,7 +110,7 @@
       <div class="loading-state">
         <div class="spinner-container">
           <div class="spinner"></div>
-          <p>Cargando técnicos...</p>
+          <p>{{'Cargando técnicos...' | transloco}}</p>
         </div>
       </div>
       } @else {
@@ -119,10 +119,10 @@
         <table class="modern-table">
           <thead class="table-header">
             <tr>
-              <th scope="col" class="ps-4">Técnico</th>
-              <th scope="col">Contacto</th>
-              <th scope="col">Estado</th>
-              <th scope="col" class="text-center pe-4">Acciones</th>
+              <th scope="col" class="ps-4">{{'Técnico' | transloco}}</th>
+              <th scope="col">{{'Contacto' | transloco}}</th>
+              <th scope="col">{{'Estado' | transloco}}</th>
+              <th scope="col" class="text-center pe-4">{{'Acciones' | transloco}}</th>
             </tr>
           </thead>
           <tbody>
@@ -148,7 +148,7 @@
                   </div>
                   <div class="contact-item">
                     <i class="bi bi-telephone"></i>
-                    <span class="contact-value">{{ tecnico.telefono || 'Sin teléfono' }}</span>
+                    <span class="contact-value">{{ tecnico.telefono || ('Sin teléfono' | transloco) }}</span>
                   </div>
                 </div>
               </td>
@@ -156,19 +156,19 @@
               <td>
                 <span class="badge" [ngClass]="tecnico.disponible ? 'bg-success' : 'bg-secondary'">
                   <i class="bi me-1" [ngClass]="tecnico.disponible ? 'bi-check-circle' : 'bi-x-circle'"></i>
-                  {{ tecnico.disponible ? 'Disponible' : 'No disponible' }}
+                  {{ tecnico.disponible ? ('Disponible' | transloco) : ('No disponible' | transloco) }}
                 </span>
               </td>
 
               <td class="text-center pe-4">
                 <div class="action-buttons">
-                  <button class="btn-icon info" (click)="viewTecnicoDetail(tecnico)" title="Ver detalle">
+                  <button class="btn-icon info" (click)="viewTecnicoDetail(tecnico)" title="{{'Ver detalle' | transloco}}">
                     <i class="fas fa-eye"></i>
                   </button>
-                  <button class="btn-icon warning" (click)="enableEditMode(tecnico)" title="Editar técnico">
+                  <button class="btn-icon warning" (click)="enableEditMode(tecnico)" title="{{'Editar técnico' | transloco}}">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button class="btn-icon danger" (click)="deleteTecnico(tecnico)" title="Eliminar técnico">
+                  <button class="btn-icon danger" (click)="deleteTecnico(tecnico)" title="{{'Eliminar técnico' | transloco}}">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -181,13 +181,13 @@
 
       <div class="pagination-container">
         <div class="pagination-info">
-          Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} •
-          {{ paginacion().totalItems }} técnicos en total
+          {{'Página' | transloco}} {{ paginacion().currentPage }} {{'de' | transloco}} {{ paginacion().totalPages }} •
+          {{ paginacion().totalItems }} {{'técnicos en total' | transloco}}
         </div>
         <nav class="pagination">
           <button class="pagination-btn" [disabled]="!paginacion().hasPrevPage"
             (click)="cambiarPagina(paginacion().currentPage - 1)">
-            <i class="bi bi-chevron-left"></i> Anterior
+            <i class="bi bi-chevron-left"></i> {{'Anterior' | transloco}}
           </button>
 
           <div class="pagination-pages">
@@ -205,7 +205,7 @@
 
           <button class="pagination-btn" [disabled]="!paginacion().hasNextPage"
             (click)="cambiarPagina(paginacion().currentPage + 1)">
-            Siguiente <i class="bi bi-chevron-right"></i>
+            {{'Siguiente' | transloco}} <i class="bi bi-chevron-right"></i>
           </button>
         </nav>
       </div>
@@ -214,17 +214,17 @@
       <div class="empty-state">
         <div class="empty-content">
           <i class="bi bi-people empty-icon"></i>
-          <h3>No se encontraron técnicos</h3>
+          <h3>{{'No se encontraron técnicos' | transloco}}</h3>
           <p>
-            No hay técnicos que coincidan con los filtros aplicados.
+            {{'No hay técnicos que coincidan con los filtros aplicados.' | transloco}}
             @if (searchInput() || filtroDisponible()) {
             <br>
-            <small>Intenta ajustar los filtros de búsqueda.</small>
+            <small>{{'Intenta ajustar los filtros de búsqueda.' | transloco}}</small>
             }
           </p>
           <button class="btn-action primary" (click)="limpiarFiltros()">
             <i class="bi bi-arrow-clockwise"></i>
-            Limpiar Filtros
+            {{'Limpiar Filtros' | transloco}}
           </button>
         </div>
       </div>
@@ -242,7 +242,7 @@
       <div class="modal-title">
         <i class="bi" [ngClass]="isEditing() ? 'bi-pencil-square' : 'bi-person-badge'"></i>
         <div>
-          <h3>{{ isEditing() ? 'Editando Técnico' : 'Detalle del Técnico' }}</h3>
+          <h3>{{ isEditing() ? ('Editando Técnico' | transloco) : ('Detalle del Técnico' | transloco) }}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="isEditing() ? cancelEdit() : closeModal()">
@@ -265,7 +265,7 @@
           <span class="tecnico-id">ID: {{ selectedTecnico()!.id }}</span>
           <span class="badge" [ngClass]="selectedTecnico()!.disponible ? 'bg-success' : 'bg-secondary'">
             <i class="bi me-1" [ngClass]="selectedTecnico()!.disponible ? 'bi-check-circle' : 'bi-x-circle'"></i>
-            {{ selectedTecnico()!.disponible ? 'Disponible' : 'No disponible' }}
+            {{ selectedTecnico()!.disponible ? ('Disponible' | transloco) : ('No disponible' | transloco) }}
           </span>
         </div>
         } @else {
@@ -275,8 +275,8 @@
               placeholder="Nombre del técnico">
             <div class="edit-selectors">
               <select class="form-select" [(ngModel)]="editTecnicoData().disponible">
-                <option [ngValue]="true">Disponible</option>
-                <option [ngValue]="false">No disponible</option>
+                <option [ngValue]="true">{{'Disponible' | transloco}}</option>
+                <option [ngValue]="false">{{'No disponible' | transloco}}</option>
               </select>
             </div>
           </div>
@@ -289,21 +289,21 @@
           <div class="section-card equal-height">
             <div class="section-header">
               <i class="bi bi-info-circle"></i>
-              <h4>Información Básica</h4>
+              <h4>{{'Información Básica' | transloco}}</h4>
             </div>
             <div class="section-body">
               @if (!isEditing()) {
               <div class="info-grid">
                 <div class="info-row">
                   <div class="info-item">
-                    <label>Correo Electrónico</label>
+                    <label>{{'Correo Electrónico' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-envelope"></i>
                       <span>{{ selectedTecnico()!.correo }}</span>
                     </div>
                   </div>
                   <div class="info-item">
-                    <label>Teléfono</label>
+                    <label>{{'Teléfono' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-telephone"></i>
                       <span>{{ selectedTecnico()!.telefono || 'No registrado' }}</span>
@@ -312,14 +312,14 @@
                 </div>
                 <div class="info-row">
                   <div class="info-item">
-                    <label>Fecha de Registro</label>
+                    <label>{{'Fecha de Registro' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-calendar"></i>
                       <span>{{ selectedTecnico()!.creadoEn | date:'dd/MM/yyyy' }}</span>
                     </div>
                   </div>
                   <div class="info-item">
-                    <label>Última Actualización</label>
+                    <label>{{'Última Actualización' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-clock"></i>
                       <span>{{ selectedTecnico()!.actualizadoEn | date:'dd/MM/yyyy' }}</span>
@@ -330,7 +330,7 @@
               } @else {
               <div class="edit-grid">
                 <div class="form-group">
-                  <label class="form-label">Correo Electrónico</label>
+                  <label class="form-label">{{'Correo Electrónico' | transloco}}</label>
                   <div class="input-with-icon">
                     <i class="bi bi-envelope"></i>
                     <input type="email" class="form-input" [(ngModel)]="editTecnicoData().correo">
@@ -338,7 +338,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Teléfono</label>
+                  <label class="form-label">{{'Teléfono' | transloco}}</label>
                   <div class="input-with-icon">
                     <i class="bi bi-telephone"></i>
                     <input type="tel" class="form-input" [(ngModel)]="editTecnicoData().telefono">
@@ -354,13 +354,13 @@
           <div class="section-card equal-height">
             <div class="section-header">
               <i class="bi bi-graph-up"></i>
-              <h4>Carga de Trabajo</h4>
+              <h4>{{'Carga de Trabajo' | transloco}}</h4>
             </div>
             <div class="section-body">
               <div class="workload-grid">
                 <div class="workload-row">
                   <div class="workload-item">
-                    <label>Tickets Asignados</label>
+                    <label>{{'Tiquetes Asignados' | transloco}}</label>
                     <div class="workload-content">
                       <div class="workload-stats">
                         <span class="workload-current">{{ selectedTecnico()!.cargaTrabajo || 0 }}</span>
@@ -385,14 +385,14 @@
                 </div>
                 <div class="workload-row workload-items-row">
                   <div class="workload-item">
-                    <label>Cargos Actuales</label>
+                    <label>{{'Cargos Actuales' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-briefcase"></i>
                       <span>{{ selectedTecnico()!.cargosActuales || 0 }}</span>
                     </div>
                   </div>
                   <div class="workload-item">
-                    <label>Límite de Tickets</label>
+                    <label>{{'Límite de Tiquetes' | transloco}}</label>
                     <div class="info-value">
                       <i class="bi bi-clipboard-check"></i>
                       <span>{{ selectedTecnico()!.limiteCargaTickets || 'No definido' }}</span>
@@ -403,7 +403,7 @@
 
               @if (isEditing()) {
               <div class="form-group">
-                <label class="form-label">Límite de Tickets</label>
+                <label class="form-label">{{'Límite de Tiquetes' | transloco}}</label>
                 <div class="input-with-icon">
                   <i class="bi bi-clipboard-check"></i>
                   <input type="number" class="form-input" [(ngModel)]="editTecnicoData().limiteCargaTickets">
@@ -421,10 +421,10 @@
         <div class="section-card">
           <div class="section-header">
             <i class="bi bi-award"></i>
-            <h4>Especialidades</h4>
+            <h4>{{'Especialidades' | transloco}}</h4>
             <button class="btn-action primary small" (click)="openEspecialidadesModal(false)">
               <i class="bi bi-plus-circle"></i>
-              Gestionar Especialidades
+              {{'Gestionar Especialidades' | transloco}}
             </button>
           </div>
           <div class="section-body">
@@ -442,7 +442,7 @@
             } @else {
             <div class="empty-especialidades">
               <i class="bi bi-award"></i>
-              <p>No hay especialidades asignadas</p>
+              <p>{{'No hay especialidades asignadas' | transloco}}</p>
             </div>
             }
           </div>
@@ -455,7 +455,7 @@
           <div class="section-card">
             <div class="section-header">
               <i class="bi bi-award"></i>
-              <h4>Especialidades</h4>
+              <h4>{{'Especialidades' | transloco}}</h4>
               <span class="section-badge">{{ selectedTecnico()!.usuarioEspecialidades.length }}</span>
             </div>
             <div class="section-body">
@@ -463,7 +463,7 @@
                 @for (esp of selectedTecnico()!.usuarioEspecialidades; track esp.especialidadId) {
                 <div class="specialty-card">
                   <div class="specialty-header">
-                    <h5>{{ esp.especialidad?.nombre || 'Sin nombre' }}</h5>
+                    <h5>{{ esp.especialidad?.nombre || ('Sin nombre' | transloco) }}</h5>
                   </div>
                   <p class="specialty-description">{{ esp.especialidad?.descripcion || 'Sin descripción' }}</p>
                 </div>
@@ -480,17 +480,17 @@
         <div class="section-card">
           <div class="section-header">
             <i class="bi bi-ticket-perforated"></i>
-            <h4>Tickets Asignados</h4>
+            <h4>{{'Tickets Asignados' | transloco}}</h4>
             <span class="section-badge">{{ selectedTecnico()!.asignacionesRecibidas.length }}</span>
           </div>
           <div class="section-body">
             <div class="tickets-table">
               <div class="table-header-row">
-                <div class="table-cell">Ticket</div>
-                <div class="table-cell">Descripcion</div>
-                <div class="table-cell">Estado</div>
-                <div class="table-cell">Prioridad</div>
-                <div class="table-cell">Fecha Asignación</div>
+                <div class="table-cell">{{'Tiquete' | transloco}}</div>
+                <div class="table-cell">{{'Descripcion' | transloco}}</div>
+                <div class="table-cell">{{'Estado' | transloco}}</div>
+                <div class="table-cell">{{'Prioridad' | transloco}}</div>
+                <div class="table-cell">{{'Fecha Asignación' | transloco}}</div>
               </div>
               <div class="table-body">
                 @for (asignacion of selectedTecnico()!.asignacionesRecibidas; track asignacion.id) {
@@ -499,7 +499,7 @@
                     <strong class="ticket-code">{{ asignacion.ticket?.consecutivo || 'N/A' }}</strong>
                   </div>
                   <div class="table-cell ticket-title">
-                    {{ asignacion.ticket?.titulo || 'Sin título' }}
+                    {{ asignacion.ticket?.titulo || ('Sin título' | transloco) }}
                   </div>
                   <div class="table-cell">
                     <span class="badge" [ngClass]="getEstadoBadgeClass(asignacion.ticket?.estado || '')">
@@ -527,7 +527,7 @@
       !isEditing()) {
       <div class="empty-section">
         <i class="bi bi-award"></i>
-        <p>No hay especialidades registradas</p>
+        <p>{{'No hay especialidades registradas' | transloco}}</p>
       </div>
       }
 
@@ -535,7 +535,7 @@
       !isEditing()) {
       <div class="empty-section">
         <i class="bi bi-inbox"></i>
-        <p>No hay tickets asignados</p>
+        <p>{{'No hay tiquetes asignados' | transloco}}</p>
       </div>
       }
     </div>
@@ -544,20 +544,20 @@
     <div class="modal-footer">
       <button type="button" class="btn-action secondary" (click)="isEditing() ? cancelEdit() : closeModal()">
         <i class="bi bi-x-circle"></i>
-        {{ isEditing() ? 'Cancelar' : 'Cerrar' }}
+        {{ isEditing() ? ('Cancelar' | transloco) : ('Cerrar' | transloco) }}
       </button>
 
       @if (!isEditing()) {
       <button type="button" class="btn-action primary" (click)="enableEdit()">
         <i class="bi bi-pencil"></i>
-        Editar Técnico
+        {{'Editar Técnico' | transloco}}
       </button>
       }
 
       @if (isEditing()) {
       <button type="button" class="btn-action success" (click)="saveTecnico()">
         <i class="bi bi-check-circle"></i>
-        Guardar Cambios
+        {{'Guardar Cambios' | transloco}}
       </button>
       }
     </div>
@@ -573,7 +573,7 @@
       <div class="modal-title">
         <i class="bi bi-person-plus"></i>
         <div>
-          <h3>Crear Nuevo Técnico</h3>
+          <h3>{{'Crear Nuevo Técnico' | transloco}}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="closeCreateModal()">
@@ -592,8 +592,8 @@
               placeholder="Nombre del técnico">
             <div class="edit-selectors">
               <select class="form-select" [(ngModel)]="newTecnico().disponible">
-                <option [ngValue]="true">Disponible</option>
-                <option [ngValue]="false">No disponible</option>
+                <option [ngValue]="true">{{'Disponible' | transloco}}</option>
+                <option [ngValue]="false">{{'No disponible' | transloco}}</option>
               </select>
             </div>
           </div>
@@ -605,12 +605,12 @@
           <div class="section-card equal-height">
             <div class="section-header">
               <i class="bi bi-info-circle"></i>
-              <h4>Información Básica</h4>
+              <h4>{{'Información Básica' | transloco}}</h4>
             </div>
             <div class="section-body">
               <div class="edit-grid">
                 <div class="form-group">
-                  <label class="form-label">Correo Electrónico *</label>
+                  <label class="form-label">{{'Correo Electrónico *' | transloco}}</label>
                   <div class="input-with-icon">
                     <i class="bi bi-envelope"></i>
                     <input type="email" class="form-input" [(ngModel)]="newTecnico().correo" placeholder="tecnico@empresa.com">
@@ -618,7 +618,7 @@
                 </div>
 
                 <div class="form-group">
-                  <label class="form-label">Teléfono</label>
+                  <label class="form-label">{{'Teléfono' | transloco}}</label>
                   <div class="input-with-icon">
                     <i class="bi bi-telephone"></i>
                     <input type="tel" class="form-input" [(ngModel)]="newTecnico().telefono" placeholder="+506 1234-5678">
@@ -633,11 +633,11 @@
           <div class="section-card equal-height">
             <div class="section-header">
               <i class="bi bi-graph-up"></i>
-              <h4>Carga de Trabajo</h4>
+              <h4>{{'Carga de Trabajo' | transloco}}</h4>
             </div>
             <div class="section-body">
               <div class="form-group">
-                <label class="form-label">Límite de Tickets</label>
+                <label class="form-label">{{'Límite de Tiquetes' | transloco}}</label>
                 <div class="input-with-icon">
                   <i class="bi bi-clipboard-check"></i>
                   <input type="number" class="form-input" [(ngModel)]="newTecnico().limiteCargaTickets" min="1" max="20">
@@ -652,10 +652,10 @@
         <div class="section-card">
           <div class="section-header">
             <i class="bi bi-award"></i>
-            <h4>Especialidades</h4>
+            <h4>{{'Especialidades' | transloco}}</h4>
             <button class="btn-action primary small" (click)="openEspecialidadesModal(true)">
               <i class="bi bi-plus-circle"></i>
-              Gestionar Especialidades
+              {{'Gestionar Especialidades' | transloco}}
             </button>
           </div>
           <div class="section-body">
@@ -673,7 +673,7 @@
             } @else {
             <div class="empty-especialidades">
               <i class="bi bi-award"></i>
-              <p>No hay especialidades asignadas</p>
+              <p>{{'No hay especialidades asignadas' | transloco}}</p>
             </div>
             }
           </div>
@@ -684,12 +684,12 @@
     <div class="modal-footer">
       <button type="button" class="btn-action secondary" (click)="closeCreateModal()">
         <i class="bi bi-x-circle"></i>
-        Cancelar
+        {{'Cancelar' | transloco}}
       </button>
 
       <button type="button" class="btn-action success" (click)="createTecnico()" [disabled]="isLoading()">
         <i class="bi bi-check-circle"></i>
-        {{ isLoading() ? 'Creando...' : 'Crear Técnico' }}
+        {{ isLoading() ? ('Creando...' | transloco) : ('Crear Técnico' | transloco) }}
       </button>
     </div>
   </div>
@@ -704,8 +704,8 @@
       <div class="modal-title">
         <i class="bi bi-award"></i>
         <div>
-          <h3>Gestionar Especialidades</h3>
-          <p class="modal-subtitle">Selecciona o gestiona las especialidades del técnico</p>
+          <h3>{{'Gestionar Especialidades' | transloco}}</h3>
+          <p class="modal-subtitle">{{'Selecciona o gestiona las especialidades del técnico' | transloco}}</p>
         </div>
       </div>
       <button class="btn-close" (click)="closeEspecialidadesModal()">
@@ -717,11 +717,11 @@
       <div class="tabs-header">
         <button class="tab-button" [class.active]="especialidadesTabActive() === 'select'" 
                 (click)="especialidadesTabActive.set('select')">
-          Seleccionar Especialidades
+          {{'Seleccionar Especialidades' | transloco}}
         </button>
         <button class="tab-button" [class.active]="especialidadesTabActive() === 'manage'" 
                 (click)="especialidadesTabActive.set('manage')">
-          Gestionar Especialidades
+          {{'Gestionar Especialidades' | transloco}}
         </button>
       </div>
 
@@ -750,7 +750,7 @@
                 </div>
                 <div class="especialidad-info">
                   <h4>{{ especialidad.nombre }}</h4>
-                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <p>{{ especialidad.descripcion || ('Sin descripción' | transloco) }}</p>
                   <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
                 </div>
               </div>
@@ -758,7 +758,7 @@
               @if (especialidadesFiltradas().length === 0) {
               <div class="empty-especialidades">
                 <i class="bi bi-search"></i>
-                <p>No se encontraron especialidades</p>
+                <p>{{'No se encontraron especialidades' | transloco}}</p>
               </div>
               }
             </div>
@@ -769,10 +769,10 @@
         <div class="tab-pane" [class.active]="especialidadesTabActive() === 'manage'">
           <div class="modal-body">
             <div class="gestion-header">
-              <h4>Lista de Especialidades</h4>
+              <h4>{{'Lista de Especialidades' | transloco}}</h4>
               <button class="btn-action primary small" (click)="openGestionEspecialidadModal()">
                 <i class="bi bi-plus-circle"></i>
-                Agregar Especialidad
+                {{'Agregar Especialidad' | transloco}}
               </button>
             </div>
 
@@ -781,14 +781,14 @@
               <div class="gestion-item">
                 <div class="gestion-item-info">
                   <h4>{{ especialidad.nombre }}</h4>
-                  <p>{{ especialidad.descripcion || 'Sin descripción' }}</p>
+                  <p>{{ especialidad.descripcion || ('Sin descripción' | transloco) }}</p>
                   <span class="especialidad-codigo">{{ especialidad.codigo }}</span>
                 </div>
                 <div class="gestion-item-actions">
-                  <button class="btn-icon warning" (click)="openGestionEspecialidadModal(especialidad)" title="Editar especialidad">
+                  <button class="btn-icon warning" (click)="openGestionEspecialidadModal(especialidad)" title="(Editar especialidad | transloco)">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button class="btn-icon danger" (click)="eliminarEspecialidad(especialidad)" title="Eliminar especialidad">
+                  <button class="btn-icon danger" (click)="eliminarEspecialidad(especialidad)" title="(Eliminar especialidad | transloco)">
                     <i class="fas fa-trash"></i>
                   </button>
                 </div>
@@ -797,7 +797,7 @@
               @if (especialidadesList().length === 0) {
               <div class="empty-especialidades">
                 <i class="bi bi-award"></i>
-                <p>No hay especialidades creadas</p>
+                <p>{{'No hay especialidades creadas' | transloco}}</p>
               </div>
               }
             </div>
@@ -809,11 +809,11 @@
     <div class="modal-footer">
       <button type="button" class="btn-action secondary" (click)="closeEspecialidadesModal()">
         <i class="bi bi-x-circle"></i>
-        Cerrar
+        {{'Cerrar' | transloco}}
       </button>
       <button type="button" class="btn-action success" (click)="closeEspecialidadesModal()">
         <i class="bi bi-check-circle"></i>
-        Confirmar
+        {{'Confirmar' | transloco}}
       </button>
     </div>
   </div>
@@ -828,7 +828,7 @@
       <div class="modal-title">
         <i class="bi bi-award"></i>
         <div>
-          <h3>{{ especialidadEditando() ? 'Editar Especialidad' : 'Crear Especialidad' }}</h3>
+          <h3>{{ especialidadEditando() ? ('Editar Especialidad' | transloco) : ('Crear Especialidad' | transloco) }}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="closeGestionEspecialidadModal()">
@@ -839,17 +839,17 @@
     <div class="modal-body">
       <div class="form-container">
         <div class="form-group">
-          <label class="form-label">Código *</label>
+          <label class="form-label">{{'Código *' | transloco}}</label>
           <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().codigo" placeholder="Código de la especialidad">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Nombre *</label>
+          <label class="form-label">{{'Nombre *' | transloco}}</label>
           <input type="text" class="form-input" [(ngModel)]="nuevaEspecialidad().nombre" placeholder="Nombre de la especialidad">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Descripción</label>
+          <label class="form-label">{{'Descripción' | transloco}}</label>
           <textarea class="form-textarea" rows="3" [(ngModel)]="nuevaEspecialidad().descripcion" placeholder="Descripción de la especialidad"></textarea>
         </div>
       </div>

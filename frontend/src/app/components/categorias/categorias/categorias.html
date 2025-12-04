@@ -4,19 +4,19 @@
       <div class="header-info">
         <h1 class="page-title">
           <i class="bi bi-tags"></i>
-          Gestión de Categorías
+          {{'Gestión de Categorías' | transloco}}
         </h1>
-        <p class="page-subtitle">Administracion de Categorias</p>
+        <p class="page-subtitle">{{'Administracion de Categorias' | transloco}}</p>
       </div>
 
       <div class="header-actions">
         <button class="btn-action refresh" (click)="loadCategorias()" [disabled]="isLoading()">
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
-          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+          {{ isLoading() ? ('Cargando...' | transloco) : ('Actualizar' | transloco) }}
         </button>
         <button class="btn-action primary" (click)="openCreateModal()">
           <i class="bi bi-plus-circle"></i>
-          Agregar Categoría
+          {{'Agregar Categoría' | transloco}}
         </button>
       </div>
     </div>
@@ -26,16 +26,16 @@
     <div class="card-header">
       <h3 class="card-title">
         <i class="bi bi-funnel"></i>
-        Filtros
+        {{'Filtros' | transloco}}
       </h3>
     </div>
     <div class="card-body">
       <div class="filters-grid">
         <div class="filter-group full-width">
-          <label class="filter-label">Buscar Categoría</label>
+          <label class="filter-label">{{'Buscar Categoría' | transloco}}</label>
           <div class="search-container full-width">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" class="form-input search-input large" placeholder="Buscar por código o nombre..."
+            <input type="text" class="form-input search-input large" placeholder="{{'Buscar por código o nombre...' | transloco}}"
               [value]="searchInput()" (input)="onSearchChange($event)">
           </div>
         </div>
@@ -43,9 +43,9 @@
 
       @if (searchInput()) {
       <div class="active-filters">
-        <span class="filters-label">Filtros activos:</span>
+        <span class="filters-label">{{'Filtros activos:' | transloco}}</span>
         <span class="filter-badge">
-          Búsqueda: "{{ searchInput() }}"
+          {{'Búsqueda:' | transloco}} "{{ searchInput() }}"
           <i class="bi bi-x" (click)="limpiarFiltros()"></i>
         </span>
       </div>
@@ -59,15 +59,15 @@
         <div>
           <h2 class="card-title">
             <i class="bi bi-list-ul"></i>
-            Lista de Categorías
+            {{'Lista de Categorías' | transloco}}
           </h2>
           <p class="card-subtitle">
-            Mostrando {{ categorias().length }} de {{ paginacion().totalItems }} categorías
+            {{'Mostrando' | transloco}} {{ categorias().length }} {{'de' | transloco}} {{ paginacion().totalItems }} {{'categorías' | transloco}}
           </p>
         </div>
         <div class="header-controls">
           <div class="items-per-page">
-            <label>Mostrar:</label>
+            <label>{{'Mostrar:' | transloco}}</label>
             <select class="form-select small" [value]="paginacion().itemsPerPage"
               (change)="cambiarItemsPorPagina($any($event.target).value)">
               <option value="5">5</option>
@@ -85,7 +85,7 @@
       <div class="loading-state">
         <div class="spinner-container">
           <div class="spinner"></div>
-          <p>Cargando categorías...</p>
+          <p>{{'Cargando categorías...' | transloco}}</p>
         </div>
       </div>
       } @else {
@@ -94,10 +94,10 @@
         <table class="modern-table">
           <thead class="table-header">
             <tr>
-              <th scope="col" class="ps-4">Código</th>
-              <th scope="col">Nombre</th>
-              <th scope="col">Descripción</th>
-              <th scope="col" class="text-center pe-4">Acciones</th>
+              <th scope="col" class="ps-4">{{'Código' | transloco}}</th>
+              <th scope="col">{{'Nombre' | transloco}}</th>
+              <th scope="col">{{'Descripción' | transloco}}</th>
+              <th scope="col" class="text-center pe-4">{{'Acciones' | transloco}}</th>
             </tr>
           </thead>
           <tbody>
@@ -350,8 +350,8 @@
                   <!-- Primera fila: 2 columnas -->
                   <div class="sla-form-row">
                     <div class="form-group">
-                      <label class="form-label">Nombre del SLA</label>
-                      <input type="text" class="form-input" [(ngModel)]="editCategoriaData().slaNombre" placeholder="Nombre del SLA">
+                      <label class="form-label">{{'Nombre del SLA' | transloco}}</label>
+                      <input type="text" class="form-input" [(ngModel)]="editCategoriaData().slaNombre" placeholder="{{'Nombre del SLA' | transloco}}">
                     </div>
                     <div class="form-group">
                       <label class="form-label">Nivel de Urgencia</label>
@@ -380,7 +380,7 @@
                   <!-- Tercera fila: 1 columna completa para descripción -->
                   <div class="sla-form-row-full">
                     <div class="form-group">
-                      <label class="form-label">Descripción del SLA</label>
+                      <label class="form-label">{{'Descripción del SLA' | transloco}}</label>
                       <textarea class="form-textarea" rows="3" [(ngModel)]="editCategoriaData().slaDescripcion" placeholder="Descripción detallada del SLA..."></textarea>
                     </div>
                   </div>
@@ -559,7 +559,7 @@
       <div class="modal-title">
         <i class="bi bi-tag-fill"></i>
         <div>
-          <h3>Crear Nueva Categoría</h3>
+          <h3>{{'Crear Nueva Categoría' | transloco}}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="closeCreateModal()">
@@ -574,8 +574,8 @@
         </div>
         <div class="categoria-edit">
           <div class="edit-fields">
-            <input type="text" class="form-input large" [(ngModel)]="newCategoria().codigo" placeholder="Código">
-            <input type="text" class="form-input large" [(ngModel)]="newCategoria().nombre" placeholder="Nombre de la categoría">
+            <input type="text" class="form-input large" [(ngModel)]="newCategoria().codigo" placeholder="{{'Código' | transloco}}">
+            <input type="text" class="form-input large" [(ngModel)]="newCategoria().nombre" placeholder="{{'Nombre de la categoría' | transloco}}">
           </div>
         </div>
       </div>
@@ -585,12 +585,12 @@
           <div class="section-card equal-height">
             <div class="section-header">
               <i class="bi bi-info-circle"></i>
-              <h4>Información Básica</h4>
+              <h4>{{'Información Básica' | transloco}}</h4>
             </div>
             <div class="section-body">
               <div class="edit-grid">
                 <div class="form-group">
-                  <label class="form-label">Descripción</label>
+                  <label class="form-label">{{'Descripción' | transloco}}</label>
                   <textarea class="form-textarea" rows="3" [(ngModel)]="newCategoria().descripcion"></textarea>
                 </div>
               </div>
@@ -610,17 +610,17 @@
                 <!-- Primera fila: 2 columnas -->
                 <div class="sla-form-row">
                   <div class="form-group">
-                    <label class="form-label">Nombre del SLA</label>
-                    <input type="text" class="form-input" [(ngModel)]="newCategoria().slaNombre" placeholder="Nombre del SLA">
+                    <label class="form-label">{{'Nombre del SLA' | transloco}}</label>
+                    <input type="text" class="form-input" [(ngModel)]="newCategoria().slaNombre" placeholder="{{'Nombre del SLA' | transloco}}">
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Nivel de Urgencia</label>
+                    <label class="form-label">{{'Nivel de Urgencia' | transloco}}</label>
                     <select class="form-select" [(ngModel)]="newCategoria().slaNivelUrgencia">
-                      <option value="">Seleccionar nivel</option>
-                      <option value="BAJO">Bajo</option>
-                      <option value="MEDIO">Medio</option>
-                      <option value="ALTO">Alto</option>
-                      <option value="CRITICO">Crítico</option>
+                      <option value="">{{'Seleccionar nivel' | transloco}}</option>
+                      <option value="BAJO">{{'Bajo' | transloco}}</option>
+                      <option value="MEDIO">{{'Medio' | transloco}}</option>
+                      <option value="ALTO">{{'Alto' | transloco}}</option>
+                      <option value="CRITICO">{{'Crítico' | transloco}}</option>
                     </select>
                   </div>
                 </div>
@@ -628,20 +628,20 @@
                 <!-- Segunda fila: 2 columnas -->
                 <div class="sla-form-row">
                   <div class="form-group">
-                    <label class="form-label">Tiempo Máx. Respuesta (min)</label>
-                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxRespuestaMin" min="1" placeholder="Minutos">
+                    <label class="form-label">{{'Tiempo Máx. Respuesta (min)' | transloco}}</label>
+                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxRespuestaMin" min="1" placeholder="{{'Minutos' | transloco}}">
                   </div>
                   <div class="form-group">
-                    <label class="form-label">Tiempo Máx. Resolución (min)</label>
-                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxResolucionMin" min="1" placeholder="Minutos">
+                    <label class="form-label">{{'Tiempo Máx. Resolución (min)' | transloco}}</label>
+                    <input type="number" class="form-input" [(ngModel)]="newCategoria().slaTiempoMaxResolucionMin" min="1" placeholder="{{'Minutos' | transloco}}">
                   </div>
                 </div>
 
                 <!-- Tercera fila: 1 columna completa para descripción -->
                 <div class="sla-form-row-full">
                   <div class="form-group">
-                    <label class="form-label">Descripción del SLA</label>
-                    <textarea class="form-textarea" rows="3" [(ngModel)]="newCategoria().slaDescripcion" placeholder="Descripción detallada del SLA..."></textarea>
+                    <label class="form-label">{{'Descripción del SLA' | transloco}}</label>
+                    <textarea class="form-textarea" rows="3" [(ngModel)]="newCategoria().slaDescripcion" placeholder="{{'Descripción detallada del SLA...' | transloco}}"></textarea>
                   </div>
                 </div>
               </div>

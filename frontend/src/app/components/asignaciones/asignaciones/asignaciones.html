@@ -312,9 +312,9 @@
                     </div>
                     <div class="resultado-details">
                       @if (resultado.exito) {
-                        <p><strong>Técnico:</strong> {{ resultado.tecnico }}</p>
-                        <p><strong>Puntaje:</strong> {{ resultado.puntaje }}</p>
-                        <p><strong>Capacidad:</strong> {{ ((resultado.capacidadTecnico ?? 0) * 100).toFixed(1) }}%</p>
+                        <p><strong>{{'Técnico:' | transloco}}</strong> {{ resultado.tecnico }}</p>
+                        <p><strong>{{'Puntaje:' | transloco}}</strong> {{ resultado.puntaje }}</p>
+                        <p><strong>{{'Capacidad:' | transloco}}</strong> {{ ((resultado.capacidadTecnico ?? 0) * 100).toFixed(1) }}%</p>
                       } @else {
                         <p><strong>Error:</strong> {{ resultado.error }}</p>
                       }
@@ -331,11 +331,11 @@
         <div class="asignacion-manual">
           <div class="form-section">
             <div class="form-group">
-              <label class="form-label">Ticket a Asignar</label>
+              <label class="form-label">{{'Tiquete a Asignar' | transloco}}</label>
               <select class="form-select" 
                       [ngModel]="selectedTicketId()" 
                       (ngModelChange)="onTicketSelected($event)">
-                <option value="">Seleccionar ticket</option>
+                <option value="">{{'Seleccionar tiquete' | transloco}}</option>
                 @for (ticket of ticketsPendientes(); track ticket.id) {
                   <option [value]="ticket.id">
                     {{ ticket.consecutivo }} - {{ ticket.titulo }} ({{ ticket.prioridad }})
@@ -346,36 +346,36 @@
               @if (isLoadingTickets()) {
                 <div class="loading-small">
                   <i class="bi bi-arrow-clockwise spin"></i>
-                  Cargando tickets pendientes...
+                  {{'Cargando tiquetes pendientes...' | transloco}}
                 </div>
               }
               
               @if (ticketsPendientes().length === 0 && !isLoadingTickets()) {
                 <div class="no-data">
                   <i class="bi bi-info-circle"></i>
-                  No hay tickets pendientes para asignar
+                  {{'No hay tickets pendientes para asignar' | transloco}}
                 </div>
               }
               
               @if (getTicketSeleccionado()) {
                 <div class="ticket-info">
-                  <p><strong>Categoría:</strong> {{ getTicketSeleccionado()?.categoria?.nombre }}</p>
-                  <p><strong>Prioridad:</strong> 
+                  <p><strong>{{'Categoría:' | transloco}}</strong> {{ getTicketSeleccionado()?.categoria?.nombre }}</p>
+                  <p><strong>{{'Prioridad:' | transloco}}</strong> 
                     <span [class]="'badge ' + getPrioridadBadgeClass(getTicketSeleccionado()?.prioridad)">
                       {{ getTicketSeleccionado()?.prioridad }}
                     </span>
                   </p>
-                  <p><strong>Solicitante:</strong> {{ getTicketSeleccionado()?.solicitante?.nombre }}</p>
+                  <p><strong>{{'Solicitante:' | transloco}}</strong> {{ getTicketSeleccionado()?.solicitante?.nombre }}</p>
                 </div>
               }
             </div>
 
             <div class="form-group">
-              <label class="form-label">Técnico</label>
+              <label class="form-label">{{'Técnico' | transloco}}</label>
               <select class="form-select" 
                       [ngModel]="selectedTecnicoId()" 
                       (ngModelChange)="onTecnicoSelected($event)">
-                <option value="">Seleccionar técnico</option>
+                <option value="">{{'Seleccionar técnico' | transloco}}</option>
                 @for (tecnico of tecnicosDisponibles(); track tecnico.id) {
                   <option [value]="tecnico.id" [disabled]="!tecnico.disponible">
                     {{ tecnico.nombre }} 
@@ -388,25 +388,25 @@
               @if (isLoadingTecnicos()) {
                 <div class="loading-small">
                   <i class="bi bi-arrow-clockwise spin"></i>
-                  Cargando técnicos disponibles...
+                  {{'Cargando técnicos disponibles...' | transloco}}
                 </div>
               }
               
               @if (tecnicosDisponibles().length === 0 && !isLoadingTecnicos()) {
                 <div class="no-data">
                   <i class="bi bi-exclamation-triangle"></i>
-                  No hay técnicos disponibles en este momento
+                  {{'No hay técnicos disponibles en este momento' | transloco}}
                 </div>
               }
               
               @if (getTecnicoSeleccionado()) {
                 <div class="tecnico-info">
-                  <p><strong>Especialidades:</strong> 
+                  <p><strong>{{'Especialidades:' | transloco}}</strong> 
                     {{ getEspecialidadesTecnico() }}
                   </p>
-                  <p><strong>Disponibilidad:</strong> 
+                  <p><strong>{{'Disponibilidad:' | transloco}}</strong> 
                     <span [class]="getTecnicoSeleccionado()?.disponible ? 'text-success' : 'text-danger'">
-                      {{ getTecnicoSeleccionado()?.disponible ? 'DISPONIBLE' : 'NO DISPONIBLE' }}
+                      {{ getTecnicoSeleccionado()?.disponible ? ('DISPONIBLE' | transloco) : ('NO DISPONIBLE' | transloco) }}
                     </span>
                   </p>
                 </div>
@@ -414,7 +414,7 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Justificación</label>
+              <label class="form-label">{{'Justificación' | transloco}}</label>
               <textarea class="form-control" rows="3" 
                         [ngModel]="justificacion()" 
                         (ngModelChange)="justificacion.set($event)"
@@ -426,7 +426,7 @@
             <button class="btn btn-success btn-lg" (click)="asignarManual()" 
                     [disabled]="!selectedTicketId() || !selectedTecnicoId() || !justificacion().trim() || isLoading()">
               <i class="bi bi-check-circle"></i>
-              {{ isLoading() ? 'Asignando...' : 'Confirmar Asignación' }}
+              {{ isLoading() ? ('Asignando...' | transloco) : ('Confirmar Asignación' | transloco) }}
             </button>
           </div>
         </div>
@@ -436,7 +436,7 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeModal()">
         <i class="bi bi-x-circle"></i>
-        Cancelar
+        {{'Cancelar' | transloco}}
       </button>
     </div>
   </div>

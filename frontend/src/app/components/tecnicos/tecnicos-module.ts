@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TecnicosRoutingModule } from './tecnicos-routing-module';
 import { TecnicosComponent } from './tecnicos/tecnicos';
+import { TranslocoModule } from '@jsverse/transloco';
 
 
 
@@ -13,6 +14,7 @@ import { TecnicosComponent } from './tecnicos/tecnicos';
     TecnicosComponent
   ],
   imports: [
+    TranslocoModule,
     CommonModule,
     TecnicosRoutingModule,
     ReactiveFormsModule,
