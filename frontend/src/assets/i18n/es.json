@@ -272,5 +272,11 @@
     "Descripción detallada del SLA...": "Descripción detallada del SLA...",
     "Nombre del SLA": "Nombre del SLA",
     "Nivel de Urgencia": "Nivel de Urgencia",
-    "Descripción del SLA": "Descripción del SLA"
+    "Descripción del SLA": "Descripción del SLA",
+    "Pendiente": "Pendiente",
+    "En Progreso": "En Progreso",
+    "Resuelto": "Resuelto",
+    "Cerrado": "Cerrado",
+    "Cancelado": "Cancelado",
+    "Espera Cliente": "Espera Cliente"
 }

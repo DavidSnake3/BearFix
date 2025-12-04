@@ -81,14 +81,14 @@
                   <td class="status-col">
                     <span class="badge" [ngClass]="getEstadoBadgeClass(ticket.estado)">
                       <i class="bi me-1" [ngClass]="getEstadoIcon(ticket.estado)"></i>
-                      {{ getEstadoText(ticket.estado) }}
+                      {{ getEstadoText(ticket.estado) | transloco }}
                     </span>
                   </td>
 
                   <td class="priority-col">
                     <span class="badge" [ngClass]="getPrioridadBadgeClass(ticket.prioridad)">
                       <i class="bi me-1" [ngClass]="getPriorityIcon(ticket.prioridad)"></i>
-                      {{ ticket.prioridad }}
+                      {{ ticket.prioridad | transloco}}
                     </span>
                   </td>
 

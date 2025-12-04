@@ -273,5 +273,11 @@
     "Descripción detallada del SLA...": "Detailed SLA description...",
     "Nombre del SLA": "SLA Name",
     "Nivel de Urgencia": "Urgency Level",
-    "Descripción del SLA": "SLA Description"
+    "Descripción del SLA": "SLA Description",
+    "Pendiente": "Pending",
+    "En Proceso": "In Progress",
+    "Resuelto": "Resolved",
+    "Cerrado": "Closed",
+    "Cancelado": "Cancelled",
+    "Espera Cliente": "Awaiting Customer"
 }
