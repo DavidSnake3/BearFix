@@ -31,28 +31,5 @@ import { MatOptionModule } from '@angular/material/core';
     Sidebar,
     Footer
   ]
-  // ,
-  //   providers: [
-  //   provideHttpClient(withInterceptorsFromDi()),
-  //   {
-  //     provide: HTTP_INTERCEPTORS,
-  //     useClass: TokenInterceptor,
-  //     multi: true
-  //   },
-  //   {
-  //     provide: HTTP_INTERCEPTORS,
-  //     useClass: HttpErrorInterceptorService,
-  //     multi: true
-  //   },
-  //   provideTransloco({
-  //     config: {
-  //       availableLangs: AvailableLanguages,
-  //       defaultLang: AvailableLanguage.ES,
-  //       reRenderOnLangChange: true,
-  //       prodMode: !isDevMode(),
-  //     },
-  //     loader: TranslocoHttpLoader,
-  //   })
-  // ],
 })
 export class CoreModule { }

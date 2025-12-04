@@ -32,7 +32,7 @@
     <div class="card-body">
       <div class="filters-grid">
         <div class="filter-group">
-          <label class="filter-label">Buscar Ticket</label>
+          <label class="filter-label">Buscar Tiquete</label>
           <div class="search-container">
             <i class="bi bi-search search-icon"></i>
             <input type="text" class="form-input search-input large" placeholder="Buscador..." [value]="searchInput()"
@@ -246,9 +246,9 @@
       <div class="empty-state">
         <div class="empty-content">
           <i class="bi bi-search empty-icon"></i>
-          <h3>No se encontraron tickets</h3>
+          <h3>No se encontraron tiquetes</h3>
           <p>
-            No hay tickets que coincidan con los filtros aplicados.
+            No hay tiquetes que coincidan con los filtros aplicados.
             @if (filtros().search || filtros().categoria || filtros().estado || filtros().prioridad) {
             <br>
             <small>Intenta ajustar los filtros de búsqueda.</small>
@@ -288,13 +288,13 @@
             <div class="section-card equal-height">
               <div class="section-header">
                 <i class="bi bi-info-circle"></i>
-                <h4>Información del Ticket</h4>
+                <h4>Información del Tiquete</h4>
               </div>
               <div class="section-body">
                 <div class="info-grid">
                   <div class="info-item full-width">
                     <label class="form-label required">Título</label>
-                    <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="Ingrese el título del ticket">
+                    <input type="text" class="form-input" [(ngModel)]="newTicket().titulo" placeholder="Ingrese el título del tiquete">
                   </div>
 
                   <div class="info-item full-width">
@@ -540,7 +540,7 @@
       <div class="modal-title">
         <i class="bi" [ngClass]="isEditing() ? 'bi-pencil-square' : 'bi-ticket-perforated'"></i>
         <div>
-          <h3>{{ isEditing() ? 'Editando Ticket' : 'Detalle del Ticket' }}</h3>
+          <h3>{{ isEditing() ? 'Editando Ticket' : 'Detalle del Tiquete' }}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="isEditing() ? cancelEdit() : closeModal()">

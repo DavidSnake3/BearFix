@@ -9,15 +9,15 @@ import { TranslocoModule } from '@jsverse/transloco';
 
 @NgModule({
   declarations: [
+    Perfil,
     DashboardComponent,
-    Perfil
   ],
   imports: [
     TranslocoModule,
     CommonModule,
     HomeRoutingModule,
     FormsModule,        
-    ReactiveFormsModule 
+    ReactiveFormsModule
   ],
   exports: [
     Perfil

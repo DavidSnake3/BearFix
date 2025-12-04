@@ -3,7 +3,7 @@
   <div class="spinner-border text-primary" role="status">
     <span class="visually-hidden">{{'Cargando...' | transloco}}</span>
   </div>
-  <p class="loading-text">{{'Cargando tickets recientes...' | transloco}}</p>
+  <p class="loading-text">{{'Cargando tiquetes recientes...' | transloco}}</p>
 </div>
 } @else {
 <div class="dashboard-container">
@@ -13,7 +13,7 @@
         <h1 class="welcome-title">
           <i class="bi bi-house-door"></i> {{'Bienvenido' | transloco}}, {{ fullName() }}
         </h1>
-        <p class="welcome-subtitle">{{'Tus tickets más recientes' | transloco}}</p>
+        <p class="welcome-subtitle">{{'Tus tiquetes más recientes' | transloco}}</p>
       </div>
     </div>
   </div>
@@ -25,7 +25,7 @@
           <div class="card-header-content">
             <h2 class="card-title">
               <i class="bi bi-clock-history"></i>
-              {{'Tickets Recientes' | transloco}}
+              {{'Tiquetes Recientes' | transloco}}
             </h2>
             <div class="header-actions">
               <button class="btn btn-refresh" (click)="refreshData()" [disabled]="isLoading()">
@@ -41,11 +41,11 @@
           <div class="empty-state">
             <div class="empty-content">
               <i class="bi bi-inbox empty-icon"></i>
-              <h3>{{'No hay tickets recientes.' | transloco}}</h3>
-              <p>{{'No se encontraron tickets en el sistema.' | transloco}}</p>
+              <h3>{{'No hay tiquetes recientes.' | transloco}}</h3>
+              <p>{{'No se encontraron tiquetes en el sistema.' | transloco}}</p>
               <button class="btn btn-primary" (click)="nuevoTicket()">
                 <i class="bi bi-plus-circle"></i>
-                {{'Crear Primer Ticket' | transloco}}
+                {{'Crear Primer Tiquete' | transloco}}
               </button>
             </div>
           </div>
@@ -54,11 +54,11 @@
             <table class="tickets-table">
               <thead class="table-header">
                 <tr>
-                  <th class="ticket-col">Ticket</th>
-                  <th class="subject-col">Asunto</th>
-                  <th class="status-col">Estado</th>
-                  <th class="priority-col">Prioridad</th>
-                  <th class="date-col">Fecha</th>
+                  <th class="ticket-col">{{'Tiquete' | transloco}}</th>
+                  <th class="subject-col">{{'Asunto' | transloco}}</th>
+                  <th class="status-col">{{'Estado' | transloco}}</th>
+                  <th class="priority-col">{{'Prioridad' | transloco}}</th>
+                  <th class="date-col">{{'Fecha' | transloco}}</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,7 +110,7 @@
             </div>
             <button class="btn btn-outline" routerLink="/historial">
               <i class="bi bi-clock-history"></i>
-              {{'Ver Todos los Tickets' | transloco}}
+              {{'Ver Todos los Tiquetes' | transloco}}
             </button>
           </div>
           }

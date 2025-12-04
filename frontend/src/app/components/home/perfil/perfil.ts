@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UsuarioPerfil, PerfilService, ActualizarPerfilRequest } from '../../../share/services/api/perfil.service';
 import { NotificationService } from '../../../share/services/app/notification.service';
+import { TranslocoService } from '@jsverse/transloco';
+import { AvailableLanguage } from '../../../transloco-config';
 
 @Component({
   selector: 'app-perfil',
@@ -10,6 +12,18 @@ import { NotificationService } from '../../../share/services/app/notification.se
   styleUrl: './perfil.css'
 })
 export class Perfil implements OnInit {
+  private transloco = inject(TranslocoService);
+  public languages: {code: AvailableLanguage, name: string}[] = [
+    { code: AvailableLanguage.ES, name: 'languages.es' },
+    { code: AvailableLanguage.EN, name: 'languages.en' },
+  ]
+  public changeLanguage(lang: AvailableLanguage) {
+    this.transloco.setActiveLang(lang);
+  }
+  public getLanguage(){
+    return this.transloco.getActiveLang();
+  }
+
   perfilForm: FormGroup;
   usuario: UsuarioPerfil | null = null;
   estaCargando = false;

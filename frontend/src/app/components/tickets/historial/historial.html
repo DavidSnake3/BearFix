@@ -4,9 +4,9 @@
       <div class="header-info">
         <h1 class="page-title">
           <i class="bi bi-clock-history"></i>
-          {{'Mis Tickets' | transloco}}
+          {{'Mis Tiquetes' | transloco}}
         </h1>
-        <p class="page-subtitle">{{'Historial de todos los tickets que has creado en el sistema' | transloco}}</p>
+        <p class="page-subtitle">{{'Historial de todos los tiquetes que has creado en el sistema' | transloco}}</p>
       </div>
 
       <div class="header-actions">
@@ -28,7 +28,7 @@
     <div class="card-body">
       <div class="filters-grid">
         <div class="filter-group">
-          <label class="filter-label">{{'Buscar Ticket' | transloco}}</label>
+          <label class="filter-label">{{'Buscar Tiquete' | transloco}}</label>
           <div class="search-container full-width">
             <i class="bi bi-search search-icon"></i>
             <input 
@@ -124,7 +124,7 @@
         <div class="loading-state">
           <div class="spinner-container">
             <div class="spinner"></div>
-            <p>{{'Cargando tus tickets...' | transloco}}</p>
+            <p>{{'Cargando tus tiquetes...' | transloco}}</p>
           </div>
         </div>
       } @else {
@@ -201,7 +201,7 @@
                       <button 
                         class="btn-icon danger" 
                         (click)="cerrarTicket(ticket)" 
-                        title="Cerrar ticket"
+                        title="{{'Cerrar tiquete' | transloco}}"
                         *ngIf="puedeCerrarTicket(ticket)">
                         <i class="fas fa-times"></i>
                       </button>
@@ -215,14 +215,14 @@
 
           <div class="pagination-container">
             <div class="pagination-info">
-              Página {{ paginacion().currentPage }} de {{ paginacion().totalPages }} • 
-              {{ paginacion().totalItems }} tickets en total
+              {{'Página' | transloco}} {{ paginacion().currentPage }} {{'de' | transloco}} {{ paginacion().totalPages }} • 
+              {{ paginacion().totalItems }} {{'tiquetes en total' | transloco}}
             </div>
             <nav class="pagination">
               <button class="pagination-btn" 
                       [disabled]="!paginacion().hasPrevPage"
                       (click)="cambiarPagina(paginacion().currentPage - 1)">
-                <i class="bi bi-chevron-left"></i> Anterior
+                <i class="bi bi-chevron-left"></i> {{'Anterior' | transloco}}
               </button>
               
               <div class="pagination-pages">
@@ -251,9 +251,9 @@
           <div class="empty-state">
             <div class="empty-content">
               <i class="bi bi-search empty-icon"></i>
-              <h3>{{'No se encontraron tickets' | transloco}}</h3>
+              <h3>{{'No se encontraron tiquetes' | transloco}}</h3>
               <p>
-                {{'No hay tickets que coincidan con los filtros aplicados.' | transloco}}
+                {{'No hay tiquetes que coincidan con los filtros aplicados.' | transloco}}
                 @if (filtros().search || filtros().estado || filtros().prioridad) {
                   <br>
                   <small>{{'Intenta ajustar los filtros de búsqueda.' | transloco}}</small>
@@ -278,7 +278,7 @@
         <div class="modal-title">
           <i class="bi bi-ticket-perforated"></i>
           <div>
-            <h3>{{'Detalle del Ticket' | transloco}}</h3>
+            <h3>{{'Detalle del Tiquete' | transloco}}</h3>
           </div>
         </div>
         <button class="btn-close" (click)="closeModal()">
@@ -465,8 +465,8 @@
                 } @else {
                   <div class="empty-section">
                     <i class="bi bi-star"></i>
-                    <p>No hay valoración</p>
-                    <small>{{'Este ticket no ha sido valorado aún.' | transloco}}</small>
+                    <p>{{'No hay valoración' | transloco}}</p>
+                    <small>{{'Este tiquete no ha sido valorado aún.' | transloco}}</small>
                   </div>
                 }
               </div>
@@ -533,7 +533,7 @@
       <div class="modal-title">
         <i class="bi bi-x-circle"></i>
         <div>
-          <h3>{{'Cerrar Ticket' | transloco}}</h3>
+          <h3>{{'Cerrar Tiquete' | transloco}}</h3>
           <p class="modal-subtitle">{{ selectedTicket()?.consecutivo }} - {{ selectedTicket()?.titulo }}</p>
         </div>
       </div>
@@ -544,7 +544,7 @@
 
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">{{'Justificación para cerrar el ticket' | transloco}}
+        <label class="form-label">{{'Justificación para cerrar el tiquete' | transloco}}
  <span class="text-danger">*</span></label>
         <textarea 
           class="form-control" 

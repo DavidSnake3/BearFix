@@ -439,7 +439,11 @@ export class AsignacionesComponent {
   }
 
   getAbreviaturaDia(diaCompleto: string): string {
-    return diaCompleto.charAt(0);
+    // return diaCompleto.charAt(0);
+    if(diaCompleto === 'MARTES'){
+      return 'K'
+    }
+    else return diaCompleto.charAt(0);
   }
 
   esHoy(fecha: Date): boolean {

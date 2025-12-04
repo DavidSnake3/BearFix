@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../share/services/api/auth.service';
 import { UserStoreService } from '../../../share/services/api/user-store.service';
 import { TicketService } from '../../../share/services/api/ticket.service';
+import { TranslocoService } from '@jsverse/transloco';
+import { AvailableLanguage } from '../../../transloco-config';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,6 +13,19 @@ import { TicketService } from '../../../share/services/api/ticket.service';
   standalone: false
 })
 export class DashboardComponent {
+  private transloco = inject(TranslocoService);
+  public languages: {code: AvailableLanguage, name: string}[] = [
+    { code: AvailableLanguage.ES, name: 'languages.es' },
+    { code: AvailableLanguage.EN, name: 'languages.en' },
+  ]
+  public changeLanguage(lang: AvailableLanguage) {
+    this.transloco.setActiveLang(lang);
+  }
+  public getLanguage(){
+    return this.transloco.getActiveLang();
+  }
+
+
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
   private userStore = inject(UserStoreService);

@@ -4,26 +4,26 @@
       <div class="header-info">
         <h1 class="page-title">
           <i class="bi bi-calendar-week"></i>
-          Mis Asignaciones
+          {{'Mis Asignaciones' | transloco}}
         </h1>
-        <p class="page-subtitle">Gestiona tus tickets asignados por fecha</p>
+        <p class="page-subtitle">{{'Gestiona tus tiquetes asignados por fecha' | transloco}}</p>
       </div>
 
       <div class="header-actions">
         @if (esAdministrador()) {
           <button class="btn-action primary" (click)="abrirModalAsignacion('automatica')">
             <i class="bi bi-robot"></i>
-            Asignación Automática
+            {{'Asignación Automática' | transloco}}
           </button>
           <button class="btn-action secondary" (click)="abrirModalAsignacion('manual')">
             <i class="bi bi-person"></i>
-            Asignación Manual
+            {{'Asignación Manual' | transloco}}
           </button>
         }
         
         <button class="btn-action refresh" (click)="cargarAsignaciones()" [disabled]="isLoading()">
           <i class="bi" [ngClass]="isLoading() ? 'bi-arrow-clockwise spin' : 'bi-arrow-clockwise'"></i>
-          {{ isLoading() ? 'Cargando...' : 'Actualizar' }}
+          {{ isLoading() ? ('Cargando......' | transloco) : ('Actualizar' | transloco) }}
         </button>
       </div>
     </div>
@@ -35,7 +35,7 @@
         </div>
         <div class="stat-info">
           <span class="stat-number">{{ getTotalAsignaciones() }}</span>
-          <span class="stat-label">Total Asignaciones</span>
+          <span class="stat-label">{{'Total Asignaciones' | transloco}}</span>
         </div>
       </div>
     </div>
@@ -43,40 +43,40 @@
     <div class="controles-mes">
       <button class="btn-control prev" (click)="mesAnterior()">
         <i class="bi bi-chevron-left"></i>
-        <span>Mes Anterior</span>
+        <span>{{'Mes Anterior' | transloco}}</span>
       </button>
 
       <div class="mes-info">
-        <h2 class="mes-actual">{{ getNombreMes() }} {{ anioActual() }}</h2>
+        <h2 class="mes-actual">{{ getNombreMes() | transloco }} {{ anioActual() }}</h2>
         <div class="mes-badges">
           <span class="badge asignaciones-badge">
             <i class="bi bi-ticket-perforated"></i>
-            {{ getDiasConAsignaciones() }} días con tickets
+            {{ getDiasConAsignaciones() }} {{'días con tickets' | transloco}}
           </span>
         </div>
       </div>
 
       <button class="btn-control next" (click)="mesSiguiente()">
-        <span>Mes Siguiente</span>
+        <span>{{'Mes Siguiente' | transloco}}</span>
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>
   </div>
 
   <div class="leyenda-prioridades">
-    <div class="leyenda-title">Leyenda de Prioridades:</div>
+    <div class="leyenda-title">{{'Leyenda de Prioridades:' | transloco}}</div>
     <div class="leyenda-items">
       <div class="leyenda-item">
         <span class="color-indicator prioridad-alto"></span>
-        <span>Alta Prioridad</span>
+        <span>{{'Alta Prioridad' | transloco}}</span>
       </div>
       <div class="leyenda-item">
         <span class="color-indicator prioridad-medio"></span>
-        <span>Media Prioridad</span>
+        <span>{{'Media Prioridad' | transloco}}</span>
       </div>
       <div class="leyenda-item">
         <span class="color-indicator prioridad-bajo"></span>
-        <span>Baja Prioridad</span>
+        <span>{{'Baja Prioridad' | transloco}}</span>
       </div>
     </div>
   </div>
@@ -85,8 +85,8 @@
     <div class="dias-semana">
       @for (dia of diasSemana; track dia) {
       <div class="dia-semana">
-        <span class="dia-nombre">{{ dia }}</span>
-        <span class="dia-abreviatura">{{ getAbreviaturaDia(dia) }}</span>
+        <span class="dia-nombre">{{ dia | transloco }}</span>
+        <span class="dia-abreviatura">{{ getAbreviaturaDia(dia) | transloco }}</span>
       </div>
       }
     </div>
@@ -156,7 +156,7 @@
   <div class="calendario-footer">
     <div class="footer-info">
       <i class="bi bi-info-circle"></i>
-      <span>Haz clic en cualquier día con asignaciones para ver los detalles</span>
+      <span>{{'Haz clic en cualquier día con asignaciones para ver los detalles' | transloco}}</span>
     </div>
   </div>
 </div>
@@ -168,7 +168,7 @@
       <div class="modal-title">
         <i class="bi bi-calendar-date"></i>
         <div>
-          <h3>Asignaciones del Día</h3>
+          <h3>{{'Asignaciones del Día' | transloco}}</h3>
           <p class="modal-subtitle">{{ fechaSeleccionada() }}</p>
         </div>
       </div>
@@ -180,13 +180,12 @@
     <div class="modal-body">
       <div class="asignaciones-count">
         <i class="bi bi-list-check"></i>
-        <span>{{ asignacionesDiaSeleccionado().length }} asignacion(es) encontrada(s)</span>
+        <span>{{ asignacionesDiaSeleccionado().length }} {{'asignacion(es) encontrada(s)' | transloco}}</span>
       </div>
 
       <div class="asignaciones-list">
         @for (asignacion of asignacionesDiaSeleccionado(); track asignacion.asignacionId) {
         <div [class]="'asignacion-card ' + obtenerClasePrioridad(asignacion.prioridad) + '-card'">
-
           <div class="card-header">
             <div class="card-badges">
               <span class="badge consecutivo">
@@ -200,7 +199,7 @@
             <div class="card-actions">
               <button class="btn-action" (click)="verDetalleAsignacion(asignacion.id)">
                 <i class="bi bi-eye"></i>
-                Ver Detalle
+                {{'Ver Detalle' | transloco}}
               </button>
             </div>
           </div>
@@ -226,7 +225,7 @@
               @if (asignacion.tiempoRestanteSLAHoras < 0) {
                 <div class="detail-item">
                   <i class="bi bi-exclamation-triangle"></i>
-                  <span class="text-danger">SLA Vencido: {{ abs(asignacion.tiempoRestanteSLAHoras) }}h</span>
+                  <span class="text-danger">{{'SLA Vencido:' | transloco}} {{ abs(asignacion.tiempoRestanteSLAHoras) }}h</span>
                 </div>
               }
             </div>
@@ -235,11 +234,11 @@
           <div class="card-footer">
             <div class="footer-info">
               <i class="bi bi-clock-history"></i>
-              <span>Asignado: {{ asignacion.fechaAsignacion | date:'medium' }}</span>
+              <span>{{'Asignado:' | transloco}} {{ asignacion.fechaAsignacion | date:'medium' }}</span>
             </div>
           <button class="btn btn-primary" (click)="verDetalleGestion(asignacion.asignacionId)">
             <i class="bi bi-arrow-right"></i>
-            Gestionar
+            {{'Gestionar' | transloco}}
           </button>
           </div>
         </div>
@@ -250,10 +249,10 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="cerrarModal()">
         <i class="bi bi-x-circle"></i>
-        Cerrar
+        {{'Cerrar' | transloco}}
       </button>
       <div class="footer-actions">
-        <span class="text-muted">{{ asignacionesDiaSeleccionado().length }} elementos</span>
+        <span class="text-muted">{{ asignacionesDiaSeleccionado().length }} {{'elementos' | transloco}}</span>
       </div>
     </div>
   </div>
@@ -267,7 +266,7 @@
       <div class="modal-title">
         <i class="bi" [ngClass]="modoAsignacion() === 'automatica' ? 'bi-robot' : 'bi-person'"></i>
         <div>
-          <h3>{{ modoAsignacion() === 'automatica' ? 'Asignación Automática' : 'Asignación Manual' }}</h3>
+          <h3>{{ modoAsignacion() === 'automatica' ? ('Asignación Automática...' | transloco) : ('Asignación Manual' | transloco) }}</h3>
         </div>
       </div>
       <button class="btn-close" (click)="closeModal()">
@@ -279,14 +278,14 @@
       @if (modoAsignacion() === 'automatica') {
         <div class="asignacion-automatica">
           <div class="info-section">
-            <h4><i class="bi bi-info-circle"></i> Información de Autotriage</h4>
+            <h4><i class="bi bi-info-circle"></i>{{'Información de Autotriage' | transloco}}</h4>
             <div class="stats-grid">
               <div class="stat-item">
-                <label>Tickets Pendientes:</label>
+                <label>{{'Tiquetes Pendientes:' | transloco}}</label>
                 <span>{{ estadisticasAutotriage()?.ticketsPendientes || 0 }}</span>
               </div>
               <div class="stat-item">
-                <label>Técnicos Disponibles:</label>
+                <label>{{'Técnicos Disponibles:' | transloco}}</label>
                 <span>{{ estadisticasAutotriage()?.tecnicosDisponibles || 0 }}</span>
               </div>
             </div>
@@ -295,13 +294,13 @@
           <div class="action-section">
             <button class="btn btn-primary btn-lg" (click)="ejecutarAutotriage()" [disabled]="isLoadingAutotriage()">
               <i class="bi" [ngClass]="isLoadingAutotriage() ? 'bi-arrow-clockwise spin' : 'bi-play-circle'"></i>
-              {{ isLoadingAutotriage() ? 'Ejecutando Autotriage...' : 'Ejecutar Autotriage' }}
+              {{ isLoadingAutotriage() ? ('Ejecutando Autotriage...' | transloco) : ('Ejecutar Autotriage' | transloco) }}
             </button>
           </div>
 
           @if (resultadosAutotriage().length > 0) {
             <div class="resultados-section">
-              <h4><i class="bi bi-list-check"></i> Resultados del Autotriage</h4>
+              <h4><i class="bi bi-list-check"></i>{{'Resultados del Autotriage' | transloco}}</h4>
               <div class="resultados-grid">
                 @for (resultado of resultadosAutotriage(); track resultado.ticket) {
                   <div class="resultado-item" [class]="resultado.exito ? 'success' : 'error'">
